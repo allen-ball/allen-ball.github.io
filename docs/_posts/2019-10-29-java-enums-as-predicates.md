@@ -60,7 +60,7 @@ will allow support for fluent expressions like:
         .anyMatch();
 ```
 
-Complete [javadoc](javadoc/allclasses-noframe.html) is
+Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
 provided.
 
 ## Extending Enums
@@ -74,7 +74,7 @@ and
 [`TemporalAdjuster`](https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAdjuster.html)
 interfaces so `DayOfWeek` provides implementation methods for those
 interface methods.  The
-[`Suit`](javadoc/ball/game/card/Card.Suit.html)
+[`Suit`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Suit.html)
 implementation demonstrates how subclass fields may be defined and set by
 defining a custom constructor.
 
@@ -108,8 +108,8 @@ The key to contributing to the fluent interface provided by
 [`Stream`](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html)
 is for the `Enum` subclass to implement `Predicate`.  Of course, that
 `Predicate` must test the bean that the `Enum` is a property for.  For
-example, [`Rank`](javadoc/ball/game/card/Card.Rank.html) and
-`Suit` must test [`Card`](javadoc/ball/game/card/Card.html):
+example, [`Rank`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Rank.html) and
+`Suit` must test [`Card`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.html):
 
 ``` java
     public enum Rank implements Predicate<Card> {
@@ -148,7 +148,7 @@ To re-inforce the fact that `Rank` and `Suit` are bean properties of `Card`,
 ## Fluent Implementation - Poker Hand Ranking
 
 To demonstrate the "fluency" of the API, a Poker
-[`Ranking`](javadoc/ball/game/card/poker/Ranking.html) `Enum`
+[`Ranking`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Ranking.html) `Enum`
 may be defined.
 
 ``` java
@@ -373,7 +373,7 @@ sequence, etc.
 ```
 
 The logic in `Ranking.find(Collection<Card>)` and
-[`Evaluator`](javadoc/ball/game/card/poker/Evaluator.html)
+[`Evaluator`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Evaluator.html)
 demonstrate more sophisticated logic.
 
 ## Summary

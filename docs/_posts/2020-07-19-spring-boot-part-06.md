@@ -24,7 +24,7 @@ starter.  It also describes a starter for the embedded MySQL server process
 described in
 ["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld/).
 
-Complete [javadoc](javadoc/allclasses-noframe.html) is
+Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
 provided.
 
 ## Theory of Operation
@@ -148,7 +148,7 @@ starter artifacts to support all use cases.  The author feels these example
 implementations do not benefit from separate auto-configuration artifacts.
 
 The
-[`BeanRestController`](javadoc/ball/spring/jig/BeanRestController.html)
+[`BeanRestController`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/jig/BeanRestController.html)
 implementation is shown below.
 
 <figcaption style="text-align: center">
@@ -187,7 +187,7 @@ Its implementation is straightforward: A method each to look-up the
 requested bean and then serialize to JSON and XML.
 
 In the project for the starter, add the
-[`AutoConfiguration`](javadoc/ball/spring/jig/autoconfigure/AutoConfiguration.html)
+[`AutoConfiguration`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html)
 class.
 
 <figcaption style="text-align: center">
@@ -218,7 +218,7 @@ the class path.
 
 Finally, `META-INF/spring.factories` must be configured in the starter JAR
 to notify Spring Boot to add the
-[`AutoConfiguration`](javadoc/ball/spring/jig/autoconfigure/AutoConfiguration.html).
+[`AutoConfiguration`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html).
 
 <figcaption style="text-align: center">META-INF/spring.factories</figcaption>
 ```properties
@@ -228,7 +228,7 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.jig.
 Creating a starter for the embedded MySQL process described in
 ["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld/)
 is equally straightforward.  Its
-[`AutoConfiguration`](javadoc/ball/spring/mysqld/autoconfigure/AutoConfiguration.html)
+[`AutoConfiguration`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/autoconfigure/AutoConfiguration.html)
 class is shown below:
 
 <figcaption style="text-align: center">

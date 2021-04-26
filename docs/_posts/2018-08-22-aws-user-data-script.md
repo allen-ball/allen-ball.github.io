@@ -326,9 +326,20 @@ script is given below.
 
 ## References
 
-- [Source](https://github.com/allen-ball/ball-ansible/tree/master/roles/aws-user-data)
-- [automount/autofs Executable Map for Amazon EBS Volumes](/article/2018-08-20-auto-ebs-map)
-- [Amazon Web Services (AWS)](https://aws.amazon.com/)
-- [AWS Elastic Compute Cloud (EC2)](https://aws.amazon.com/ec2/)
-- [AWS Elastic Block Store (EBS)](https://aws.amazon.com/ebs/)
-- [Ansible](https://www.ansible.com/)
+- [Source]
+- [automount/autofs Executable Map for Amazon EBS Volumes]
+- [Amazon Web Services (AWS)]
+- [AWS Elastic Compute Cloud (EC2)]
+- [AWS Elastic Block Store (EBS)]
+- [Ansible]
+
+
+[Ansible]: https://www.ansible.com/
+
+[Amazon Web Services (AWS)]: https://aws.amazon.com/
+[AWS Elastic Block Store (EBS)]: https://aws.amazon.com/ebs/
+[AWS Elastic Compute Cloud (EC2)]: https://aws.amazon.com/ec2/
+
+[Source]: https://github.com/allen-ball/ball-ansible/tree/master/roles/aws-user-data
+
+[automount/autofs Executable Map for Amazon EBS Volumes]: /article/2018-08-20-auto-ebs-map

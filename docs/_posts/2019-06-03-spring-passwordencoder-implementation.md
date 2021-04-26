@@ -20,7 +20,7 @@ authentication database with an external application,
 [Dovecot](https://www.dovecot.org/), is examined in this
 article.  Dovecot uses an `MD5-CRYPT` algorithm.
 
-Complete [javadoc](javadoc/allclasses-noframe.html) is
+Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
 provided.
 
 ## Reference
@@ -75,7 +75,7 @@ public class MD5CryptPasswordEncoder extends DelegatingPasswordEncoder {
 ```
 
 The
-[`MD5Crypt`](javadoc/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.114)
+[`MD5Crypt`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.114)
 inner class implementation is straightforward:
 
 ``` java
@@ -123,7 +123,7 @@ inner class implementation is straightforward:
 ```
 
 The
-[`NoCrypt`](javadoc/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.70)
+[`NoCrypt`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.70)
 implementation provides the methods for calculating salt and `itoa64`
 conversion.
 

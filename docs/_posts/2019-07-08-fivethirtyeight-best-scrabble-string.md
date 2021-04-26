@@ -13,9 +13,9 @@ permalink: article/2019-07-08-fivethirtyeight-best-scrabble-string
 [challenge](https://fivethirtyeight.com/features/whats-your-best-scrabble-string/)
 to order Scrabble tiles to generate the largest score.
 
-Complete [javadoc](javadoc/overview-summary.html) is
+Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html) is
 provided with the solution implemented in
-[`SolveRiddle20190628Task`](javadoc/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html).
+[`SolveRiddle20190628Task`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html).
 
 ## Solution
 
@@ -153,14 +153,14 @@ are generated from the
 ```
 
 `wordlist` is a
-[`Map<CharSequence,Integer>`](javadoc/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.441)
+[`Map<CharSequence,Integer>`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.441)
 mapping a valid "word" to its potential point value, `wordmap` is a
-[`Map<CharSequence,SortedSet<CharSequence>>`](javadoc/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.536)
+[`Map<CharSequence,SortedSet<CharSequence>>`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.536)
 mapping a word to all its "included" words, and `starts` is also a
-[`Map<CharSequence,SortedSet<CharSequence>>`](javadoc/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.561)
+[`Map<CharSequence,SortedSet<CharSequence>>`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.561)
 mapping all words to its respective prefix.  After each iteration of
 selecting a subsequence to
-[play](javadoc/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.365),
+[play]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.365),
 the `wordmap` `keySet()` is updated by removing any sequences that can no
 longer be played for points:
 
@@ -175,7 +175,7 @@ longer be played for points:
 ```
 
 The
-[`next()`](javadoc/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.313)
+[`next()`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.313)
 method chooses the next highest valued sequence of tiles to play:
 
 ``` java
@@ -214,7 +214,7 @@ The `ball.game.scrabble` package was initially developed to solve a previous
 Scrabble
 [problem](http://fivethirtyeight.com/features/this-challenge-will-boggle-your-mind/).
 The implementation is
-[`SolveExpress20161021Task`](javadoc/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html)
+[`SolveExpress20161021Task`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html)
 giving the solution:
 
 <pre>

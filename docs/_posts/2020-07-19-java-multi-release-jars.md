@@ -12,7 +12,7 @@ permalink: article/2020-07-19-java-multi-release-jars
 describes how to implement an
 [`InvocationHandler`](https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true)
 to invoke `default` interface methods.  This mechanism is critical to the
-[`FluentNode`](javadoc/ball/xml/FluentNode.html)
+[`FluentNode`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.html)
 implementation described in
 ["Java Interface Facades"](/article/2019-03-30-java-interface-facades/).
 The first article also notes that the
@@ -49,7 +49,7 @@ hierarchy.
 
 ## Implementation
 
-[`DefaultInvocationHandler.invoke(Object,Method,Object[])`](javadoc/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-)
+[`DefaultInvocationHandler.invoke(Object,Method,Object[])`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-)
 is re-factored to implement
 [`DefaultInterfaceMethodInvocationHandler`](http://localhost:8080/preview/DRAFT-java-multi-release-jars/javadoc/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.html):
 

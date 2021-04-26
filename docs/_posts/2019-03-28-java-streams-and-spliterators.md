@@ -16,9 +16,9 @@ This article discusses implementing
 and the underlying
 [`Spliterator`](https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html)
 implementation.  The nontrivial implementations described here are
-[`Permutations`](javadoc/ball/util/stream/Permutations.html)
+[`Permutations`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/stream/Permutations.html)
 and
-[`Combinations`](javadoc/ball/util/stream/Combinations.html)
+[`Combinations`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/stream/Combinations.html)
 `Stream`s, both of which provide a stream of
 [`List<T>`](https://docs.oracle.com/javase/8/docs/api/java/util/List.html)
 instances representing the combinations of the argument
@@ -41,7 +41,7 @@ For example, the first `Combinations` of `5` of a 52-card `Deck` are:
 ...
 ```
 
-Complete [javadoc](javadoc/overview-summary.html) is
+Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html) is
 provided.
 
 ## `Stream` Implementation
@@ -89,7 +89,7 @@ The `Spliterator` implementation is the subject of the next section.
 ## `Spliterator` Implementation
 
 The abstract
-[`DispatchSpliterator`](javadoc/ball/util/DispatchSpliterator.html)
+[`DispatchSpliterator`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html)
 base class provides the implementation of
 [`Spliterator.tryAdvance(Consumer)`](https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-).
 The key logic is the current `Spliterator`'s `tryAdvance(Consumer)` method
@@ -140,12 +140,12 @@ there are no more `Spliterator`s to be supplied.
 
 Subclass implementors must supply an implementation of
 [`Iterator<Supplier<Spliterator<T>>>
-spliterators()`](javadoc/ball/util/DispatchSpliterator.html#spliterators--).
+spliterators()`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#spliterators--).
 In the `Combinations` implementation, the key `Spliterator`,
-[`ForPrefix`](javadoc/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208),
+[`ForPrefix`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208),
 iterates over every (sorted) prefix and either supplies more `ForPrefix`
 `Spliterator`s or a single
-[`ForCombination`](javadoc/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265)
+[`ForCombination`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265)
 `Spliterator`:
 
 ```java
@@ -188,7 +188,7 @@ iterates over every (sorted) prefix and either supplies more `ForPrefix`
 ```
 
 Size, supplied as a superclass constructor parameter, is calculated with the
-[`binomial()`](javadoc/ball/util/DispatchSpliterator.html#binomial-long-long-)
+[`binomial()`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#binomial-long-long-)
 method.  For an individual combination, the size is `1`.
 
 ```java
@@ -216,9 +216,9 @@ in `Spliterator.tryAdvance(Consumer)` allowing callers (including
 `Stream` thorough `StreamSupport`) to optimize and avoid computation.
 
 The complete implementation provides a
-[`Start`](javadoc/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144)
+[`Start`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144)
 `Spliterator` returned by the `SpliteratorSupplier` and a
-[`ForSize`](javadoc/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177)
+[`ForSize`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177)
 spliterator to iterate over combination sizes.
 
 ```java

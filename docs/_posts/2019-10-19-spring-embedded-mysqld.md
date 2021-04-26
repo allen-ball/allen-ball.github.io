@@ -21,13 +21,13 @@ database and then create and manage the `mysqld` `Process` for the life of
 the Spring Boot application including graceful shutdown at application
 shutdown.
 
-Complete [javadoc](javadoc/allclasses-noframe.html) is
+Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
 provided.
 
 ## Theory of Operation
 
 The
-[`MysqldConfiguration`](javadoc/ball/spring/mysqld/MysqldConfiguration.html)
+[`MysqldConfiguration`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldConfiguration.html)
 is
 [`@ConditionalOnProperty`](https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnProperty.html?is-external=true)
 for `${mysqld.home}`; if the property is defined, the `Process`
@@ -164,7 +164,7 @@ server has started: While the
 does not support UNIX domain sockets, the above code waits for the `mysqld`
 server to create the socket to be sure the server is running before
 continuing.  The
-[`MysqldComponent`](javadoc/ball/spring/mysqld/MysqldComponent.html)
+[`MysqldComponent`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldComponent.html)
 will simply monitor that the `Process` is still alive.  This
 [`@Component`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Component.html?is-external=true)
 is dependent on the `mysqld` `@Bean` which in turn is dependent on the
@@ -195,7 +195,7 @@ public class MysqldComponent {
 
 Per the direction of the
 [Spring Boot Reference Guide](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/howto.html#howto-configure-a-component-that-is-used-by-JPA),
-[`EntityManagerFactoryComponent`](javadoc/ball/spring/mysqld/EntityManagerFactoryComponent.html)
+[`EntityManagerFactoryComponent`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/EntityManagerFactoryComponent.html)
 is provided to indicate the `mysqld` `Process` is required by JPA.
 
 ``` java

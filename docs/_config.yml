@@ -9,6 +9,11 @@ github_username:  allen-ball
 #baseurl: "" # the subpath of your site, e.g. /blog
 #url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
+blog_javadoc_url: https://allen-ball.github.io/blog-javadoc
+
+theme: minima
+show_excerpts: false
+
 footer-links:
   email: ball@hcf.dev
   github: allen-ball/allen-ball
@@ -16,8 +21,6 @@ footer-links:
   stackoverflow: users/11866308/allen-d-ball
 
 google_analytics: UA-137275928-1
-
-theme: minima
 
 plugins:
   - jekyll-feed

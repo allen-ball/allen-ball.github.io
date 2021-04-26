@@ -12,25 +12,27 @@ tags:
 permalink: article/2018-08-20-auto-ebs-map
 ---
 
-Amazon Web Services (AWS) provides their Elastic Block Store (EBS) service
-for persistent block storage for Amazon Elastic Compute Cloud (EC2)
-instances in the AWS cloud.  Linux/UNIX file systems may be created on these
-volumes and then attached to an instance and subsequently mounted as a file
-system.  However, the EC2 instance must be started before the volume can be
-attached which may lead to significant challenges in architecture design as
-both the numbers of instances and volumes increase.
+[Amazon Web Services (AWS)][AWS] provides their
+
+[Elastic Block Store (EBS)][EBS] service for persistent block storage for
+[Amazon Elastic Compute Cloud (EC2)][EC2] instances in the AWS cloud.
+Linux/UNIX file systems may be created on these volumes and then attached to
+an instance and subsequently mounted as a file system.  However, the EC2
+instance must be started before the volume can be attached which may lead to
+significant challenges in architecture design as both the numbers of
+instances and volumes increase.
 
 This article presents an implementation of an executable automount map which
-may be leveraged to attach and mount EBS volumes on demand.  The
+may be leveraged to attach and mount [EBS] volumes on demand.  The
 implementation includes a mechanism for detaching unmounted EBS volumes so
 they me be attached to different instances in the future.
 
 ## Theory of Operation
 
-EBS volumes must be prepared with file systems and must be
+[EBS] volumes must be prepared with file systems and must be
 [tagged](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html)
 with `fstype` and `uuid`.  The `fstype` value must accurately reflect the
-the volume's file system type and must be supported by the EC2 instance.
+the volume's file system type and must be supported by the [EC2] instance.
 The `uuid` tag must contain the file system partition UUID.[^1]
 
 [^1]: The [`aws.rc` script](#aws.rc) included at the end of this article
@@ -51,8 +53,8 @@ described in the following subsections.
 
 The scripts herein rely on shell functions defined in `/etc/aws.rc`
 described [later](#aws.rc) in this article.  Most functions are
-straightforward wrappers to the corresponding [AWS Command Line
-Interface](https://aws.amazon.com/cli/).
+straightforward wrappers to the corresponding
+[AWS Command Line Interface](https://aws.amazon.com/cli/).
 
 ### <a name="auto.ebs"></a> `auto.ebs` Executable Map
 
@@ -250,9 +252,9 @@ WantedBy=multi-user.target
 
 ### Ansible Role
 
-The [Ansible](https://www.ansible.com/) tasks and handlers
-configure the `autofs` `/ebs` map.
+The [Ansible] tasks and handlers configure the `autofs` `/ebs` map.
 
+{% raw %}
 ```yaml
 # tasks/main.yml
 ---
@@ -289,6 +291,7 @@ configure the `autofs` `/ebs` map.
 - name: restart autofs
   service: name=autofs enabled=yes state=restarted
 ```
+{% endraw %}
 
 ### SELinux Policies
 
@@ -313,7 +316,7 @@ allow automount_t ldconfig_exec_t:file { execute execute_no_trans open read };
 
 These policies may be installed with the combination of the
 `checkmodule`/`semodule_package`/`semodule` commands.  The following is
-added to the Ansible `tasks/main.yml`.
+added to the [Ansible] `tasks/main.yml`.
 
 ```yaml
 - name: SELinux Policies
@@ -519,8 +522,17 @@ new-volume-mkfs() {
 
 ## References
 
-- [Source](https://github.com/allen-ball/ball-ansible/tree/master/roles/auto.ebs)
-- [Amazon Web Services (AWS)](https://aws.amazon.com/)
-- [AWS Elastic Block Store (EBS)](https://aws.amazon.com/ebs/)
-- [AWS Elastic Compute Cloud (EC2)](https://aws.amazon.com/ec2/)
-- [Ansible](https://www.ansible.com/)
+- [Source]
+- [Amazon Web Services (AWS)][AWS]
+- [AWS Elastic Block Store (EBS)][EBS]
+- [AWS Elastic Compute Cloud (EC2)][EC2]
+- [Ansible]
+
+
+[Ansible]: https://www.ansible.com/
+
+[AWS]: ttps://aws.amazon.com/
+[EBS]: https://aws.amazon.com/ebs/
+[EC2]: https://aws.amazon.com/ec2/
+
+[Source]: https://github.com/allen-ball/ball-ansible/tree/master/roles/auto.ebs

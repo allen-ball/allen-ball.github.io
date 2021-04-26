@@ -1,7 +1,48 @@
 ---
-layout: default
 title: Notes on Migrating a Blog to GitHub Pages
 ---
+
+This post discusses my experience migrating my blog from a custom-built
+Spring application to GitHub pages.  Unique to the application is the
+ability to simultaneously serve markdown and auxiliary HTML files (javadoc)
+from the same server.  The application has been hosted on GCP but no longer
+works due to some change/upgrade/etc. of a component outside my control.
+
+
+# Requirements
+
+1. Host blog posts authored in markdown with associated assets
+
+2. Host generated HTML (javadoc) assets associated with the blog posts
+
+3. Serve a custom domain
+
+GitHub pages leveraging Jekyll satisfies requirements #1 and #3.  GitHub
+pages may also host the javadoc but it cannot be mixed into the Jekyll
+generated site.
+
+
+# Strategy
+
+* Create a GitHub repository ("blog") to host Jekyll generated site
+
+* Create a GitHub repository ("blog-javadoc") to host the auxiliary javadoc
+
+* Store assets, javadoc, and legacy articles with consistent paths
+
+The legacy application creates URLs of the form
+<https://example.com/article/YYYY-MM-DD-title/> for blog posts where
+"article" was constant and assets associated with the article are prefixed
+with the article URL.  E.g.,
+
+    https://example.com/article/YYYY-MM-DD-title/screenshot.png
+    https://example.com/article/YYYY-MM-DD-title/javadoc/index.html
+
+For each legacy article, a "permalink" will be added to the frontmatter of
+the form `article/YYYY-MM-DD-title` which will serve the dual purpose of
+preserving each article's URL, relative links to other articles, and provide
+a mechanism to calculate URLs to article assets and javadoc.
+
 
 # Initialize the GitHub Repositories
 
@@ -230,6 +271,23 @@ $ bundle info --path minima
 
 where individual files may be overridden by creating a "local" copy in the
 hierarchy.
+
+
+# Edits to Legacy Blog Posts
+
+1. Add "permalink" to frontmatter.
+   E.g., `permalink: article/2018-08-06-ghost-blog`
+
+2. Change links to non-javadoc assets.
+   E.g., change `![](themes.png)` to
+   {% raw %}`![](/assets/{{ page.permalink }}/themes.png)`{% endraw %}
+
+3. Change links to javadoc assets.
+   E.g., change `[AbstractTaglet](javadoc/ball/tools/javadoc/AbstractTaglet.html)`
+   to
+   {% raw %}`[AbstractTaglet](https://USER.github.io/blog-javadoc/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html)`{% endraw %}
+
+4. Convert endnotes/footnotes to HTML compatible with GFM
 
 
 [Creating a GitHub Pages site with Jekyll]: https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/creating-a-github-pages-site-with-jekyll
