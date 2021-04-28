@@ -6,38 +6,41 @@ tags:
  - Spring
  - MySQL
 permalink: article/2019-10-19-spring-embedded-mysqld
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
+  spring: >-
+    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+  spring-boot: >-
+    https://docs.spring.io/spring-boot/docs/2.4.5/api
+  spring-framework: >-
+    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+  spring-security: >-
+    https://docs.spring.io/spring-security/site/docs/5.4.6/api
 ---
 
-## Introduction
-
-This article describes a method to create a `mysqld`
-[`Process`](https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html)
+This article describes a method to create a `mysqld` [`Process`][Process]
 managed by the Spring Boot Application conditioned on the definition of an
 `application.properties` property, `${mysqld.home}`.  If the property is
-defined, the corresponding bean
-[`@Configuration`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Configuration.html?is-external=true)
-with invoke `mysqld` with the `--initialize-insecure` option to create the
+defined, the corresponding bean [`@Configuration`][Configuration] with
+invoke `mysqld` with the `--initialize-insecure` option to create the
 database and then create and manage the `mysqld` `Process` for the life of
 the Spring Boot application including graceful shutdown at application
 shutdown.
 
-Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
-provided.
+Complete [javadoc] is provided.
+
 
 ## Theory of Operation
 
-The
-[`MysqldConfiguration`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldConfiguration.html)
-is
-[`@ConditionalOnProperty`](https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnProperty.html?is-external=true)
-for `${mysqld.home}`; if the property is defined, the `Process`
-[`@Bean`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Bean.html?is-external=true)
-is created running the MySQL server.  If the `${mysqld.datadir}` does not
-exist, `mysqld` is invoked with the `--initialize-insecure` option to create
-the database first.  A
-[`@PreDestroy`](https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PreDestroy.html?is-external=true)
-method is defined to destroy the `mysqld` `Process` at application
-shutdown.
+The [`MysqldConfiguration`][MysqldConfiguration] is
+[`@ConditionalOnProperty`][ConditionalOnProperty] annotation for
+`${mysqld.home}`; if the property is defined, the [`Process`][Process]
+[`@Bean`][Bean] is created running the MySQL server.  If the
+`${mysqld.datadir}` does not exist, `mysqld` is invoked with the
+`--initialize-insecure` option to create the database first.  A
+[`@PreDestroy`][PreDestroy] method is defined to destroy the `mysqld`
+`Process` at application shutdown.
 
 ``` java
 @Configuration
@@ -159,16 +162,12 @@ public class MysqldConfiguration {
 
 The `mysqld` server is configured with the `--socket=${mysqld.socket}`
 option for the purpose of notifying the Spring Boot Application that the
-server has started: While the
-[`MySQL Connector/J`](https://dev.mysql.com/doc/connector-j/8.0/en/)
-does not support UNIX domain sockets, the above code waits for the `mysqld`
-server to create the socket to be sure the server is running before
-continuing.  The
-[`MysqldComponent`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldComponent.html)
-will simply monitor that the `Process` is still alive.  This
-[`@Component`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Component.html?is-external=true)
-is dependent on the `mysqld` `@Bean` which in turn is dependent on the
-`${mysqld.home}` property.
+server has started: While the [MySQL Connector/J] does not support UNIX
+domain sockets, the above code waits for the `mysqld` server to create the
+socket to be sure the server is running before continuing.  The
+[`MysqldComponent`][MysqldComponent] will simply monitor that the `Process`
+is still alive.  This [`@Component`][Component] is dependent on the `mysqld`
+[`@Bean`][Bean]` which in turn is dependent on the `${mysqld.home}` property.
 
 ``` java
 @Component
@@ -195,8 +194,8 @@ public class MysqldComponent {
 
 Per the direction of the
 [Spring Boot Reference Guide](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/howto.html#howto-configure-a-component-that-is-used-by-JPA),
-[`EntityManagerFactoryComponent`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/EntityManagerFactoryComponent.html)
-is provided to indicate the `mysqld` `Process` is required by JPA.
+[`EntityManagerFactoryComponent`][EntityManagerFactoryComponent] is provided
+to indicate the `mysqld` [`Process`][Process] is required by JPA.
 
 ``` java
 @Component
@@ -223,6 +222,7 @@ public class SomeComponent {
     ...
 }
 ```
+
 
 ## Shell Script
 
@@ -272,7 +272,25 @@ fi
 exec mysqld "${DEFAULTS_OPT}" "${DATADIR_OPT}" --socket="${SOCKET}"
 ```
 
+
 ## Summary
 
 The technique described here may be used with with other database
 applications (e.g., PostgreSQL).
+
+
+[MySQL Connector/J]: https://dev.mysql.com/doc/connector-j/8.0/en/
+
+[Process]: {{ page.javadoc.javase }}/java/lang/Process.html
+
+[PreDestroy]: https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PreDestroy.html?is-external=true
+
+[Bean]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Bean.html?is-external=true
+[Component]: {{ page.javadoc.spring }}/org/springframework/stereotype/Component.html?is-external=true
+[ConditionalOnProperty]: https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnProperty.html?is-external=true
+[Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html?is-external=true
+
+[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html
+[EntityManagerFactoryComponent]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/EntityManagerFactoryComponent.html
+[MysqldComponent]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldComponent.html
+[MysqldConfiguration]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldConfiguration.html

@@ -10,23 +10,29 @@ tags:
  - oauth
  - oidc
 permalink: article/2020-10-31-spring-boot-part-07
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
+  spring: >-
+    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+  spring-boot: >-
+    https://docs.spring.io/spring-boot/docs/2.4.5/api
+  spring-data: >-
+    https://docs.spring.io/spring-data/jpa/docs/2.4.5/api
+  spring-framework: >-
+    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+  spring-security: >-
+    https://docs.spring.io/spring-security/site/docs/5.4.6/api
 ---
 
-## Introduction
-
-This article explores integrating
-[Spring Security](https://docs.spring.io/spring-security/site/docs/5.4.6/reference/html5/)
-into a
-[Spring Boot](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/index.html)
+This article explores integrating [Spring Security] into a [Spring Boot]
 application.  Specifically, it will examine:
 
 1. Managing users' credentials (IDs and passwords) and granted authorities
 
 2. Creating a Spring MVC Controller with Spring Method Security and
-[Thymeleaf](https://www.thymeleaf.org/)
-[Spring Security Integration Modules](https://github.com/thymeleaf/thymeleaf-extras-springsecurity)
-(to provide features such as customized menus corresponding to a user's
-grants)
+[Thymeleaf] [Spring Security Integration Modules] (to provide features such
+as customized menus corresponding to a user's grants)
 
 3. Creating a REST controller with Basic Authentication and Spring Method
 Security
@@ -36,8 +42,8 @@ various granted authorities.  E.g., a "who-am-i" function may be executed by
 a "USER" but the "who" function will require 'ADMINISTRATOR" authority while
 "logout" and "change password" will simply require the user is
 authenticated.  The MVC application will also use the Spring Security
-Thymeleaf Dialect to provide menus in the context of the authorities granted
-to the user.
+[Thymeleaf] Dialect to provide menus in the context of the authorities
+granted to the user.
 
 After creating the baseline application, this article will then explore
 integrating OAuth authentication.
@@ -48,19 +54,17 @@ and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-07)
 are available on [Github](https://github.com/allen-ball).
 
+
 ## Application
 
 The following subsections outline creating and running the baseline
 application.
 
+
 ### Prerequisites
 
-A
-[`PasswordEncoder`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true)
-must be configured.  This is straightforward:[^1]
-
-[^1]: Implementing a `PasswordEncoder` is discussed in detail in
-[Spring PasswordEncoder Implementation](/article/2019-06-03-spring-passwordencoder-implementation/).
+A [`PasswordEncoder`][PasswordEncoder] must be configured.  This is
+straightforward:<sup id="ref1">[1](#endnote1)</sup>
 
 <figcaption style="text-align: center">
   PasswordEncoderConfiguration
@@ -76,20 +80,13 @@ public class PasswordEncoderConfiguration {
 }
 ```
 
-The returned
-[`DelegatingPasswordEncoder`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/crypto/password/DelegatingPasswordEncoder.html?is-external=true)
-will decrypt most formats known to Spring and will encrypt using a
-[`BCryptPasswordEncoder`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html)
-for storage.
+The returned [`DelegatingPasswordEncoder`][DelegatingPasswordEncoder] will
+decrypt most formats known to Spring and will encrypt using a
+[`BCryptPasswordEncoder`][BCryptPasswordEncoder] for storage.
 
 Users' credentials and granted authorities are stored in a database
-(configured at runtime) and accessed through
-[JPA](https://docs.oracle.com/javaee/7/api/javax/persistence/package-summary.html).
-The `Credential`
-[`@Entity`](https://docs.oracle.com/javaee/7/api/javax/persistence/Entity.html)
-and
-[`JpaRepository`](https://docs.spring.io/spring-data/jpa/docs/2.4.5/api/org/springframework/data/jpa/repository/JpaRepository.html?is-external=true)
-are shown below.
+(configured at runtime) and accessed through [JPA].  The `Credential`
+[`@Entity`][Entity] and [`JpaRepository`][JpaRepository] are shown below.
 
 <figcaption style="text-align: center">Credential</figcaption>
 ```java
@@ -118,11 +115,10 @@ public interface CredentialRepository extends JpaRepository<Credential,String> {
 The implementations of `Authority` and `AuthorityRepository` are nearly
 identical with the `password` property/column replaced with `grants`, a
 `AuthoritiesSet` (`Set<Authorities>`) with a
-[`@Converter`](https://docs.oracle.com/javaee/7/api/javax/persistence/Converter.html)-annotated
-[`AttributeConverter`](https://docs.oracle.com/javaee/7/api/javax/persistence/AttributeConverter.html)
-to convert to and from a comma-separated string of `Authorities`
-([`Enum`](https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html))
-names for storing in the database.
+[`@Converter`][Converter]-annotated
+[`AttributeConverter`][AttributeConverter] to convert to and from a
+comma-separated string of `Authorities` ([`Enum`][Enum]) names for storing
+in the database.
 
 <figcaption style="text-align: center">Authorities</figcaption>
 ```java
@@ -152,9 +148,8 @@ mysql> DESCRIBE authorities;
 ```
 
 The `CredentialRepository` and `AuthorityRepository` are injected into a
-[`UserDetailsService`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/core/userdetails/UserDetailsService.html)
-implementation to provide
-[`UserDetails`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/core/userdetails/UserDetails.html).
+[`UserDetailsService`][UserDetailsService] implementation to provide
+[`UserDetails`][UserDetails].
 
 <figcaption style="text-align: center">
   UserServicesConfiguration - UserDetailsService @Bean
@@ -200,11 +195,11 @@ public class UserServicesConfiguration {
 }
 ```
 
-Separate
-[`WebSecurityConfigurer`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html)
-instances will be configured for the `RestControllerImpl` (`/api/**`) and
-`ControllerImpl` (`/**`) but each will share the same super-class where the
-`PasswordEncoder` and `UserDetailsService` configured above will be injected
+Separate [`WebSecurityConfigurer`][WebSecurityConfigurer] instances will be
+configured for the `RestControllerImpl` (`/api/**`) and `ControllerImpl`
+(`/**`) but each will share the same super-class where the
+[`PasswordEncoder`][PasswordEncoder] and
+[`UserDetailsService`][UserDetailsService] configured above will be injected
 and configured.
 
 <figcaption style="text-align: center">WebSecurityConfigurerImpl</figcaption>
@@ -226,7 +221,7 @@ public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAda
 }
 ```
 
-The `WebSecurityConfigurer` for the REST controller
+The [`WebSecurityConfigurer`][WebSecurityConfigurer] for the REST controller
 (`WebSecurityConfigurerImpl.API`) must be ordered before the configurer for
 the MVC controller (`@Order(1)`) because otherwise its path-space,
 `/api/**`, would be included in that of the MVC controller, `/**`.
@@ -237,7 +232,7 @@ The configuration:
 * Disables Cross-Site Request Forgery checks
 * Configures Basic Authentication
 
-<a name="authenticationEntryPoint">
+<a name="authenticationEntryPoint"></a>
 <figcaption style="text-align: center">
   WebSecurityConfigurerImpl.API
 </figcaption>
@@ -260,11 +255,9 @@ public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAda
 }
 ```
 
-The
-[`HttpStatusEntryPoint`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/web/authentication/HttpStatusEntryPoint.html)
-is configured to prevent authentication failures from redirecting to the
-`/error` page configured for the MVC controller.
-</a>
+The [`HttpStatusEntryPoint`][HttpStatusEntryPoint] is configured to prevent
+authentication failures from redirecting to the `/error` page configured for
+the MVC controller.
 
 The `WebSecurityConfigurerImpl.UI` configuration:
 
@@ -274,7 +267,7 @@ The `WebSecurityConfigurerImpl.UI` configuration:
 * Configures a Logout Handler (alleviating the need to implement a
 corresponding MVC controller method)
 
-<a name="logoutRequestMatcher">
+<a name="logoutRequestMatcher"></a>
 <figcaption style="text-align: center">
   WebSecurityConfigurerImpl.UI
 </figcaption>
@@ -312,11 +305,10 @@ The outline of the MVC is shown below.  (The individual methods will be
 described in detail in a subsequent chapter.)  There are two things to note:
 
 1. The template resolver is configured to use
-["decoupled template logic"](https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic)
+["decoupled template logic"][decoupled template logic]
 
 2. All methods (including a custom `/error` mapping) return the same view
-(Thymeleaf template)
-</a>
+([Thymeleaf] template)
 
 <figcaption style="text-align: center">ControllerImpl</figcaption>
 ```java
@@ -353,14 +345,13 @@ public class ControllerImpl implements ErrorController {
 }
 ```
 
-The common Thymeleaf template is outlined below.  `<li/>` elements provide
+The common [Thymeleaf] template is outlined below.  `<li/>` elements provide
 drop-down menus which are activated by security dialect `sec:authorize`
 attributes.  A `th:switch` attribute provides a `<section/>` "case" element
 for each supported path.  A form is displayed if the "form" attribute is set
-in the
-[`Model`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html).
-And, if the user is authenticated, their granted authorities are displayed
-in the right of the footer with the `sec:authentication` attribute.
+in the [`Model`][Model].  And, if the user is authenticated, their granted
+authorities are displayed in the right of the footer with the
+`sec:authentication` attribute.
 
 <figcaption style="text-align: center">application.html</figcaption>
 ```html
@@ -427,12 +418,12 @@ in the right of the footer with the `sec:authentication` attribute.
 </html>
 ```
 
-[Bootstrap](https://getbootstrap.com/) attributes are added
-through the "decoupled template logic" expressed in
-`src/main/resources/templates/application.th.xml`.  (The mechanics of
-decoupled template logic are not discussed further in this article.)
+[Bootstrap] attributes are added through the "decoupled template logic"
+expressed in `src/main/resources/templates/application.th.xml`.  (The
+mechanics of decoupled template logic are not discussed further in this
+article.)
 
-<a name="ExceptionHandler">
+<a name="ExceptionHandler"></a>
 The outline of the REST controller is shown below.  The common exception
 handler returns an HTTP 403 code for security-related exceptions.  This
 combined with the Basic Authentication entry point setting in the
@@ -452,13 +443,12 @@ public class RestControllerImpl {
     }
 }
 ```
-</a>
+
 
 ### Runtime Environment
 
 The POM (`pom.xml`) has a similar `spring-boot:run` profile to that
-described in
-[part 1](/article/2019-11-16-spring-boot-part-01/) of this
+described in [part 1](/article/2019-11-16-spring-boot-part-01/) of this
 series.  The relevant parts of the
 [`application.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-07/application.properties)
 file are shown below.
@@ -608,13 +598,14 @@ Whose output may be used to set (UPDATE) `user@example.com`'s password to
 
 The next section discusses the MVC controller.
 
+
 ### MVC Controller
 
 Navigating to <http://localhost:8080/login/> will present:
 
 ![](/assets/{{ page.permalink }}/application-01-form-login.png)
 
-The portion of the Thymeleaf template that generates the navbar buttons and
+The portion of the [Thymeleaf] template that generates the navbar buttons and
 drop-down menus is shown below.  The `sec:authorize` expressions are
 evaluated to determine if Thymeleaf renders the corresponding HTML.
 
@@ -663,11 +654,10 @@ decoupled template logic applied) is shown below.
 The controller methods to present the Login form, present the Change
 Password form, and handle the change password POST method are shown below.
 The default Spring Security login POST method is used and does not have to
-be implemented here.  The
-[`@PreAuthorize`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/access/prepost/PreAuthorize.html)
-annotations on the change password methods enforce that the client must be
-authenticated to use those functions.  No logout method needs to be
-implemented because a logout handler was configured in the
+be implemented here.  The [`@PreAuthorize`][PreAuthorize] annotations on the
+change password methods enforce that the client must be authenticated to use
+those functions.  No logout method needs to be implemented because a logout
+handler was configured in the
 [`WebSecurityConfigurer`](#logoutRequestMatcher).
 
 <figcaption style="text-align: center">
@@ -764,10 +754,9 @@ The user dropdown expanded below:
 
 ![](/assets/{{ page.permalink }}/application-04-user-dropdown.png)
 
-The `/who-am-i` method adds the client's
-[`Principal`](https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html)
-(injected as a parameter by Spring) to the `Model` so it may be presented in
-the Thymeleaf template (as long as the client has the "USER" authority).
+The `/who-am-i` method adds the client's [`Principal`][Principal] (injected
+as a parameter by Spring) to the `Model` so it may be presented in the
+[Thymeleaf] template (as long as the client has the "USER" authority).
 
 <figcaption style="text-align: center">ControllerImpl - /who-am-i</figcaption>
 ```java
@@ -788,15 +777,8 @@ When selecting "User->Who Am I?" the application shows something similar to:
 
 ![](/assets/{{ page.permalink }}/application-05-who-am-i.png)
 
-The application Thymeleaf template contains to display the method parameter
-`Principal`:[^2]
-
-[^2]: It's important to note that the equivalent value for `Principal` is
-available in the security dialect as `${#authentication}` which references
-an implementation of
-[`Authentication`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/index.html?org/springframework/security/core/Authentication.html).
-The use of `${#authentication}` will be explored further in the OAuth
-discussion in the next chapter.
+The application [Thymeleaf] template contains to display the method
+parameter [`Principal`][Principal]:<sup id="ref2">[2](#endnote2)</sup>
 
 ```xml
       <section th:case="'/who-am-i'">
@@ -830,10 +812,9 @@ public class ControllerImpl implements ErrorController {
 ```
 
 The method implementation is straightforward with the injected
-[`SessionRegistry`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/core/session/SessionRegistry.html).
-The `SessionRegistry`
-[implementation](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/core/session/SessionRegistryImpl.html)
-bean must be configured as part of the `WebSecurityConfigurer`.
+[`SessionRegistry`][SessionRegistry].  The `SessionRegistry`
+[implementation][SessionRegistryImpl] bean must be configured as part of the
+[`WebSecurityConfigurer`][WebSecurityConfigurer].
 
 <figcaption style="text-align: center">
   WebSecurityConfigurerImpl.UI - SessionRegistry
@@ -869,11 +850,13 @@ While a client without (even if authenticated) will be denied:
 
 The next section discusses the REST controller.
 
+
 ### REST Controller
 
-Similar to the corresponding `@Controller` method described in the previous
-section, the `/api/who-am-i` method returns the client's `Principal`
-(injected as a parameter by Spring) if the client has the "USER" authority.
+Similar to the corresponding [`@Controller`][Controller] method described in
+the previous section, the `/api/who-am-i` method returns the client's
+[`Principal`][Principal] (injected as a parameter by Spring) if the client
+has the "USER" authority.
 
 <figcaption style="text-align: center">
   RestControllerImpl - /who-am-i
@@ -890,11 +873,8 @@ public class RestControllerImpl {
 }
 ```
 
-Invoking without authentication returns `HTTP/1.1 403`.[^3]
-
-[^3]: Recall the discussion of setting
-[`HttpSecurity`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/config/annotation/web/builders/HttpSecurity.html)
-[basic authentication entry point](#authenticationEntryPoint).
+Invoking without authentication returns
+`HTTP/1.1 403`.<sup id="ref3">[3](#endnote3)</sup>
 
 ```command-line
 $ curl -is http://localhost:8080/api/who-am-i
@@ -951,8 +931,8 @@ Date: Sat, 17 Oct 2020 05:25:44 GMT
 }
 ```
 
-The `/api/who` method returns the list of all `Principal`s logged in
-(defined as having active sessions in the UI) if the client has
+The `/api/who` method returns the list of all [`Principal`s][Principal]
+logged in (defined as having active sessions in the UI) if the client has
 "ADMINISTRATOR" authority.
 
 <figcaption style="text-align: center">RestControllerImpl - /who</figcaption>
@@ -970,10 +950,8 @@ public class RestControllerImpl {
 ```
 
 Invoking with an authenticated client *without* "ADMINISTRATOR" authority
-granted returns `HTTP/1.1 403` (as expected).[^4]
-
-[^4]: Recall the discussion `RestControllerImpl`'s
-[`@ExceptionHandler` method](#ExceptionHandler).
+granted returns `HTTP/1.1 403`
+(as expected).<sup id="ref4">[4](#endnote4)</sup>
 
 ```command-line
 $ curl -is --basic -u user@example.com:123456 http://localhost:8080/api/who
@@ -1025,6 +1003,7 @@ Date: Sat, 17 Oct 2020 05:27:39 GMT
 
 The next chapter will examine OAuth integration.
 
+
 ## OAuth
 
 The following subsections will:
@@ -1034,6 +1013,7 @@ first chapter for OAuth authentication
 
 2. Change the application implementation to allow Form Login and OAuth
 authenitcation
+
 
 ### Experiment
 
@@ -1101,8 +1081,8 @@ Allowing the application to be run from Maven with either
 `mvn -Pspring-boot:run,hsqldb,oauth` or
 `mvn -Pspring-boot:run,mysql,oauth`.
 
-The `WebSecurityConfigurer` is changed to use OAuth Login instead of Form
-Login (with default configuration):
+The [`WebSecurityConfigurer`][WebSecurityConfigurer] is changed to use OAuth
+Login instead of Form Login (with default configuration):
 
 <figcaption style="text-align: center">
   WebSecurityConfigurerImpl.UI (Default OAuth2 Customizer)
@@ -1129,12 +1109,10 @@ public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAda
 ```
 
 Finally, the OAuth client prperties must be configured in the
-profile-specific application properties YAML file:[^5]
+profile-specific application properties YAML 
+file:<sup id="ref5">[5](#endnote5)</sup>
 
-[^5]: YAML is not required but YAML lends itself to expressing the
-configuration compactly.
-
-<a name="application-oauth.yml">
+<a name="application-oauth.yml"></a>
 <figcaption style="text-align: center">application-oauth.yml</figcaption>
 ```yaml
 spring:
@@ -1146,7 +1124,6 @@ spring:
             client-id: dad3306da38eb7be68a1
             client-secret: 8a5394b2e29037b9bdf17e51af472020f85bfca6
 ```
-</a>
 
 Running the application now offers OAuth
 [login](http://localhost:8080/password):
@@ -1158,7 +1135,8 @@ Clicking [GitHub]() will redirect for authorization:
 ![](/assets/{{ page.permalink }}/application-10-redirect.png)
 
 If granted, the application will successfully login.  However, the
-`Principal` name will be unrecognizable as well as the granted authorities:
+[`Principal`][Principal] name will be unrecognizable as well as the granted
+authorities:
 
 ![](/assets/{{ page.permalink }}/application-11-oauth-authenticated.png)
 
@@ -1166,8 +1144,8 @@ If invoked, the Change Password function fails with:
 
 ![](/assets/{{ page.permalink }}/application-12-change-password.png)
 
-Because the authenticated `Principal` has no corresponding `Credential`
-database record.
+Because the authenticated [`Principal`][Principal] has no corresponding
+`Credential` database record.
 
 A naive implementation to integrate Form Login and OAuth2 Login is
 configured by simply enabling both:
@@ -1191,13 +1169,14 @@ compatible with (and the same as) the Form Login Page.
 
 The next subsection will adjust the implementation to:
 
-1. Use user e'mail as `Principal` name
+1. Use user e'mail as [`Principal`][Principal] name
 
 2. Integrate Form Login and OAuth2 Login into a single custom login page
 
 3. Manage granted authorities for OAuth2-authenticated users
 
 4. Not offer the Change Password function to users logged in through OAuth2
+
 
 ### Implementation
 
@@ -1239,16 +1218,16 @@ spring:
 ```
 
 Note that the providers are configured to use the user's e'mail address as
-the `Principal` name (`user-name-attribute: email`).
+the [`Principal`][Principal] name (`user-name-attribute: email`).
 
 The next step is to integrate the OAuth Login page with the custom Form
 Login page.  Simply calling
-[`HttpSecurity.oauth2Login(Customizer.withDefaults())`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/config/annotation/web/builders/HttpSecurity.html#oauth2Login-org.springframework.security.config.Customizer-)
+[`HttpSecurity.oauth2Login(Customizer.withDefaults())`][HttpSecurity.oauth2Login]
 will attempt to configure a
-[`ClientRegistrationRepository`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/oauth2/client/registration/ClientRegistrationRepository.html)
+[`ClientRegistrationRepository`]({{ page.javadoc.spring-security }}/org/springframework/security/oauth2/client/registration/ClientRegistrationRepository.html)
 bean but that will fail if no `spring.security.oauth2.client.registration.*`
 properties are configured.  The implementation tests if the bean is
-configured before attempting the `HttpSecurity` method call.
+configured before attempting the [`HttpSecurity`][HttpSecurity] method call.
 
 <figcaption style="text-align: center">
   WebSecurityConfigurerImpl.UI (Custom Login Page)
@@ -1282,14 +1261,11 @@ public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAda
 }
 ```
 
-Both the
-[`OAuth2UserService`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/oauth2/client/userinfo/OAuth2UserService.html)
-and
-[`OidcUserService`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/oauth2/client/oidc/userinfo/OidcUserService.html)
-beans are configured by configuring the Open ID Connect (OIDC)
-`OidcUserService` -- OIDC is built on top of OAuth 2.0 to provide identity
-services.  The `OidcUserService` delegates to the `OAuth2UserService` for
-retrieving Oauth 2.0-specific information.
+Both the [`OAuth2UserService`][OAuth2UserService] and
+[`OidcUserService`][OidcUserService] beans are configured by configuring the
+Open ID Connect (OIDC) `OidcUserService` -- OIDC is built on top of OAuth
+2.0 to provide identity services.  The `OidcUserService` delegates to the
+`OAuth2UserService` for retrieving Oauth 2.0-specific information.
 
 <figcaption style="text-align: center">
   UserServicesConfiguration - OAuth2UserService and OidcUserService Beans
@@ -1370,14 +1346,16 @@ public class UserServicesConfiguration {
 }
 ```
 
-Both the `OAuth2UserService` and `OidcUserService` map granted authorities
-for *this* application.
+Both the [`OAuth2UserService`][OAuth2UserService] and
+[`OidcUserService`][OidcUserService] map granted authorities for *this*
+application.
 
-A `@ControllerAdvice` is implemented to add two attributes to the `Model`:
+A `@ControllerAdvice` is implemented to add two attributes to the
+[`Model`][Model]:
 
 1. `oauth2`, a `List` of configured `ClientRegistration`s
 
-2. `isPasswordAuthenticated`, indicating if the `Principal` was
+2. `isPasswordAuthenticated`, indicating if the [`Principal`][Principal] was
 authenticated with a password
 
 <figcaption style="text-align: center">ControllerAdviceImpl</figcaption>
@@ -1454,7 +1432,7 @@ options (if configured):
 
 And the Change Password menu option is only offered if the client was
 authenticated with a password (by testing the `isPasswordAuthenticated`
-`Model` attribute:
+[`Model`][Model] attribute:
 
 <figcaption style="text-align: center">
   application.html - Change Password
@@ -1480,3 +1458,73 @@ The end result for the login page is shown below:
 With a successful (Google) login:
 
 ![](/assets/{{ page.permalink }}/application-14-authenticated.png)
+
+
+<b id="endnote1">[1]</b>
+Implementing a [`PasswordEncoder`][PasswordEncoder] is discussed in detail
+in
+[Spring PasswordEncoder Implementation](/article/2019-06-03-spring-passwordencoder-implementation/).
+[↩](#ref1)
+
+<b id="endnote2">[2]</b>
+It's important to note that the equivalent value for
+[`Principal`][Principal] is available in the security dialect as
+`${#authentication}` which references an implementation of
+[`Authentication`][Authentication].  The use of `${#authentication}` will be
+explored further in the OAuth discussion in the next chapter.
+[↩](#ref2)
+
+<b id="endnote3">[3]</b>
+Recall the discussion of setting [`HttpSecurity`][HttpSecurity] [basic
+authentication entry point](#authenticationEntryPoint).
+[↩](#ref3)
+
+<b id="endnote4">[4]</b>
+Recall the discussion `RestControllerImpl`'s
+[`@ExceptionHandler` method](#ExceptionHandler).
+[↩](#ref4)
+
+<b id="endnote5">[5]</b>
+YAML is not required but YAML lends itself to expressing the
+configuration compactly.
+[↩](#ref5)
+
+
+[Enum]: {{ page.javadoc.javase }}/java/lang/Enum.html
+[Principal]: {{ page.javadoc.javase }}/java/security/Principal.html
+
+[JPA]: https://docs.oracle.com/javaee/7/api/javax/persistence/package-summary.html
+[AttributeConverter]: https://docs.oracle.com/javaee/7/api/javax/persistence/AttributeConverter.html
+[Converter]: https://docs.oracle.com/javaee/7/api/javax/persistence/Converter.html
+[Entity]: https://docs.oracle.com/javaee/7/api/javax/persistence/Entity.html
+
+[Spring Boot]: https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/index.html
+[Spring Security]: https://docs.spring.io/spring-security/site/docs/5.4.6/reference/html5/
+
+[Thymeleaf]: https://www.thymeleaf.org/
+[Spring Security Integration Modules]: https://github.com/thymeleaf/thymeleaf-extras-springsecurity
+[decoupled template logic]: https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic
+
+[Model]: {{ page.javadoc.spring }}/org/springframework/ui/Model.html
+
+[Controller]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Controller.html
+
+[Authentication]: {{ page.javadoc.spring-security }}/index.html?org/springframework/security/core/Authentication.html
+[BCryptPasswordEncoder]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html
+[DelegatingPasswordEncoder]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/password/DelegatingPasswordEncoder.html?is-external=true
+[HttpSecurity]: {{ page.javadoc.spring-security }}/org/springframework/security/config/annotation/web/builders/HttpSecurity.html
+[HttpSecurity.oauth2Login]: {{ page.javadoc.spring-security }}/org/springframework/security/config/annotation/web/builders/HttpSecurity.html#oauth2Login-org.springframework.security.config.Customizer-
+[HttpStatusEntryPoint]: {{ page.javadoc.spring-security }}/org/springframework/security/web/authentication/HttpStatusEntryPoint.html
+[OAuth2UserService]: {{ page.javadoc.spring-security }}/org/springframework/security/oauth2/client/userinfo/OAuth2UserService.html
+[OidcUserService]: {{ page.javadoc.spring-security }}/org/springframework/security/oauth2/client/oidc/userinfo/OidcUserService.html
+[PasswordEncoder]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true
+[PreAuthorize]: {{ page.javadoc.spring-security }}/org/springframework/security/access/prepost/PreAuthorize.html
+[SessionRegistryImpl]: {{ page.javadoc.spring-security }}/org/springframework/security/core/session/SessionRegistryImpl.html
+[SessionRegistry]: {{ page.javadoc.spring-security }}/org/springframework/security/core/session/SessionRegistry.html
+[UserDetailsService]: {{ page.javadoc.spring-security }}/org/springframework/security/core/userdetails/UserDetailsService.html
+[UserDetails]: {{ page.javadoc.spring-security }}/org/springframework/security/core/userdetails/UserDetails.html
+[WebSecurityConfigurer]: {{ page.javadoc.spring-security }}/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html
+
+[JpaRepository]: {{ page.javadoc.spring-data }}/org/springframework/data/jpa/repository/JpaRepository.html?is-external=true
+
+[Bootstrap]: https://getbootstrap.com/

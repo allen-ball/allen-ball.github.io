@@ -4,27 +4,24 @@ canonical_url: https://blog.hcf.dev/article/2019-01-30-java-responsecache-implem
 tags:
  - Java
 permalink: article/2019-01-30-java-responsecache-implementation
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
 ---
 
-The Java
-[`URLConnection`](https://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html?is-external=true)
-mechanism may be configured to use a
-[`ResponseCache`](https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html?is-external=true).
-This article describes a `ResponseCache` implementation.
+The Java [`URLConnection`][URLConnection] mechanism may be configured to use
+a [`ResponseCache`][ResponseCache].  This article describes a
+`ResponseCache` implementation.
+
 
 ## Implementation Outline
 
 The implementation requires subclassing `ResponseCache`, providing
-implementations of
-[`get(URI,String,Map<String,List<String>>)`](https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html#get-java.net.URI-java.lang.String-java.util.Map-)
-and
-[`put(URI,URLConnection)`](https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html#put-java.net.URI-java.net.URLConnection-).
-Non-trivial implementations of each method require providing concrete
-implementations of
-[`CacheResponse`](https://docs.oracle.com/javase/8/docs/api/java/net/CacheResponse.html)
-and
-[`CacheRequest`](https://docs.oracle.com/javase/8/docs/api/java/net/CacheRequest.html).
-The outline of the implementation is:
+implementations of [`get(URI,String,Map<String,List<String>>)`][URI.get] and
+[`put(URI,URLConnection)`][URI.put].  Non-trivial implementations of each
+method require providing concrete implementations of
+[`CacheResponse`][CacheResponse] and [`CacheRequest`][CacheRequest].  The
+outline of the implementation is:
 
 ```java
 import java.net.CacheRequest;
@@ -81,13 +78,13 @@ public class ResponseCacheImpl extends ResponseCache {
 ```
 
 Note: The `get()` and `put()` methods may return `null` indicating that no
-caching facility is available for that
-[`URI`](https://docs.oracle.com/javase/8/docs/api/java/net/URI.html).
+caching facility is available for that [`URI`][URI].
+
 
 ## Cache Design
 
 The cache will be a simple file system hierarchy residing under
-`${user.home}/.config/java/cache/`.  A cached `URI` will map to a
+`${user.home}/.config/java/cache/`.  A cached [`URI`][URI] will map to a
 directory which will exist and contain two files if the object is cached:
 `BODY` and `HEADERS`.
 
@@ -117,8 +114,8 @@ directory which will exist and contain two files if the object is cached:
     }
 ```
 
-No attempt will be made to cache "complex" `URI`s. `isCacheable` is defined
-as:
+No attempt will be made to cache "complex" [`URI`][URI]s. `isCacheable` is
+defined as:
 
 ```java
     private boolean isCacheable(URI uri) {
@@ -130,7 +127,8 @@ as:
     }
 ```
 
-A `URI` is cached if it `isCacheable()` and its body exists in the cache:
+A [`URI`][URI] is cached if it `isCacheable()` and its body exists in the
+cache:
 
 ```java
     private boolean isCached(URI uri) {
@@ -138,12 +136,12 @@ A `URI` is cached if it `isCacheable()` and its body exists in the cache:
     }
 ```
 
-## `ResponseCache.put(URI,URLConnection)` Implementation
+
+## ResponseCache.put(URI,URLConnection) Implementation
 
 This method allows the caller to put an object in the cache.
-[`URLConnection.getHeaderFields()`](https://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html#getHeaderFields--)
-are saved along with the "body" using an
-[`XMLEncoder`](https://docs.oracle.com/javase/8/docs/api/java/beans/XMLEncoder.html).
+[`URLConnection.getHeaderFields()`][URLConnection.getHeaderFields] are saved
+along with the "body" using an [`XMLEncoder`][XMLEncoder].
 
 ```java
     @Override
@@ -186,13 +184,13 @@ are saved along with the "body" using an
         }
 ```
 
-## `ResponseCache.get(URI,String,Map<String,List<String>>)` Implementation
+
+## ResponseCache.get(URI,String,Map<String,List<String>>) Implementation
 
 This method attempts to retrieve the object from cache.  If it is cached,
 `CacheResponseImpl` provides the previously saved headers and
-[`InputStream`](https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html)
-from the cached file.  Headers are deserialized with an
-[`XMLDecoder`](https://docs.oracle.com/javase/8/docs/api/java/beans/XMLDecoder.html).
+[`InputStream`][InputStream] from the cached file.  Headers are deserialized
+with an [`XMLDecoder`][XMLDecoder].
 
 ```java
     @Override
@@ -236,10 +234,11 @@ from the cached file.  Headers are deserialized with an
     }
 ```
 
+
 ## Installation
 
-The `ResponseCache` implementation must be configured with the
-[`ResponseCache.setDefault(ResponseCache)`](https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html#setDefault-java.net.ResponseCache-)
+The [`ResponseCache`][ResponseCache] implementation must be configured with
+the [`ResponseCache.setDefault(ResponseCache)`][ResponseCache.setDefault]
 static method.  The following code fragment checks to see no other
 `ResponseCache` is installed before installing the target.
 
@@ -249,10 +248,12 @@ static method.  The following code fragment checks to see no other
         }
 ```
 
+
 ## Ant Task
 
-The critical portions of an Ant Task that uses `URLConnection` configured
-with `ResponseCacheImpl` for download is shown below.
+The critical portions of an Ant Task that uses
+[`URLConnection`][URLConnection] configured with `ResponseCacheImpl` for
+download is shown below.
 
 ```java
 @AntTask("download")
@@ -288,6 +289,7 @@ public class DownloadTask extends Task {
     }
 }
 ```
+
 
 ## ResponseCacheImpl.java
 
@@ -489,3 +491,16 @@ public class ResponseCacheImpl extends ResponseCache {
     }
 }
 ```
+
+[CacheRequest]: {{ page.javadoc.javase }}/java/net/CacheRequest.html
+[CacheResponse]: {{ page.javadoc.javase }}/java/net/CacheResponse.html
+[InputStream]: {{ page.javadoc.javase }}/java/io/InputStream.html
+[ResponseCache]: {{ page.javadoc.javase }}/java/net/ResponseCache.html?is-external=true
+[URI.get]: {{ page.javadoc.javase }}/java/net/ResponseCache.html#get-java.net.URI-java.lang.String-java.util.Map-
+[URI.put]: {{ page.javadoc.javase }}/java/net/ResponseCache.html#put-java.net.URI-java.net.URLConnection-
+[URI]: {{ page.javadoc.javase }}/java/net/URI.html
+[URLConnection.getHeaderFields]: {{ page.javadoc.javase }}/java/net/URLConnection.html#getHeaderFields--
+[URLConnection]: {{ page.javadoc.javase }}/java/net/URLConnection.html?is-external=true
+[XMLDecoder]: {{ page.javadoc.javase }}/java/beans/XMLDecoder.html
+[XMLEncoder]: {{ page.javadoc.javase }}/java/beans/XMLEncoder.html
+[ResponseCache.setDefault]: {{ page.javadoc.javase }}/java/net/ResponseCache.html#setDefault-java.net.ResponseCache-

@@ -8,13 +8,12 @@ tags:
 permalink: article/2019-09-15-maven-toolchains-xml-script
 ---
 
-## Introduction
-
 Apache Maven has introduced Maven Toolchains to ease configuring plug-ins
 and to avoid specifying any JDK location in the project POMs.  Available
 JDKs are configured in `${HOME}/.m2/toolchains.xml`.  This article
 introduces a script to automate the generation of the `toolchains.xml`
 file, `toolchains.xml.bash`.
+
 
 ## Theory of Operation
 
@@ -67,6 +66,7 @@ public class ToolchainEntry {
 
 This program is combined with a `bash` script in the next section.
 
+
 ## Script
 
 A `bash` script is used to drive the execution of the Java program described
@@ -75,16 +75,13 @@ in the previous section with responsibilities to:
 1. Identify the candidate JVM directories:
     * Mac OS X (Darwin): `/Library/Java/JavaVirtualMachines/*.jdk/Contents/Home`
     * Linux: `/usr/lib/jvm/*jdk*`
-2. Create `Toolchain.java` and compile to `Toolchain.class`[^1]
+2. Create `Toolchain.java` and compile to
+   `Toolchain.class`<sup id="ref1">[1](#endnote1)</sup>
 3. Create a new `<toolchains/>` document and iterate therough each candidate
    JDK directory executing `Toolchain.class` with the candidate JVM
 
-[^1]: Even though the earliest Java version supported by the java source is
-1.5, the earliest code Oracle's JDK 12 can produce is for 1.7.
-
 ``` bash
 #!/bin/bash
-# $Id: README.md 6484 2020-07-17 18:24:03Z ball $
 
 shopt -s nullglob
 JDKS+=({/Library/Java/JavaVirtualMachines/*.jdk/Contents/Home,/usr/lib/jvm/*jdk*})
@@ -128,6 +125,7 @@ echo '</toolchains>' >> toolchains.xml
 
 rm -rf ToolchainEntry.*
 ```
+
 
 ## Output
 
@@ -285,3 +283,9 @@ Cloud Shell) are provided below.
   </toolchain>
 </toolchains>
 ```
+
+
+<b id="endnote1">[1]</b>
+Even though the earliest Java version supported by the java source is 1.5,
+the earliest code Oracle's JDK 12 can produce is for 1.7.
+[↩](#ref1)

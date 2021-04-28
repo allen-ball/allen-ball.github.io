@@ -290,4 +290,44 @@ hierarchy.
 4. Convert endnotes/footnotes to HTML compatible with GFM
 
 
+# Configure Prism.js
+
+Configure `prism.js` by following the instructions to
+[disable Rouge](https://mycyberuniverse.com/disable-rouge-syntax-highlighter.html)
+and
+[enable Prism.js](https://mycyberuniverse.com/replace-rouge-highlighter-prismjs-jekyll.html)
+by updating `_config.yml`:
+
+```yaml
+...
+highlighter: none
+markdown: kramdown
+kramdown:
+  syntax_highlighter_opts:
+    disable: true
+...
+```
+
+downloading `prism.css` and `prism.js` from <https://prismjs.com/> and
+copying to the `assets` subdirectory, and copying `head.html` and
+`footer.html` to local `_includes` and adding the CSS and javascript
+references, respectively:
+
+{% raw %}
+```html
+<head>
+  ...
+  <link rel="stylesheet" href="{{ "/assets/prism.css" | relative_url }}">
+```
+{% endraw %}
+
+{% raw %}
+```html
+  <script src="{{ "/assets/prism.js" | relative_url }}"></script>
+  ...
+</footer>
+```
+{% endraw %}
+
+
 [Creating a GitHub Pages site with Jekyll]: https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/creating-a-github-pages-site-with-jekyll

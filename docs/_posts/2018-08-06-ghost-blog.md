@@ -31,6 +31,7 @@ My requirements were:
 After some investigation, I settled on [Ghost].  The next section details
 the strategy for responding to these requirements.
 
+
 ## Strategy
 
 [Ghost] now provides [Ghost CLI] which we'll ultimately combine with
@@ -38,6 +39,7 @@ the strategy for responding to these requirements.
 
 The custom theme will integrate [Bootstrap] and [Prism] (for code
 highlighting).
+
 
 ## Development Instance
 
@@ -99,6 +101,7 @@ $ env PATH=$(brew --prefix node@8)/bin:$PATH ghost stop
 
 to stop the instance (or the corresponding "stop" target in `ghost.mk`).
 
+
 ## Creating the Theme
 
 When the server is started with `--development`, theme content may be added
@@ -130,6 +133,7 @@ The theme may be activated by clicking on the corresponding `Activate` link.
 Ghost provides links to helpful documentation for any errors identified.
 
 ![](/assets/{{ page.permalink }}/theme-failed-to-load.png)
+
 
 ## Bootstrap and Prism Integration
 
@@ -237,6 +241,7 @@ through the {% raw %}`{{> header}}`{% endraw %} directive and provides a
 Bootstrap 4 "fixed-top" `navbar`.  Some details of that implementation are
 described in the next section.
 
+
 ## Bootstrap navbar
 
 The theme provides a `navbar` that is always fixed to the top of the page.
@@ -269,9 +274,11 @@ body {
 }
 ```
 
+
 ## Next Steps
 
 Deploy a production Ghost server (to be covered in a future post).
+
 
 ## References
 

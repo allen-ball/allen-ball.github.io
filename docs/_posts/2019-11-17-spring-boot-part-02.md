@@ -6,9 +6,18 @@ tags:
  - Java
  - Spring
 permalink: article/2019-11-17-spring-boot-part-02
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
+  spring: >-
+    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+  spring-boot: >-
+    https://docs.spring.io/spring-boot/docs/2.4.5/api
+  spring-framework: >-
+    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+  spring-security: >-
+    https://docs.spring.io/spring-security/site/docs/5.4.6/api
 ---
-
-## Introduction
 
 This series of articles will examine
 [Spring Boot](https://spring.io/projects/spring-boot)
@@ -22,6 +31,7 @@ Complete source code for the
 and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-02)
 are available on [Github](https://github.com/allen-ball).
+
 
 ## Static Resources
 
@@ -47,6 +57,7 @@ browsing `http://localhost:8080/` produces something similar to:
 ![](/assets/{{ page.permalink }}/hello-world.png)
 
 Note: No additional Java code is required to serve static resources.
+
 
 ## WebJars
 
@@ -111,12 +122,16 @@ the frontend versions when linking into HTML.  The
 
 Note: Again, no additional Java code is required to serve static resources.
 
+
 ## Summary
 
 This article demonstrates how static resources may be provided to be served
 by the Spring Web Server.  These resources may be included on the
 `classpath` under the `/static` folder or within WebJars.
 
-[Part 3](/article/2019-12-15-spring-boot-part-03/) of this
-series discusses dependency injection and implements a simple
-[`@RestController`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RestController.html).
+[Part 3](/article/2019-12-15-spring-boot-part-03/) of this series discusses
+dependency injection and implements a simple
+[`@RestController`][RestController].
+
+
+[RestController]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RestController.html

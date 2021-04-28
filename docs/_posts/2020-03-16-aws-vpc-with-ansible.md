@@ -8,33 +8,23 @@ tags:
 permalink: article/2020-03-16-aws-vpc-with-ansible
 ---
 
-## Introduction
-
-A critical first step to creating an
-[Amazon Web Services (AWS)](https://aws.amazon.com/)
-[AWS Elastic Compute Cloud (EC2)](https://aws.amazon.com/ec2/)
-configuration is to configure a
-[Virtual Private Cloud (VPC)](https://aws.amazon.com/vpc/).
-Often, the default configuration is sufficient for most administrators'
-needs but some solutions require an IP address space different than the
-Amazon default.  This article presents the
-[Ansible](https://www.ansible.com/) boilerplate for
-configuring an alternative IP address space specified by a minimum of
-parameters:
+A critical first step to creating an [Amazon Web Services (AWS)][AWS]
+[AWS Elastic Compute Cloud (EC2)][EC2] configuration is to configure a
+[Virtual Private Cloud (VPC)][VPC] Often, the default configuration is
+sufficient for most administrators' needs but some solutions require an IP
+address space different than the Amazon default.  This article presents the
+[Ansible] boilerplate for configuring an alternative IP address space
+specified by a minimum of parameters:
 [region](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.partial.html),
 VPC CIDR block (e.g., 10.1.0.0/16) and subnet mask size (e.g., 20).  The
 boilerplate calculates subnet CIDR blocks (e.g., 10.1.0.0/20, 10.1.16.0/20,
 etc...) for each availability zone within the region.
 
-The solution leverages Ansible's
-[`ipaddr`](https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters_ipaddr.html)
-filter interface to the
-[`netaddr`](https://pypi.org/project/netaddr/) Python package
-with its
-[extended loop variables](https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#extended-loop-variables).
-The solution also makes extensive use of the Ansible
-[JSON query filter](https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html#json-query-filter)
-to parse the results of the AWS modules.
+The solution leverages [Ansible's][Ansible] [`ipaddr`][ipaddr] filter
+interface to the [`netaddr`][netaddr] Python package with its
+[extended loop variables].  The solution also makes extensive use of the
+Ansible [JSON query filter] to parse the results of the AWS modules.
+
 
 ## Theory of Operation
 
@@ -53,16 +43,16 @@ The implementation:
 3. For each availability zone within the region, creates a unique subnet
    within the VPC's CIDR block of the specified size
 
-4. Creates an
-   [Internet Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html)
-   and connects to each of the subnets
+4. Creates an [Internet Gateway] and connects to each of the subnets
 
 The implementation also demonstrates how host IP address may be calculated
 relative to an availability zone's subnet.
 
+
 ## Implementation
 
-The Ansible controller must have the `netaddr` Python package installed.
+The Ansible controller must have the [`netaddr`][netaddr] Python package
+installed.
 
 ``` bash
 $ pip install --upgrade netaddr
@@ -344,10 +334,12 @@ availability zone and a host IP may be calculated relative to that subnet.
 ```
 {% endraw %}
 
+
 ## Summary
 
 The Ansible boilerplate discussed herein can configure an AWS VPC with a
 minimum of parameters specified by the administrator.
+
 
 ## Boilerplate
 
@@ -432,3 +424,16 @@ The complete boilerplate suitable for cut-and-paste is provide below.
         gateway_id: "{{ ec2_vpc_igw.gateway_id }}"
 ```
 {% endraw %}
+
+
+[AWS]: https://aws.amazon.com/
+[EC2]: https://aws.amazon.com/ec2/
+[VPC]: https://aws.amazon.com/vpc/
+[Internet Gateway]: https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html
+
+[Ansible]: https://www.ansible.com/
+[JSON query filter]: https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html#json-query-filter
+[extended loop variables]: https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#extended-loop-variables
+[ipaddr]: https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters_ipaddr.html
+
+[netaddr]: https://pypi.org/project/netaddr/

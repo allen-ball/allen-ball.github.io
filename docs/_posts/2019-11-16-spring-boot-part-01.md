@@ -6,16 +6,23 @@ tags:
  - Java
  - Spring
 permalink: article/2019-11-16-spring-boot-part-01
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
+  spring: >-
+    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+  spring-boot: >-
+    https://docs.spring.io/spring-boot/docs/2.4.5/api
+  spring-framework: >-
+    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+  spring-security: >-
+    https://docs.spring.io/spring-security/site/docs/5.4.6/api
 ---
 
-## Introduction
-
-This series of articles will examine
-[Spring Boot](https://spring.io/projects/spring-boot)
-features.  This first article will look at the minimum Spring Boot
-application, Spring Boot Devtools, and the Spring Boot Actuator.  There are
-already a wealth of resources for Spring Boot including the
-[Spring Initializr](https://start.spring.io/); these articles
+This series of articles will examine [Spring Boot] features.  This first
+article will look at the minimum Spring Boot application, Spring Boot
+Devtools, and the Spring Boot Actuator.  There are already a wealth of
+resources for Spring Boot including the [Spring Initializr]; these articles
 do not intend to replace these resources but instead provide a collection of
 skeletal projects which may be quickly and easily used to experiment with
 specific Spring Boot features.
@@ -26,12 +33,11 @@ and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-01)
 are available on [Github](https://github.com/allen-ball).
 
+
 ## Minimum Web Server Project
 
-The minimum web server project consists of a
-[Maven](http://maven.apache.org/)
-[POM](http://maven.apache.org/guides/introduction/introduction-to-the-pom.html),
-a "Launcher" class with static `main` function, and an
+The minimum web server project consists of a [Maven][Apache Maven] [POM], a
+"Launcher" class with static `main` function, and an
 `applications.properties` file.  The web server will be launched from Maven
 by invoking the `spring-boot:run` plug-in.
 
@@ -71,21 +77,15 @@ The minimum POM for the server is:
 This POM:
 
 1. Specifies the parent POM as
-`org.springframework.boot:spring-boot-dependencies`,[^1]
+   `org.springframework.boot:spring-boot-dependencies`,<sup id="ref1">[1](#endnote1)</sup>
 
-2. Sets the `${project.build.sourceEncoding}` property to `UTF-8`
-avoid Maven warnings,
+2. Sets the `${project.build.sourceEncoding}` property to `UTF-8` avoid
+   Maven warnings,
 
 3. Specifies the one required Spring Boot dependency,
-`org.springframework.boot:spring-boot-starter-web`, and,
+   `org.springframework.boot:spring-boot-starter-web`, and,
 
-4. Provides the
-[`org.projectlombok:lombok`](https://projectlombok.org/)
-artifact
-
-[^1]: This author prefers this specific method if only because versions of
-provided dependencies may be updated simply by updating the corresponding
-property value in the project POM.
+4. Provides the [`org.projectlombok:lombok`][Project Lombok] artifact
 
 The last is not strictly required but it saves on writing the Java
 "boilerplate" required by the implementation beans.
@@ -111,10 +111,8 @@ ASCII-art banner and color in the log lines.)  However, browsing to
 ![](/assets/{{ page.permalink }}/whitelabel-error-page.png)
 
 This is to be expected!  This project has not yet defined any content
-(static or dynamic) to be served.[^2]
+(static or dynamic) to be served.<sup id="ref2">[2](#endnote2)</sup>
 
-[^2]: In fact, serving content is not covered here and will be the subject
-of subsequent articles in this series.
 
 ## Spring Boot Devtools
 
@@ -191,6 +189,7 @@ and executing the application with devtools through the new profile
 output.
 
 ![](/assets/{{ page.permalink }}/spring-boot-run+devtools.png)
+
 
 ## Spring Boot Actuator
 
@@ -390,6 +389,7 @@ something like:
 }
 ```
 
+
 ## Spring Boot Properties Migrator
 
 Spring Boot relies on numerous properties whose names may change from
@@ -425,18 +425,42 @@ output:
 
 ![](/assets/{{ page.permalink }}/spring-boot-run+properties-migrator.png)
 
+
 ## Summary
 
 This article demonstrates the use of the `spring-boot-starter-web`, the use
-of `spring-boot-devtools`,[^3] and the integration of
-`spring-boot-starter-actuator`.  The POM defines a `spring-boot:run`
-`<profile/>` which can be used for testing the application.  The projects
-described in subsequent articles in this series will benefit by having both
-Spring Boot Devtools and the Spring Boot Actuator activated during
-development runs of the application.
-
-[^3]: With `spring-boot-properties-migrator`.
+of `spring-boot-devtools`,<sup id="ref3">[3](#endnote3)</sup> and the
+integration of `spring-boot-starter-actuator`.  The POM defines a
+`spring-boot:run` `<profile/>` which can be used for testing the
+application.  The projects described in subsequent articles in this series
+will benefit by having both Spring Boot Devtools and the Spring Boot
+Actuator activated during development runs of the application.
 
 [Part 2](/article/2019-11-17-spring-boot-part-02/) of this
 series demonstrates how static resources may be added to be served by the
 web server.
+
+
+<b id="endnote1">[1]</b>
+This author prefers this specific method if only because versions of
+provided dependencies may be updated simply by updating the corresponding
+property value in the project POM.
+[↩](#ref1)
+
+<b id="endnote2">[2]</b>
+In fact, serving content is not covered here and will be the subject of
+subsequent articles in this series.
+[↩](#ref2)
+
+<b id="endnote3">[3]</b>
+With `spring-boot-properties-migrator`.
+[↩](#ref3)
+
+
+[Apache Maven]: https://maven.apache.org/
+[POM]: http://maven.apache.org/guides/introduction/introduction-to-the-pom.html
+
+[Project Lombok]: https://projectlombok.org/
+
+[Spring Boot]: https://spring.io/projects/spring-boot
+[Spring Initializr]: https://start.spring.io/

@@ -5,26 +5,22 @@ tags:
  - Java
  - fluent
 permalink: article/2019-10-29-java-enums-as-predicates
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
 ---
 
-## Introduction
-
-This article examines extending Java
-[`Enum`s](https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html)
-used as property values within
-[JavaBeans](https://docs.oracle.com/javase/tutorial/javabeans/)
-combined with the Java
-[Stream API](https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html) 
-to create and extend *fluent interfaces*.  From
+This article examines extending Java [`Enum`s][Enum] used as property values
+within [JavaBeans] combined with the Java [Stream API] to create and extend
+*fluent interfaces*.  From
 [Wikipedia](https://en.wikipedia.org/wiki/Main_Page):
 
 > [In software engineering, a fluent interface ... is a method for designing object oriented APIs based extensively on method chaining with the goal of making the readability of the source code close to that of ordinary written prose, essentially creating a domain-specific language within the interface.](https://en.wikipedia.org/wiki/Fluent_interface)
 
 The Java Stream API provides the method chaining; this article will examine
-how Java `Enum`s may be extended (specifically to implement
-[`Predicate`](https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html))
-to contribute to a fluent interface's quality of being similar to "written
-prose."  For example:
+how Java [`Enum`s][Enum] may be extended (specifically to implement
+[`Predicate`][Predicate] to contribute to a fluent interface's quality of
+being similar to "written prose."  For example:
 
 ``` java
 public enum Rank implements Predicate<Card> {
@@ -60,21 +56,17 @@ will allow support for fluent expressions like:
         .anyMatch();
 ```
 
-Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
-provided.
+Complete [javadoc] is provided.
+
 
 ## Extending Enums
 
-`Enum` values are constants but they are also subclasses of `Enum` and those
-subclass implementations may have custom fields and methods.  For example,
-[`java.time.DayOfWeek`](https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html)
-implements the
-[`TemporalAccessor`](https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAccessor.html)
-and
-[`TemporalAdjuster`](https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAdjuster.html)
-interfaces so `DayOfWeek` provides implementation methods for those
-interface methods.  The
-[`Suit`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Suit.html)
+[`Enum`][Enum] values are constants but they are also subclasses of `Enum`
+and those subclass implementations may have custom fields and methods.  For
+example, [`java.time.DayOfWeek`][DayOfWeek] implements the
+[`TemporalAccessor`][TemporalAccessor] and
+[`TemporalAdjuster`][TemporalAdjuster] interfaces so `DayOfWeek` provides
+implementation methods for those interface methods.  The [`Suit`][Card.Suit]
 implementation demonstrates how subclass fields may be defined and set by
 defining a custom constructor.
 
@@ -102,14 +94,14 @@ defining a custom constructor.
     }
 ```
 
+
 ## Implementing Predicate
 
 The key to contributing to the fluent interface provided by
-[`Stream`](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html)
-is for the `Enum` subclass to implement `Predicate`.  Of course, that
-`Predicate` must test the bean that the `Enum` is a property for.  For
-example, [`Rank`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Rank.html) and
-`Suit` must test [`Card`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.html):
+[`Stream`][Stream] is for the [`Enum`][Enum] subclass to implement
+[`Predicate`][Predicate].  Of course, that `Predicate` must test the bean
+that the `Enum` is a property for.  For example, [`Rank`][Card.Rank] and
+[`Suit`][Card.Suit] must test [`Card`][Card]:
 
 ``` java
     public enum Rank implements Predicate<Card> {
@@ -142,14 +134,15 @@ example, [`Rank`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/car
 Note: Both implementations provide static `is` methods to further contribute
 to the "fluency" of the API.
 
-To re-inforce the fact that `Rank` and `Suit` are bean properties of `Card`,
-`Rank` and `Suit` are implemented as inner classes of `Card`.
+To re-inforce the fact that [`Rank`][Card.Rank] and [`Suit`][Card.Suit] are
+bean properties of [`Card`][Card], `Rank` and `Suit` are implemented as
+inner classes of `Card`.
+
 
 ## Fluent Implementation - Poker Hand Ranking
 
-To demonstrate the "fluency" of the API, a Poker
-[`Ranking`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Ranking.html) `Enum`
-may be defined.
+To demonstrate the "fluency" of the API, a Poker [`Ranking`][Ranking]
+[`Enum`][Enum] may be defined.
 
 ``` java
 public enum Ranking implements Predicate<List<Card>> {
@@ -185,8 +178,9 @@ public enum Ranking implements Predicate<List<Card>> {
 }
 ```
 
-To complete the Poker "domain specific language" the `Rank` and `Suit` types
-must provide static `Predicate` `SAME` fields,
+To complete the Poker "domain specific language" the [`Rank`][Card.Rank] and
+[`Suit`][Card.Suit] types must provide static [`Predicate`][Predicate]
+`SAME` fields,
 
 ``` java
     ...
@@ -208,7 +202,8 @@ must provide static `Predicate` `SAME` fields,
     ...
 ```
 
-`Rank` must provide a static `SEQUENCE` `Predicate`,
+[`Rank`][Card.Rank] must provide a static `SEQUENCE`
+[`Predicate`][Predicate],
 
 ``` java
     ...
@@ -263,7 +258,7 @@ must provide static `Predicate` `SAME` fields,
     ...
 ```
 
-and `Ranking` must provide static `with` and `holding` methods:
+and [`Ranking`][Ranking] must provide static `with` and `holding` methods:
 
 ``` java
 public enum Ranking implements Predicate<List<Card>> {
@@ -299,10 +294,10 @@ public enum Ranking implements Predicate<List<Card>> {
 }
 ```
 
-The `Ranking` `Predicate` `Enum` combined with the `Combinations` `Stream`
-introduced in
-[this article](/article/2019-03-28-java-streams-and-spliterators/)
-may be used to test for a specific Poker hand.
+The [`Ranking`][Ranking] [`Predicate`][Predicate] [`Enum`][Enum] combined
+with the `Combinations` [`Stream`][Stream] introduced in
+[this article](/article/2019-03-28-java-streams-and-spliterators/) may be
+used to test for a specific Poker hand.
 
 ``` java
     List<Card> hand = ...;
@@ -314,11 +309,12 @@ may be used to test for a specific Poker hand.
         .anyMatch();
 ```
 
-While this implementation is complete, the `Combinations` `Stream` provides
-an `of(int,int,Predicate<List<T>>,Collection<T>)` method that allows the
-specification of a `Predicate` that when it evaluates to `false` will stop
-iterating over that branch.  The `Ranking` `Enum` may be extended to provide
-that `Predicate` by providing a `possible()` method:
+While this implementation is complete, the `Combinations` [`Stream`][Stream]
+provides an `of(int,int,Predicate<List<T>>,Collection<T>)` method that
+allows the specification of a [`Predicate`][Predicate] that when it
+evaluates to `false` will stop iterating over that branch.  The
+[`Ranking`][Ranking] [`Enum`][Enum] may be extended to provide that
+[`Predicate`][Predicate] by providing a `possible()` method:
 
 ``` java
 public enum Ranking implements Predicate<List<Card>> {
@@ -359,8 +355,8 @@ public enum Ranking implements Predicate<List<Card>> {
 which in combination with the
 `Combinations.of(int,int,Predicate<List<T>>,Collection<T>)` method will
 optimize the search for `ThreeOfAKind` by escaping a branch if the first
-`Card`s are not the same `Rank`, `Straight` if the first `Card`s are not a
-sequence, etc.
+[`Card`s][Card] are not the same [`Rank`][Card.Rank], `Straight` if the
+first `Card`s are not a sequence, etc.
 
 ``` java
     List<Card> hand = ...;
@@ -372,12 +368,30 @@ sequence, etc.
         .anyMatch();
 ```
 
-The logic in `Ranking.find(Collection<Card>)` and
-[`Evaluator`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Evaluator.html)
+The logic in `Ranking.find(Collection<Card>)` and [`Evaluator`][Evaluator]
 demonstrate more sophisticated logic.
+
 
 ## Summary
 
-Implementing `Predicate(BEAN)` for `BEAN` property types (including `Enum`)
-will contribute to making an API "fluent" when used in combination with
-`Stream`.
+Implementing [`Predicate(BEAN)`][Predicate] for `BEAN` property types
+(including [`Enum`][Enum]) will contribute to making an API "fluent" when
+used in combination with [`Stream`][Stream].
+
+
+[JavaBeans]: https://docs.oracle.com/javase/tutorial/javabeans/
+
+[DayOfWeek]: {{ page.javadoc.javase }}/java/time/DayOfWeek.html
+[Enum]: {{ page.javadoc.javase }}/java/lang/Enum.html
+[Predicate]: {{ page.javadoc.javase }}/java/util/function/Predicate.html
+[Stream API]: {{ page.javadoc.javase }}/java/util/stream/package-summary.html
+[Stream]: {{ page.javadoc.javase }}/java/util/stream/Stream.html
+[TemporalAccessor]: {{ page.javadoc.javase }}/java/time/temporal/TemporalAccessor.html
+[TemporalAdjuster]: {{ page.javadoc.javase }}/java/time/temporal/TemporalAdjuster.html
+
+[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html
+[Card.Rank]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Rank.html
+[Card.Suit]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Suit.html
+[Card]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.html
+[Evaluator]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Evaluator.html
+[Ranking]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Ranking.html

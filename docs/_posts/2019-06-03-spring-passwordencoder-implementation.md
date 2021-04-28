@@ -6,34 +6,40 @@ tags:
  - Spring Boot
  - Spring Security
 permalink: article/2019-06-03-spring-passwordencoder-implementation
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
+  spring: >-
+    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+  spring-boot: >-
+    https://docs.spring.io/spring-boot/docs/2.4.5/api
+  spring-framework: >-
+    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+  spring-security: >-
+    https://docs.spring.io/spring-security/site/docs/5.4.6/api
 ---
 
-## Introduction
+[Spring Security] provides multiple [`PasswordEncoder`][PasswordEncoder]
+implementations with [`BCRYPT`][BCRYPT] as the recommended implementation.
+However, the use-case of sharing an authentication database with an external
+application, [Dovecot], is examined in this article.  Dovecot uses an
+`MD5-CRYPT` algorithm.
 
-[Spring Security](https://spring.io/projects/spring-security)
-provides multiple
-[`PasswordEncoder`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true)
-implementations with
-[`BCRYPT`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html)
-as the recommended implementation.  However, the use-case of sharing an
-authentication database with an external application,
-[Dovecot](https://www.dovecot.org/), is examined in this
-article.  Dovecot uses an `MD5-CRYPT` algorithm.
+Complete [javadoc] is provided.
 
-Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html) is
-provided.
 
 ## Reference
 
 The actual encryption algorithm is captured in the Dovecot source file
 [`password-scheme-md5crypt.c`](https://github.com/dovecot/core/blob/master/src/auth/password-scheme-md5crypt.c).
 
+
 ## Implementation
 
 The implementation extends
-[`DelegatingPasswordEncoder`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/crypto/password/DelegatingPasswordEncoder.html?is-external=true)
-to provide decryption services for the other Spring Security supported
-password types.  Two inner classes, each subclasses of `PasswordEncoder`,
+[`DelegatingPasswordEncoder`][DelegatingPasswordEncoder] to provide
+decryption services for the other Spring Security supported password types.
+Two inner classes, each subclasses of [`PasswordEncoder`][PasswordEncoder],
 provide `MD5-CRYPT` and `PLAIN` implementations.
 
 ``` java
@@ -127,10 +133,11 @@ The
 implementation provides the methods for calculating salt and `itoa64`
 conversion.
 
+
 ## Spring Boot Application Integration
 
-The `PasswordEncoder` may be integrated with the following
-[`@Configuration`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Configuration.html?is-external=true):
+The [`PasswordEncoder`][PasswordEncoder] may be integrated with the
+following [`@Configuration`][Configuration]:
 
 ``` java
 package some.application;
@@ -149,10 +156,8 @@ public class PasswordEncoderConfiguration {
 }
 ```
 
-and must be integrated with a
-[`UserDetailsService`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/core/userdetails/UserDetailsService.html)
-in a
-[`WebSecurityConfigurer`](https://docs.spring.io/spring-security/site/docs/5.4.6/api/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html):
+and must be integrated with a [`UserDetailsService`][UserDetailsService] in
+a [`WebSecurityConfigurer`][WebSecurityConfigurer]:
 
 ``` java
 package some.application;
@@ -177,3 +182,16 @@ public class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
     ...
 }
 ```
+
+[Dovecot]: https://www.dovecot.org/
+
+[Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html?is-external=true
+
+[Spring Security]: https://spring.io/projects/spring-security
+[BCRYPT]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html
+[DelegatingPasswordEncoder]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/password/DelegatingPasswordEncoder.html?is-external=true
+[PasswordEncoder]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true
+[UserDetailsService]: {{ page.javadoc.spring-security }}/org/springframework/security/core/userdetails/UserDetailsService.html
+[WebSecurityConfigurer]: {{ page.javadoc.spring-security }}/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html
+
+[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html

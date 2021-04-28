@@ -5,21 +5,21 @@ tags:
  - Java
  - Scrabble
 permalink: article/2019-07-08-fivethirtyeight-best-scrabble-string
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
 ---
 
-## Introduction
+[FiveThirtyEight] presented a [challenge] to order Scrabble tiles to
+generate the largest score.
 
-[FiveThirtyEight](https://fivethirtyeight.com/) presented a
-[challenge](https://fivethirtyeight.com/features/whats-your-best-scrabble-string/)
-to order Scrabble tiles to generate the largest score.
+Complete [javadoc] is provided with the solution implemented in
+[`SolveRiddle20190628Task`][SolveRiddle20190628Task].
 
-Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html) is
-provided with the solution implemented in
-[`SolveRiddle20190628Task`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html).
 
 ## Solution
 
-<pre>
+```log
 CARBOXYMETHYLCELLULOSEHAND_RAFTSMANS_IPWIREDRAWERDINITROBENZENEPETTIFOGGINGJUDOKAEQUATEVIVAAIOESOOIU 912
                           C         H
 ----------------------------------------------------------------------------------------------------
@@ -137,13 +137,12 @@ CAR                                                                             
                                                                                            AI        2
                                                                                              OE      2
                                                                                                SO    2
-</pre>
+```
+
 
 ## Theory of Operation
 
-A number of
-[`Map`s](https://docs.oracle.com/javase/8/docs/api/java/util/Map.html)
-are generated from the
+A number of [`Map`s][Map] are generated from the
 [word list](https://norvig.com/ngrams/enable1.txt).
 
 ``` java
@@ -208,16 +207,16 @@ method chooses the next highest valued sequence of tiles to play:
     }
 ```
 
+
 ## Previous Challenge
 
 The `ball.game.scrabble` package was initially developed to solve a previous
 Scrabble
 [problem](http://fivethirtyeight.com/features/this-challenge-will-boggle-your-mind/).
-The implementation is
-[`SolveExpress20161021Task`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html)
+The implementation is [`SolveExpress20161021Task`][SolveExpress20161021Task]
 giving the solution:
 
-<pre>
+```log
 CLASSISMS [AS, AS+S, L+ASS, LASS+I, LASSI+S, C+LASSIS, CLASSIS+M, CLASSISM+S]
 CLASSISTS [AS, AS+S, L+ASS, LASS+I, LASSI+S, C+LASSIS, CLASSIS+T, CLASSIST+S]
 RELAPSERS [LA, LA+P, LAP+S, LAPS+E, E+LAPSE, R+ELAPSE, RELAPSE+R, RELAPSER+S]
@@ -225,4 +224,14 @@ GLASSIEST [AS, AS+S, L+ASS, LASS+I, LASSI+E, LASSIE+S, G+LASSIES, GLASSIES+T]
 SCRAPINGS [PI, PI+N, PIN+G, A+PING, R+APING, C+RAPING, S+CRAPING, SCRAPING+S]
 SHEATHERS [AT, E+AT, EAT+H, H+EATH, S+HEATH, SHEATH+E, SHEATHE+R, SHEATHER+S]
 UPRAISERS [IS, A+IS, R+AIS, RAIS+E, P+RAISE, PRAISE+R, PRAISER+S, U+PRAISERS]
-</pre>
+```
+
+
+[FiveThirtyEight]: https://fivethirtyeight.com/
+[challenge]: https://fivethirtyeight.com/features/whats-your-best-scrabble-string/
+
+[Map]: {{ page.javadoc.javase }}/java/util/Map.html
+
+[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html
+[SolveExpress20161021Task]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html
+[SolveRiddle20190628Task]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html

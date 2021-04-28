@@ -7,16 +7,11 @@ tags:
 permalink: article/2020-03-15-centos-in-place-upgrade
 ---
 
-## Introduction
-
-[CentOS](https://centos.org/) 8.0 was released on September
-24th, 2019 and
-[8.1](https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911)
-on January 15, 2020.  This article describes how a
-[CentOS 7](https://wiki.centos.org/Manuals/ReleaseNotes/CentOS7.1908)
-may be upgraded in place.  The steps are captured in an
-[Ansible](https://www.ansible.com/) role published on
+[CentOS] 8.0 was released on September 24th, 2019 and [8.1][CentOS 8] on
+January 15, 2020.  This article describes how a [CentOS 7] may be upgraded
+in place.  The steps are captured in an [Ansible] role published on
 [GitHub](https://github.com/allen-ball/ball-ansible/blob/master/roles/centos/tasks/main.yml).
+
 
 ## Theory of Operation
 
@@ -44,9 +39,11 @@ replaced
 [`yum`](https://wiki.centos.org/PackageManagement/Yum) in
 CentOS/RHEL 8 systems.  The implementation is discussed in the next session.
 
+
 ## Implementation
 
 The following subsection describe the major steps of the upgrade.
+
 
 ### Replace `yum` with `dnf`
 
@@ -63,11 +60,8 @@ symbolic link to `dnf-3` when dnf is installed.
 The condition `yum.stat.isreg is defined and yum.stat.isreg`, if true,
 indicates `yum` was the package manager when Anisble was invoked.  The
 Ansible script takes advantage of this observation to provide idempotent
-operation.
-[`package-cleanup(1)`](https://linux.die.net/man/1/package-cleanup)
-is installed from
-[`epel-release`](https://fedoraproject.org/wiki/EPEL) and
-used to remove locally installed RPMs.
+operation.  [`package-cleanup(1)`][package-cleanup(1)] is installed from
+[`epel-release`][epel-release] and used to remove locally installed RPMs.
 
 {% raw %}
 ``` yaml
@@ -132,13 +126,14 @@ an inconsistent state without a functioning `yum` or `dnf`.
 
 `dnf` is now installed and available to use for an in-place upgrade.
 
+
 ### Upgrade CentOS
 
-CentOS 8 requires 3 CentOS RPMs plus the latest `epel-release` (obtained via
-RPM) which are installed explicitly with `dnf`.  The conditional
-`ansible_distribution_major_version is version(releasever, "lt")` is
-leveraged to provide idempotent operation and avoid re-running once CentOS 8
-is installed.
+[CentOS 8] requires 3 [CentOS] RPMs plus the latest
+[`epel-release`][epel-release] (obtained via RPM) which are installed
+explicitly with `dnf`.  The conditional `ansible_distribution_major_version
+is version(releasever, "lt")` is leveraged to provide idempotent operation
+and avoid re-running once CentOS 8 is installed.
 
 {% raw %}
 ``` yaml
@@ -192,6 +187,7 @@ Ansible play once the update and reboot are complete.
 ```
 {% endraw %}
 
+
 ### Post Upgrade Steps
 
 The script allows for enabling the `CentOS-Plus` repository and updating
@@ -212,7 +208,19 @@ installed packages *after* the reboot.
     state: latest
 ```
 
+
 ## Summary
 
-CentOS 7 installation may be upgraded to CentOS 8 in-place once `yum` is
+[CentOS 7] installation may be upgraded to [CentOS 8] in-place once `yum` is
 replaced by `dnf`.
+
+
+[CentOS]: https://centos.org/
+[CentOS 7]: https://wiki.centos.org/Manuals/ReleaseNotes/CentOS7.1908
+[Centos 8]: https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911
+
+[epel-release]: https://fedoraproject.org/wiki/EPEL
+
+[Ansible]: https://www.ansible.com/
+
+[package-cleanup(1)]: https://linux.die.net/man/1/package-cleanup

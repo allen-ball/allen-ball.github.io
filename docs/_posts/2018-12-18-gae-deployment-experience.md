@@ -12,26 +12,24 @@ permalink: article/2018-12-18-gae-deployment-experience
 This article describes some of the challenges and pecularities of deploying
 an annotated
 [`@SpringBootApplication`](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/using-spring-boot.html#using-boot-using-springbootapplication-annotation)
-application to
-[Google Cloud Platform](https://cloud.google.com/)'s
-[Google App Engine](https://cloud.google.com/appengine/).
+application to [Google Cloud Platform] [Google App Engine].
+
 
 ## Set-Up
 
-This article assumes that the
-[Google Cloud SDK](https://cloud.google.com/sdk/) has been
-installed and has been configured.  Further, this article assumes that a
-project has been set-up within the
-[Google Cloud Platform Console](https://console.cloud.google.com/)
-(a fictitious `www-example-com` within this article).
+This article assumes that the [Google Cloud SDK] has been installed and has
+been configured.  Further, this article assumes that a project has been
+set-up within the [Google Cloud Platform Console] (a fictitious
+`www-example-com` within this article).
 
-The `default` Google App Engine service must be created.  It may be created
-from the command line with `gcloud app create`.
+The `default` [Google App Engine] service must be created.  It may be
+created from the command line with `gcloud app create`.
+
 
 ## WAR Maven Project
 
-The Maven Project to create the WAR for deployment consists of the following
-artifacts:
+The [Maven][Apache Maven] Project to create the WAR for deployment consists
+of the following artifacts:
 
 ```bash
 www-example-com-service-default
@@ -154,25 +152,25 @@ Boot application are:
 The additional artifacts used in constructing the WAR include
 `src/main/resources/application-gcp.properties`,
 
-<pre data-src="www-example-com-service-default/src/main/resources/application-gcp.properties"></pre>
+<pre data-src="/assets/{{ page.permalink }}/www-example-com-service-default/src/main/resources/application-gcp.properties"></pre>
 
 `src/main/webapp/WEB-INF/web.xml`,
 
-<pre data-src="www-example-com-service-default/src/main/webapp/WEB-INF/web.xml"></pre>
+<pre data-src="/assets/{{ page.permalink }}/www-example-com-service-default/src/main/webapp/WEB-INF/web.xml"></pre>
 
 and `src/main/webapp/WEB-INF/logging.properties`:
 
-<pre data-src="www-example-com-service-default/src/main/webapp/WEB-INF/logging.properties"></pre>
+<pre data-src="/assets/{{ page.permalink }}/www-example-com-service-default/src/main/webapp/WEB-INF/logging.properties"></pre>
 
 The resulting WAR is expected to be executed with the Spring Profile "`gcp`"
 enabled.  The secrets in the template may be populated by setting the
-corresponding Maven properties in the build.[^1]  While the `web.xml` is not
+corresponding Maven properties in the
+build.<sup id="ref1">[1](#endnote1)</sup>  While the `web.xml` is not 
 needed by the annotated Spring Boot Application, it is configured to
 redirect `http` traffic to `https` and provide session management.
 
-[^1]: Exercise left to the reader.
-
 The WAR may be created by executing `mvn clean package`.
+
 
 ## Adjustments to Deploy to Google App Engine
 
@@ -242,7 +240,7 @@ Both plugins (as with any deployment to App Engine) require a
 which is either specified and/or generated.  This application includes the
 following:
 
-<pre data-src="www-example-com-service-default/src/main/webapp/WEB-INF/appengine-web.xml"></pre>
+<pre data-src="/assets/{{ page.permalink }}/www-example-com-service-default/src/main/webapp/WEB-INF/appengine-web.xml"></pre>
 
 which has the following features (in addition to specifying scaling):
 
@@ -416,7 +414,7 @@ INFO: submitting command: /usr/local/Caskroom/google-cloud-sdk/latest/google-clo
 This author recommends using `com.google.cloud.tools:appengine-maven-plugin`
 with a fully defined `appengine-web.xml` and a trivial `app.yaml`:
 
-<pre data-src="www-example-com-service-default/src/main/appengine/app.yaml"></pre>
+<pre data-src="/assets/{{ page.permalink }}/www-example-com-service-default/src/main/appengine/app.yaml"></pre>
 
 With the corresponding output:
 
@@ -487,15 +485,31 @@ INFO: submitting command: /usr/local/Caskroom/google-cloud-sdk/latest/google-clo
 [INFO] ------------------------------------------------------------------------
 ```
 
-## `pom.xml`
+
+## pom.xml
 
 The complete `pom.xml` used in this example:
 
-<pre data-src="www-example-com-service-default/pom.xml"></pre>
+<pre data-src="/assets/{{ page.permalink }}/www-example-com-service-default/pom.xml"></pre>
+
 
 ## References
 
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [Google Cloud Platform](https://cloud.google.com/)
-- [Google App Engine](https://cloud.google.com/appengine/)
-- [Google Cloud Platform Console](https://console.cloud.google.com/home/dashboard)
+- [Spring Boot]
+- [Google Cloud Platform]
+- [Google App Engine]
+- [Google Cloud Platform Console]
+
+<b id="endnote1">[1]</b>
+Exercise left to the reader.
+[↩](#ref1)
+
+
+[Apache Maven]: https://maven.apache.org/
+
+[Google App Engine]: https://cloud.google.com/appengine/
+[Google Cloud Platform Console]: https://console.cloud.google.com/home/dashboard
+[Google Cloud Platform]: https://cloud.google.com/
+[Google Cloud SDK]: https://cloud.google.com/sdk/
+
+[Spring Boot]: https://spring.io/projects/spring-boot

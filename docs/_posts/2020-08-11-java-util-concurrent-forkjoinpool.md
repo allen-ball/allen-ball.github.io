@@ -5,23 +5,21 @@ tags:
  - Java
  - Concurrency
 permalink: article/2020-08-11-java-util-concurrent-forkjoinpool
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
 ---
 
-## Introduction
-
-The combination of
-[`RecursiveTask`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html)
-implementations running in a
-[`ForkJoinPool`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html)
-allows tasks to be defined that may spawn subtasks that in turn may run
-asynchronously.  The `ForkJoinPool` manages efficient processing of those
-tasks.
+The combination of [`RecursiveTask`][RecursiveTask] implementations running
+in a [`ForkJoinPool`][ForkJoinPool] allows tasks to be defined that may
+spawn subtasks that in turn may run asynchronously.  The `ForkJoinPool`
+manages efficient processing of those tasks.
 
 This article presents a simple calculator application to evaluate a formula
-defined as a
-[`List`](https://docs.oracle.com/javase/8/docs/api/java/util/List.html),
-presents a single-threaded recursive solution, and then converts that
-solution to use `RecursiveTask`s executed in a `ForkJoinPool`.
+defined as a [`List`][List] presents a single-threaded recursive solution,
+and then converts that solution to use [`RecursiveTasks`][RecursiveTask]
+executed in a [`ForkJoinPool`][ForkJoinPool].
+
 
 ## Recursive Solution
 
@@ -37,12 +35,11 @@ A formula to be computed is defined as follows:
                         List.of(Operator.MULTIPLY, 9, 10, 11)));
 ```
 
-A formula is either a
-[`Number`](https://docs.oracle.com/javase/8/docs/api/java/lang/Number.html)
-or a `List` consisting of an `Operator` followed by other formulae.  For
-illustration, the Lisp equivalent of `FORMULA` would be:
+A formula is either a [`Number`][Number] or a [`List`][List] consisting of
+an `Operator` followed by other formulae.  For illustration, the Lisp
+equivalent of `FORMULA` would be:
 
-```lisp
+```scheme
 (+ (* 1 2 3) 4 5
    (+ 6 7 8
       (* 9 10 11)))
@@ -95,10 +92,8 @@ A `Task` class is defined to solve formulae:
 The `compute()` method evaluates the formula by creating another `Task`
 instance to evaluate each operand recursively by calling `compute()`.  The
 actual mechanics are to create a `List` of `Task`s and then map the
-[`Stream`](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html)
-of `Task`s to an
-[`IntStream`](https://docs.oracle.com/javase/8/docs/api/java/util/stream/IntStream.html)
-by calling `Task.compute()` which is evaluated based on the operator.
+[`Stream`][Stream] of `Task`s to an [`IntStream`][IntStream] by calling
+`Task.compute()` which is evaluated based on the operator.
 
 The static `main(String[])` function simply instantiates a `Task` and calls
 `compute()`.
@@ -132,19 +127,19 @@ Which generates the following output:
 Result: 1026
 ```
 
-The next chapter details how to convert this solution to use `ForkJoinPool`
-to enable some level of parallel processing.
+The next chapter details how to convert this solution to use
+[`ForkJoinPool`][ForkJoinPool] to enable some level of parallel processing.
 
-## `ForkJoinPool` Solution
 
-The `Task` class is modified to extend `RecursiveTask<Integer>`.  When a
-subtask is instantiated,
-[`RecursiveTask.fork()`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html#fork--)
-is called to asynchronously execute this task in the pool the current task
-is running in.  In the `IntStream`,
-[`RecursiveTask.join()`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html#join--)
-is called to wait for the subtask to complete (if it hasn't already) and
-return the result of the `compute()` method.
+## ForkJoinPool Solution
+
+The `Task` class is modified to extend
+[`RecursiveTask<Integer>`][RecursiveTask].  When a subtask is instantiated,
+[`RecursiveTask.fork()`][RecursiveTask.fork] is called to asynchronously
+execute this task in the pool the current task is running in.  In the
+`IntStream`, [`RecursiveTask.join()`][RecursiveTask.join] is called to wait
+for the subtask to complete (if it hasn't already) and return the result of
+the `compute()` method.
 
 ```java
     public static class Task extends RecursiveTask<Integer> {
@@ -178,11 +173,11 @@ return the result of the `compute()` method.
     }
 ```
 
-The executing `Thread` is included in the output to demonstrate the
-behavior.  The `main(String[])` function creates a `ForkJoinPool`, the
-`Task` to compute `FORMULA`, and uses the pool to invoke the `Task`.  The
-result is obtained through `Task.join()` to wait for the computation to
-complete.
+The executing [`Thread`][Thread] is included in the output to demonstrate
+the behavior.  The `main(String[])` function creates a
+[`ForkJoinPool`][ForkJoinPool], the `Task` to compute `FORMULA`, and uses
+the pool to invoke the `Task`.  The result is obtained through `Task.join()`
+to wait for the computation to complete.
 
 ```java
     public static int N = 10;
@@ -242,10 +237,27 @@ Result: 1026
 Which (unsurprisingly) calculates the formulae in the same order as the
 recursive solution.
 
+
 ## Summary
 
-Single threaded recursive solutions may be converted to `RecursiveTask`[^1]
-implementations and invoked through a `ForkJoinPool` to enable efficient
-processing of subtasks.
+Single threaded recursive solutions may be converted to
+[`RecursiveTask`][RecursiveTask]<sup id="ref1">[1](#endnote1)</sup>
+implementations and invoked through a [`ForkJoinPool`][ForkJoinPool] to
+enable efficient processing of subtasks.
 
-[^1]: Implementation class of [`ForkJoinTask`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html).
+
+<b id="endnote1">[1]</b>
+Implementation class of [`ForkJoinTask`][ForkJoinTask].
+[↩](#ref1)
+
+
+[ForkJoinPool]: {{ page.javadoc.javase }}/java/util/concurrent/ForkJoinPool.html
+[ForkJoinTask]: {{ page.javadoc.javase }}/java/util/concurrent/ForkJoinTask.html
+[IntStream]: {{ page.javadoc.javase }}/java/util/stream/IntStream.html
+[List]: {{ page.javadoc.javase }}/java/util/List.html
+[Number]: {{ page.javadoc.javase }}/java/lang/Number.html
+[RecursiveTask.fork]: {{ page.javadoc.javase }}/java/util/concurrent/ForkJoinTask.html#fork--
+[RecursiveTask.join]: {{ page.javadoc.javase }}/java/util/concurrent/ForkJoinTask.html#join--
+[RecursiveTask]: {{ page.javadoc.javase }}/java/util/concurrent/RecursiveTask.html
+[Stream]: {{ page.javadoc.javase }}/java/util/stream/Stream.html
+[Thread]: {{ page.javadoc.javase }}/java/lang/Thread.html

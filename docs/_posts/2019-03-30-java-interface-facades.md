@@ -9,27 +9,18 @@ tags:
  - Proxy
  - Javadoc
 permalink: article/2019-03-30-java-interface-facades
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
 ---
 
-## Introduction
-
 This article discusses extending final implementation classes through the
-use of
-[`Proxy`](https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html)
-[`InvocationHandler`s](https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html)
-and
-[Default Interface Methods](https://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html)
-introduced in
-[Java 8](https://docs.oracle.com/javase/8/docs/api/index.html).
-The specific use case described here is to add fluent methods to
-[Document Object Model (DOM)](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/package-summary.html)
-to enable
-[Javadoc](https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html)
-[Taglet](https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/taglet/overview.html)
-implementations to provide snippets of well-formed HTML/XML.  The various
-fluent `add()` methods implemented in
-[`FluentNode`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.html) (the
-"facade"):
+use of [`Proxy`][Proxy] [`InvocationHandler`s][InvocationHandler] and
+[Default Interface Methods] introduced in [Java 8].  The specific use case
+described here is to add fluent methods to [Document Object Model (DOM)] to
+enable [Javadoc] [Taglet] implementations to provide snippets of well-formed
+HTML/XML.  The various fluent `add()` methods implemented in
+[`FluentNode`][FluentNode] (the "facade"):
 
 ```java
     default FluentNode add(Stream<Node> stream) {
@@ -57,8 +48,7 @@ fluent `add()` methods implemented in
     }
 ```
 
-which allows the creation of fluent methods to create
-[`Element`s](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Element.html):
+which allows the creation of fluent methods to create [`Element`s][Element]:
 
 ```java
     default FluentNode element(String name, Stream<Node> stream) {
@@ -74,7 +64,8 @@ which allows the creation of fluent methods to create
     }
 ```
 
-that can be built up in to templates (e.g., [`HTMLTemplates`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/HTMLTemplates.html)):
+that can be built up in to templates (e.g.,
+[`HTMLTemplates`][HTMLTemplates]):
 
 ```java
     default FluentNode pre(String content) {
@@ -99,26 +90,18 @@ to produce something like
 <a href="https://www.rfc-editor.org/rfc/rfc2045.txt" target="newtab">RFC2045</a>
 ```
 
-Complete [javadoc]({{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html) is
-provided.
+Complete [javadoc] is provided.
+
 
 ## Theory of Operation
 
 An application can add a facade to a class hierarchy by extending
-[`FacadeProxyInvocationHandler`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html)[^1]
+[`FacadeProxyInvocationHandler`][FacadeProxyInvocationHandler]<sup id="ref1">[1](#endnote1)</sup>
 and implementing
-[`getProxyClassFor(Object)`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor-java.lang.Object-)
+[`getProxyClassFor(Object)`][FacadeProxyInvocationHandler.getProxyClassFor]
 where the
-[`invoke(Object,Method,Object[])`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-)
+[`invoke(Object,Method,Object[])`][FacadeProxyInvocationHandler.invoke]
 "enhances" any eligible return types.  Conceptually:
-
-[^1]: `FacadeProxyInvocationHandler` is a subclass of
-[`DefaultInvocationHandler`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html)
-whose
-([`invoke(Object,Method,Object[])`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-)
-implementation is discussed in ["Adding Support to Java InvocationHandler
-Implementations for Interface Default
-Methods"](/article/2019-01-31-java-invocationhandler-interface-default-methods/)).
 
 ```java
     public Object enhance(Object in) {
@@ -151,22 +134,17 @@ Methods"](/article/2019-01-31-java-invocationhandler-interface-default-methods/)
 ```
 
 There are additional details that are discussed in the next section.  The
-implementor must return a interface
-[`Class`](https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html?is-external=true)
-to `Proxy` from `getProxyClassFor(Object)` for any `Class` to be enhanced.
+implementor must return a interface [`Class`][Class] to [`Proxy`][Proxy]
+from `getProxyClassFor(Object)` for any `Class` to be enhanced.
+
 
 ## Implementation
 
-[`Node`](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html)
-will be enhanced by `FluentNode` and
-[`Document`](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Document.html)
-will be enhanced by
-[`FluentDocument`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocument.html).
-Note: A `Node` does not necessarily have to implement the sub-interface that
-corresponds to
-[Node.getNodeType()](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html#getNodeType--)
-so both the
-[Object](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html)'s
+[`Node`][Node] will be enhanced by [`FluentNode`][FluentNode] and
+[`Document`][Document] will be enhanced by
+[`FluentDocument`][FluentDocument].  Note: A `Node` does not necessarily
+have to implement the sub-interface that corresponds to
+[Node.getNodeType()][Node.getNodeType] so both the [`Object`][Object]'s
 class hierarchy and node type are analyzed and the results are cached in the
 [`getProxyClassFor(Object)`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/xml/FluentNode.InvocationHandler.html#line.358) implementation.
 
@@ -236,18 +214,14 @@ interface is found through reflection:
         }
 ```
 
-The
-[`DocumentBuilderFactory`](https://docs.oracle.com/javase/8/docs/api/javax/xml/parsers/DocumentBuilderFactory.html),
-[`FluentDocumentBuilderFactory`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocumentBuilderFactory.html),
-and
-[`DocumentBuilder`](https://docs.oracle.com/javase/8/docs/api/javax/xml/parsers/DocumentBuilder.html),
-[`FluentDocument.Builder`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocument.Builder.html),
-implementations are both straightforward.  The two `DocumentBuilder`
+The [`DocumentBuilderFactory`][DocumentBuilderFactory],
+[`FluentDocumentBuilderFactory`][FluentDocumentBuilderFactory], and
+[`DocumentBuilder`][DocumentBuilder],
+[`FluentDocument.Builder`][FluentDocument.Builder], implementations are both
+straightforward.  The two `DocumentBuilder`
 [methods]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/xml/FluentDocument.Builder.html#line.75)
-that create new
-[`Document`s](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Document.html)
-are implemented by creating a new
-[`FluentNode.InvocationHandler`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.InvocationHandler.html):
+that create new [`Document`s][Document] are implemented by creating a new
+[`FluentNode.InvocationHandler`][FluentNode.InvocationHandler]:
 
 ```java
         @Override
@@ -265,7 +239,7 @@ are implemented by creating a new
         }
 ```
 
-Creating a new `FluentDocument` is as simple as:
+Creating a new [`FluentDocument`][FluentDocument] is as simple as:
 
 ```java
             document =
@@ -291,8 +265,8 @@ The `com.sun.org.apache.xerces.internal.dom` implementation classes expect
 to have package access to other package classes.  This requires adjusting
 the
 [`invoke(Object,Method,Object[])`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.164)
-implementation to choose the wider of the `Proxy` facade or the *reverse*
-depending on the required context:
+implementation to choose the wider of the [`Proxy`][Proxy] facade or the
+*reverse* depending on the required context:
 
 ```java
     @Override
@@ -317,9 +291,8 @@ depending on the required context:
     }
 ```
 
-This requires keeping an
-[`IdentityHashMap`](https://docs.oracle.com/javase/8/docs/api/java/util/IdentityHashMap.html)
-of enhanced `Object` to `Proxy` and reverse:
+This requires keeping an [`IdentityHashMap`][IdentityHashMap] of enhanced
+[`Object`][Object] to [`Proxy`][Proxy] and reverse:
 
 ```java
     private final ProxyMap map = new ProxyMap();
@@ -371,13 +344,12 @@ of enhanced `Object` to `Proxy` and reverse:
 and providing the necessary "reverse" methods contained in the
 [source]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.104).
 
+
 ## Integration
 
-[`AbstractTaglet`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html)
-demonstrates the integration.  The class must implement
-[`XMLServices`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/XMLServices.html) and
-provide an implementation of
-[`document()`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/XMLServices.html#document--).
+[`AbstractTaglet`][AbstractTaglet] demonstrates the integration.  The class
+must implement [`XMLServices`][XMLServices] and provide an implementation of
+[`document()`][XMLServices.document].
 
 ```java
     private final FluentDocument document;
@@ -408,16 +380,64 @@ provide an implementation of
     public FluentDocument document() { return document; }
 ```
 
-`AbstractTaglet` also implements
-[`HTMLTemplates`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/HTMLTemplates.html) which
-provides `default` methods for HTML elements/nodes.  `HTMLTemplates` is
-further extended by
-[`JavadocHTMLTemplates`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/tools/javadoc/JavadocHTMLTemplates.html)
-to provide common HTML/XML fragments required to generate Javadoc.
+[`AbstractTaglet`][AbstractTaglet] also implements
+[`HTMLTemplates`][HTMLTemplates] which provides `default` methods for HTML
+elements/nodes.  `HTMLTemplates` is further extended by
+[`JavadocHTMLTemplates`][JavadocHTMLTemplates] to provide common HTML/XML
+fragments required to generate Javadoc.
+
 
 ## Summary
 
-The
-[`FacadeProxyInvocationHandler`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html)
-combined with specialized interfaces implementing "`default`" methods
-provides a mechanism for extending an otherwise `final` class hierarchy.
+The [`FacadeProxyInvocationHandler`][FacadeProxyInvocationHandler] combined
+with specialized interfaces implementing `default` methods provides a
+mechanism for extending an otherwise `final` class hierarchy.
+
+
+<b id="endnote1">[1]</b>
+[`FacadeProxyInvocationHandler`][FacadeProxyInvocationHandler] is a subclass
+of [`DefaultInvocationHandler`][DefaultInvocationHandler] whose
+[`invoke(Object,Method,Object[])`][DefaultInvocationHandler.invoke]
+implementation is discussed in
+["Adding Support to Java InvocationHandler Implementations for Interface
+Default Methods"]).
+[↩](#ref1)
+
+
+[Java 8]: https://www.java.com/en/download/help/java8.html
+[Default Interface Methods]: https://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html
+[Document Object Model (DOM)]: {{ page.javadoc.javase }}/org/w3c/dom/package-summary.html
+
+[Javadoc]: https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html
+[Taglet]: https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/taglet/overview.html
+
+[Class]: {{ page.javadoc.javase }}/java/lang/Class.html?is-external=true
+[DocumentBuilderFactory]: {{ page.javadoc.javase }}/javax/xml/parsers/DocumentBuilderFactory.html
+[DocumentBuilder]: {{ page.javadoc.javase }}/javax/xml/parsers/DocumentBuilder.html
+[Document]: {{ page.javadoc.javase }}/org/w3c/dom/Document.html
+[Element]: {{ page.javadoc.javase }}/org/w3c/dom/Element.html
+[IdentityHashMap]: {{ page.javadoc.javase }}/java/util/IdentityHashMap.html
+[InvocationHandler]: {{ page.javadoc.javase }}/java/lang/reflect/InvocationHandler.html?is-external=true
+[Node.getNodeType]: {{ page.javadoc.javase }}/org/w3c/dom/Node.html#getNodeType--
+[Node]: {{ page.javadoc.javase }}/org/w3c/dom/Node.html
+[Object]: {{ page.javadoc.javase }}/java/lang/Object.html
+[Proxy]: {{ page.javadoc.javase }}/java/lang/reflect/Proxy.html
+
+[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html
+[AbstractTaglet]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html
+[DefaultInvocationHandler.invoke]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
+[DefaultInvocationHandler]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html
+[FacadeProxyInvocationHandler.getProxyClassFor]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor-java.lang.Object-
+[FacadeProxyInvocationHandler.invoke]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
+[FacadeProxyInvocationHandler]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html
+[FluentDocument.Builder]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocument.Builder.html
+[FluentDocumentBuilderFactory]:{{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocumentBuilderFactory.html
+[FluentDocument]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocument.html
+[FluentNode.InvocationHandler]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.InvocationHandler.html
+[FluentNode]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.html
+[HTMLTemplates]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/HTMLTemplates.html
+[JavadocHTMLTemplates]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/tools/javadoc/JavadocHTMLTemplates.html
+[XMLServices.document]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/XMLServices.html#document--
+[XMLServices]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/XMLServices.html
+
+["Adding Support to Java InvocationHandler Implementations for Interface Default Methods"]: /article/2019-01-31-java-invocationhandler-interface-default-methods/

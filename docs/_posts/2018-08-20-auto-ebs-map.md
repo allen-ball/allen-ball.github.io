@@ -13,7 +13,6 @@ permalink: article/2018-08-20-auto-ebs-map
 ---
 
 [Amazon Web Services (AWS)][AWS] provides their
-
 [Elastic Block Store (EBS)][EBS] service for persistent block storage for
 [Amazon Elastic Compute Cloud (EC2)][EC2] instances in the AWS cloud.
 Linux/UNIX file systems may be created on these volumes and then attached to
@@ -27,23 +26,21 @@ may be leveraged to attach and mount [EBS] volumes on demand.  The
 implementation includes a mechanism for detaching unmounted EBS volumes so
 they me be attached to different instances in the future.
 
+
 ## Theory of Operation
 
 [EBS] volumes must be prepared with file systems and must be
 [tagged](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html)
 with `fstype` and `uuid`.  The `fstype` value must accurately reflect the
 the volume's file system type and must be supported by the [EC2] instance.
-The `uuid` tag must contain the file system partition UUID.[^1]
-
-[^1]: The [`aws.rc` script](#aws.rc) included at the end of this article
-includes shell functions for allocating, formatting, and tagging EBS volumes
-as file systems.
+The `uuid` tag must contain the file system partition
+UUID.<sup id="ref1">[1](#endnote1)</sup>
 
 The volumes are attached and mounted on demand through an *Executable Autofs
-Map*.  [systemd](https://en.wikipedia.org/wiki/Systemd) is
-configured to monitor the corresponding `autofs` mount point to detect when
-the `automount` daemon unmounts a file system and then detach the volume
-from the EC2 instance.
+Map*.  [systemd] is configured to monitor the corresponding `autofs` mount
+point to detect when the `automount` daemon unmounts a file system and then
+detach the volume from the EC2 instance.
+
 
 ## Implementation
 
@@ -53,8 +50,8 @@ described in the following subsections.
 
 The scripts herein rely on shell functions defined in `/etc/aws.rc`
 described [later](#aws.rc) in this article.  Most functions are
-straightforward wrappers to the corresponding
-[AWS Command Line Interface](https://aws.amazon.com/cli/).
+straightforward wrappers to the corresponding [AWS Command Line Interface].
+
 
 ### <a name="auto.ebs"></a> `auto.ebs` Executable Map
 
@@ -154,14 +151,15 @@ configured in `/etc/auto.master.d/ebs.autofs`.
 /ebs    /etc/auto.ebs
 ```
 
+
 ### <a name="systemd"></a> `systemd` `auto.ebs-detach.service`
 
-`systemd` is configured to monitor the `/ebs` map mount directory and invoke
+[systemd] is configured to monitor the `/ebs` map mount directory and invoke
 `/etc/auto.ebs-detach.sh` whenever the directory changes.  This script is
 responsible for detaching any volumes that are no longer mounted.
 `/usr/lib/systemd/system/auto.ebs-detach.service` configures
 `/etc/auto.ebs-detach.sh` as a service and
-`/usr/lib/systemd/system/auto.ebs-detach.path` configures `systemd` to
+`/usr/lib/systemd/system/auto.ebs-detach.path` configures systemd to
 monitor `/ebs`.
 
 ```bash
@@ -176,15 +174,9 @@ monitor `/ebs`.
                 └── auto.ebs-detach.service
 ```
 
-Since the only reliable event[^2] that is available to monitor is a change
-to `/ebs` directory, each attached volume must be checked in each
-invocation.
-
-[^2]: The author investigated implementations based on
-[incrond(8)](https://linux.die.net/man/8/incrond) and
-[inotifywait(1)](https://linux.die.net/man/1/inotifywait) but
-settled on `systemd` as it appears to be the greatest common denominator for
-Linux distributions.
+Since the only reliable event<sup id="ref2">[2](#endnote2)</sup> that is
+available to monitor is a change to `/ebs` directory, each attached volume
+must be checked in each invocation.
 
 ```bash
 #!/bin/bash
@@ -250,6 +242,7 @@ PathModified=/ebs/
 WantedBy=multi-user.target
 ```
 
+
 ### Ansible Role
 
 The [Ansible] tasks and handlers configure the `autofs` `/ebs` map.
@@ -292,6 +285,7 @@ The [Ansible] tasks and handlers configure the `autofs` `/ebs` map.
   service: name=autofs enabled=yes state=restarted
 ```
 {% endraw %}
+
 
 ### SELinux Policies
 
@@ -364,6 +358,7 @@ added to the [Ansible] `tasks/main.yml`.
 ```
 
 Developing the SELinux polices will be the subject of a future entry.
+
 
 ### <a name="aws.rc"></a> /etc/aws.rc
 
@@ -520,6 +515,7 @@ new-volume-mkfs() {
 }
 ```
 
+
 ## References
 
 - [Source]
@@ -529,10 +525,28 @@ new-volume-mkfs() {
 - [Ansible]
 
 
+<b id="endnote1">[1]</b>
+The [`aws.rc` script](#aws.rc) included at the end of this article
+includes shell functions for allocating, formatting, and tagging EBS volumes
+as file systems.
+[↩](#ref1)
+
+<b id="endnote2">[2]</b>
+The author investigated implementations based on
+[incrond(8)](https://linux.die.net/man/8/incrond) and
+[inotifywait(1)](https://linux.die.net/man/1/inotifywait) but settled on
+`systemd` as it appears to be the greatest common denominator for Linux
+distributions.
+[↩](#ref2)
+
+
 [Ansible]: https://www.ansible.com/
 
-[AWS]: ttps://aws.amazon.com/
+[AWS]: https://aws.amazon.com/
+[AWS Command Line Interface]: https://aws.amazon.com/cli/
 [EBS]: https://aws.amazon.com/ebs/
 [EC2]: https://aws.amazon.com/ec2/
 
 [Source]: https://github.com/allen-ball/ball-ansible/tree/master/roles/auto.ebs
+
+[systemd]: https://en.wikipedia.org/wiki/Systemd

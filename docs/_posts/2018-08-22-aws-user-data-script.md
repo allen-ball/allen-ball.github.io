@@ -10,11 +10,11 @@ tags:
 permalink: article/2018-08-22-aws-user-data-script
 ---
 
-Creators of Amazon Elastic Compute Cloud (EC2) instances may stuff a script
-into the "user data" which will be executed on the instance's initial boot.
-This script may be useful to mount Elastic Block Store (EBS) volumes as file
-systems since those volumes cannot be attached to the instance until *after*
-the instance has been created and started.
+Creators of [Amazon Elastic Compute Cloud (EC2)][EC2] instances may stuff a
+script into the "user data" which will be executed on the instance's initial
+boot.  This script may be useful to mount [Elastic Block Store (EBS)][EBS]
+volumes as file systems since those volumes cannot be attached to the
+instance until *after* the instance has been created and started.
 
 This article presents a script which leverages the functions provided in the
 `aws.rc` script described in a previous
@@ -33,30 +33,31 @@ instances:
 2. Create users, install their SSH authorized keys, and configure `sudo`
 
 3. Attach volumes, create file systems (if neccessary), mount, and update
-   [/etc/fstab](https://linux.die.net/man/5/fstab)
+   [/etc/fstab][fstab(5)]
+
 
 ## AWS Configuration
 
 The scripts require specific configuration in AWS.  These requirements are
 described in the next subsections.
 
+
 ### Users
 
 The script will configure all users specified in the instance's
 [http://169.254.169.254/latest/meta-data/public-keys/](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
-These key pairs must be imported either through [AWS Management
-Console](https://console.aws.amazon.com/organizations/home)
-or the [AWS
-CLI](https://docs.aws.amazon.com/cli/latest/reference/ec2/import-key-pair.html).
-The name of the key pair must be the same as the user name.
+These key pairs must be imported either through [AWS Management Console] or
+the [AWS CLI][AWS CLI import-key-pair].  The name of the key pair must be
+the same as the user name.
 
 A primary use case is to create and configure `ec2-user` on CentOS images to
 be consistent with Amazon's Linux images.
 
+
 ### EBS File System Volumes
 
-Any EBS volume that will be mounted as a file system must be configured with
-the following
+Any [EBS] volume that will be mounted as a file system must be configured
+with the following
 [tags](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html):
 
 * `host`
@@ -66,21 +67,18 @@ the following
 Where `host` is the
 [http://169.254.169.254/latest/meta-data/local-ipv4](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
 address of the newly created instance, `fstype` is a file system type
-compatible with the
-[mkfs(8)](https://linux.die.net/man/8/mkfs) and
-[mount(8)](https://linux.die.net/man/8/mount) commands'`-t`
-argument, and `mntpt` is the local directory on which the file system will
-be mounted.
+compatible with the [mkfs(8)] and [mount(8)] commands'`-t` argument, and
+`mntpt` is the local directory on which the file system will be mounted.
 
-Once the EBS volume is formatted with a valid file system, the volume's
+Once the [EBS] volume is formatted with a valid file system, the volume's
 `uuid` tag should be updated with the file system's UUID.  The
 `user-data.bash` script will *not* format the volume if the `uuid` tag is
 present.  The `user-data.bash` script will update the volume's `uuid` tag if
 it successfully creates a file system on the volume.
 
-Finally, the script will configure
-[/etc/fstab](https://linux.die.net/man/5/fstab) to mount the
-EBS volume on the `mntpt` directory.
+Finally, the script will configure [/etc/fstab][fstab(5)] to mount the [EBS]
+volume on the `mntpt` directory.
+
 
 ## Theory of Operation
 
@@ -93,19 +91,17 @@ The script:
    [http://169.254.169.254/latest/meta-data/local-ipv4](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
    address
 
-The corresponding parts fo the `user-data.bash` script are described in
+The corresponding parts of the `user-data.bash` script are described in
 detail in the following subsections.
+
 
 ### Software Update
 
 The software update consists of:
 
-1. Updating all packages managed by
-   [yum(8)](https://linux.die.net/man/8/yum)
-2. Install and update
-   [python(1)](https://linux.die.net/man/1/python)
-3. Install the
-   [AWS Command Line Interface](https://aws.amazon.com/cli/)
+1. Updating all packages managed by [yum(8)]
+2. Install and update [python(1)]
+3. Install the [AWS Command Line Interface]
 
 ```bash
 export LANG=en_US.UTF-8
@@ -118,6 +114,7 @@ pip install --prefix /usr --upgrade pip
 pip install --prefix /usr --upgrade awscli
 ```
 
+
 ### Users Configuration
 
 For each public key specified in
@@ -128,8 +125,7 @@ For each public key specified in
 2. Add the
    [openssh-key](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
    value to the user's `~/.ssh/authorized_keys`
-3. Configure the user in
-   [sudoers(5)](https://linux.die.net/man/5/sudoers)
+3. Configure the user in [sudoers(5)]
 
 ```bash
 for key in $(metadata public-keys/); do
@@ -150,21 +146,19 @@ for key in $(metadata public-keys/); do
 done
 ```
 
+
 ### Attach and Mount EBS Volumes
 
-For each EBS volume tagged with `host` equalling the value at
+For each [EBS] volume tagged with `host` equalling the value at
 [http://169.254.169.254/latest/meta-data/local-ipv4](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html),
 a non-nil `fstype`, and non-nil `mntpt`:
 
 1. [Attach](https://docs.aws.amazon.com/cli/latest/reference/ec2/attach-volume.html)
-   the EBS volume to this instance
-2. Test if the volume contains data known to
-   [file(1)](https://linux.die.net/man/1/file) and, if it
-   does *not*, [create a file
-   system](https://linux.die.net/man/8/mkfs) of type
-   specified by `fstype`
+   the [EBS] volume to this instance
+2. Test if the volume contains data known to [file(1)] and, if it does
+   *not*, [create a file system][mkfs(8)] of type specified by `fstype`
 4. Determine the UUID of the file system and add an entry to
-   [/etc/fstab](https://linux.die.net/man/5/fstab)
+   [/etc/fstab][fstab(5)]
 
 ```bash
 export HOST=$(metadata local-ipv4)
@@ -199,14 +193,13 @@ fi
 ```
 
 At this point in the script, the file system could be mounted with
-[`mount -a`](https://linux.die.net/man/8/mount).  However,
-the script reboots the instance and the file systems are booted on
-start-up.
+[`mount -a`][mount(8)].  However, the script reboots the instance and the
+file systems are booted on start-up.
 
-## `user-data.bash`
 
-For reference, the complete `user-data.bash`
-[Ansible](https://www.ansible.com/) template is included
+## user-data.bash
+
+For reference, the complete `user-data.bash` [Ansible] template is included
 below.  The `aws.rc` script is included through a relative path.  If another
 tool than Ansible is used, the `aws.rc` script must be included to provide
 the functions through that tool's appropriate mechanism.
@@ -296,8 +289,8 @@ exit 0
 ```
 {% endraw %}
 
-Within Ansible, the `user-data.bash` can be expanded from the template into
-a "fact:"
+Within [Ansible], the `user-data.bash` can be expanded from the template
+into a "fact:"
 
 {% raw %}
 ```yaml
@@ -308,7 +301,7 @@ a "fact:"
 ```
 {% endraw %}
 
-An example fragment for creating the EC2 instance with the `user-data.bash`
+An example fragment for creating the [EC2] instance with the `user-data.bash`
 script is given below.
 
 {% raw %}
@@ -324,22 +317,34 @@ script is given below.
 ```
 {% endraw %}
 
+
 ## References
 
 - [Source]
 - [automount/autofs Executable Map for Amazon EBS Volumes]
-- [Amazon Web Services (AWS)]
-- [AWS Elastic Compute Cloud (EC2)]
-- [AWS Elastic Block Store (EBS)]
+- [Amazon Web Services (AWS)][AWS]
+- [AWS Elastic Compute Cloud (EC2)][EC2]
+- [AWS Elastic Block Store (EBS)][EBS]
 - [Ansible]
 
 
 [Ansible]: https://www.ansible.com/
 
-[Amazon Web Services (AWS)]: https://aws.amazon.com/
-[AWS Elastic Block Store (EBS)]: https://aws.amazon.com/ebs/
-[AWS Elastic Compute Cloud (EC2)]: https://aws.amazon.com/ec2/
+[AWS]: https://aws.amazon.com/
+[AWS Command Line Interface]: https://aws.amazon.com/cli/
+[AWS CLI import-key-pair]: https://docs.aws.amazon.com/cli/latest/reference/ec2/import-key-pair.html
+[EBS]: https://aws.amazon.com/ebs/
+[EC2]: https://aws.amazon.com/ec2/
+[AWS Management Console]: https://console.aws.amazon.com/organizations/home
 
 [Source]: https://github.com/allen-ball/ball-ansible/tree/master/roles/aws-user-data
 
 [automount/autofs Executable Map for Amazon EBS Volumes]: /article/2018-08-20-auto-ebs-map
+
+[file(1)]: https://linux.die.net/man/1/file
+[python(1)]: https://linux.die.net/man/1/python
+[fstab(5)]: https://linux.die.net/man/5/fstab
+[sudoers(5)]: https://linux.die.net/man/5/sudoers
+[mkfs(8)]: https://linux.die.net/man/8/mkfs
+[mount(8)]: https://linux.die.net/man/8/mount
+[yum(8)]: https://linux.die.net/man/8/yum

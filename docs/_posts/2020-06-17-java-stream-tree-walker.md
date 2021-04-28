@@ -6,22 +6,22 @@ tags:
  - Stream
  - Spliterator
 permalink: article/2020-06-17-java-stream-tree-walker
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
 ---
 
-## Introduction
-
 This article discusses walking a tree or graph of nodes with a
-[Java 8](https://docs.oracle.com/javase/8/docs/api/index.html)
-[`Stream`](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html)
-implementation.  The implementation is codified in a
-[`Spliterator`](https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html).
-The strategy described herein can be a useful alternative to implementing a
-class-hierarchy specific visitor because only a single per-type method need
-be defined (often as a Java lambda).
+[Java 8][Java 8] [`Stream`][Stream] implementation.  The implementation is
+codified in a [`Spliterator`][Spliterator] The strategy described herein can
+be a useful alternative to implementing a class-hierarchy specific visitor
+because only a single per-type method need be defined (often as a Java
+lambda).
 
 Please refer to this
-[article](/article/2019-03-28-java-streams-and-spliterators/)
-for an in-depth discussion of creating `Spliterator`s.
+[article](/article/2019-03-28-java-streams-and-spliterators/) for an
+in-depth discussion of creating [`Spliterator`s][Spliterator].
+
 
 ## API Definition
 
@@ -35,28 +35,25 @@ public class Walker<T> ... {
 }
 ```
 
-The
-[`Function`](https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html)
-provides the subordinate ("children") nodes of the argument node.  For
-example, for Java
-[`Class`es](https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html)
-to obtain inner (declared) `Class`es:
+The [`Function`][Function] provides the subordinate ("children") nodes of
+the argument node.  For example, for Java [`Class`es][Class] to obtain inner
+(declared) `Class`es:
 
 ```java
     t -> Stream.of(t.getDeclaredClasses()
 ```
 
-or for
-[`File`s](https://docs.oracle.com/javase/8/docs/api/java/io/File.html):
+or for [`File`s][File]:
 
 ```java
     t -> t.isDirectory() ? Stream.of(t.listFiles()) : Stream.empty()
 ```
 
+
 ## Implementation
 
-The API provides a static method to create a `Stream` from the implemented
-`Spliterator`:
+The API provides a static method to create a [`Stream`][Stream] from the
+implemented [`Spliterator`][Spliterator]:
 
 ```java
     public static <T> Stream<T> walk(T root, Function<? super T,Stream<? extends T>> childrenOf) {
@@ -64,7 +61,7 @@ The API provides a static method to create a `Stream` from the implemented
     }
 ```
 
-The complete `Spliterator` implementation is:
+The complete [`Spliterator`][Spliterator] implementation is:
 
 ```java
 public class Walker<T> extends Spliterators.AbstractSpliterator<T> {
@@ -119,22 +116,20 @@ public class Walker<T> extends Spliterators.AbstractSpliterator<T> {
 }
 ```
 
-A `Stream` of `Spliterator`
-[`Supplier`s](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html)
+A [`Stream`][Stream] of [`Spliterator`][Spliterator] [`Supplier`s][Supplier]
 is created at instantiation (and the `Supplier` will supply another
-`Walker`).  The first time
-[`trySplit()`](https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#trySplit--)
-is called the `Stream` is converted to an
-[`Iterator`](https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html)
-and the next `Spliterator` is generated.  The
-[`tryAdvance(Consumer)`](https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-)
-will exhaust the last created `Spliterator` before calling `tryAdvance()` to
-obtain another.  The first `Spliterator` consists solely of the root node.
+`Walker`).  The first time [`trySplit()`][Spliterator.trySplit] is called
+the `Stream` is converted to an [`Iterator`][Iterator] and the next
+`Spliterator` is generated.  The
+[`tryAdvance(Consumer)`][Spliterator.tryAdvance] will exhaust the last
+created `Spliterator` before calling `tryAdvance()` to obtain another.  The
+first `Spliterator` consists solely of the root node.
+
 
 ## Examples
 
 To print the inner defined classes of
-[`Collections`](https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html):
+[`Collections`]({{ page.javadoc.javase }}/java/util/Collections.html):
 
 ```java
         Walker.<Class<?>>walk(java.util.Collections.class,
@@ -179,9 +174,7 @@ Yields:
 ```
 
 This presents a flexible solution and can be extended with disparate
-objects.  For example, a method to walk XML
-[`Node`s](https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html)
-might be:
+objects.  For example, a method to walk XML [`Node`s][Node] might be:
 
 ```java
     public static Stream<Node> childrenOf(Node node) {
@@ -190,6 +183,7 @@ might be:
         return IntStream.range(0, list.getLength()).mapToObj(list::item);
     }
 ```
+
 
 ## Alternate Entry Point
 
@@ -212,9 +206,23 @@ public class Walker<T> extends Spliterators.AbstractSpliterator<T> {
 }
 ```
 
+
 ## Summary
 
-`Stream`s created from the `Spliterator` implementation described herein
-provide a versatile means for walking any tree with a minimum per-type
-implementation while offering all the filtering and processing power of the
-`Stream` API.
+[`Stream`s][Stream] created from the [`Spliterator`][Spliterator]
+implementation described herein provide a versatile means for walking any
+tree with a minimum per-type implementation while offering all the filtering
+and processing power of the `Stream` API.
+
+
+[Java 8]: https://www.java.com/en/download/help/java8.html
+[Class]: {{ page.javadoc.javase }}/java/lang/Class.html
+[File]: {{ page.javadoc.javase }}/java/io/File.html
+[Function]: {{ page.javadoc.javase }}/java/util/function/Function.html
+[Iterator]: {{ page.javadoc.javase }}/java/util/Iterator.html
+[Node]: {{ page.javadoc.javase }}/org/w3c/dom/Node.html
+[Spliterator.tryAdvance]: {{ page.javadoc.javase }}/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-
+[Spliterator.trySplit]: {{ page.javadoc.javase }}/java/util/Spliterator.html#trySplit--
+[Spliterator]: {{ page.javadoc.javase }}/java/util/Spliterators.html
+[Stream]: {{ page.javadoc.javase }}/java/util/stream/Stream.html
+[Supplier]: {{ page.javadoc.javase }}/java/util/function/Supplier.html

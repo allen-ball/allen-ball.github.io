@@ -7,22 +7,28 @@ tags:
  - Spring
  - Thymeleaf
 permalink: article/2020-06-26-spring-boot-part-05
+javadoc:
+  javase: >-
+    https://docs.oracle.com/javase/8/docs/api
+  spring: >-
+    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+  spring-boot: >-
+    https://docs.spring.io/spring-boot/docs/2.4.5/api
+  spring-framework: >-
+    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+  spring-security: >-
+    https://docs.spring.io/spring-security/site/docs/5.4.6/api
+  ball-api: >-
+    https://repo.hcf.dev/javadoc/ball-api/20200622.0
 ---
-
-## Introduction
 
 [This](/article/2019-11-16-spring-boot-part-01/)
 [series](/article/2019-11-17-spring-boot-part-02/)
 [of](/article/2019-12-15-spring-boot-part-03/)
-[articles](/article/2020-01-01-spring-boot-part-04/) examines
-[Spring Boot](https://spring.io/projects/spring-boot)
+[articles](/article/2020-01-01-spring-boot-part-04/) examines [Spring Boot]
 features.  This fifth article in the series presents a non-trivial
-application which probes local hosts (with the help of the
-[`nmap`](https://nmap.org/) command) to assist in developing
-[UPNP](https://openconnectivity.org/developer/specifications/upnp-resources/upnp-developer-resources)
-and
-[SSDP](https://tools.ietf.org/id/draft-cai-ssdp-v1-03.txt)
-applications.
+application which probes local hosts (with the help of the [`nmap`][nmap]
+command) to assist in developing [UPNP] and [SSDP] applications.
 
 ![](/assets/{{ page.permalink }}/screen-shot-nmap.png)
 
@@ -43,47 +49,42 @@ from the Maven repository at:
 
 Specific topics covered herein:
 
-* [`@Service`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true)
-implementations with
-[`@Scheduled`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true)
-updates
-    - `@Autowired`
+* [`@Service`][Service] implementations with [`@Scheduled`][Scheduled]
+  updates
+    - [`@Autowired`][Autowired]
 
-* UI
-[`@Controller`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Controller.html?is-external=true)
-    - Populates `Model`
+* UI [`@Controller`][Controller]
+    - Populates [`Model`][Model]
     - Thymeleaf temlates and decoupled logic
 
-* [`@RestController`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RestController.html?is-external=true)
-implementation
+* [`@RestController`][RestController] implementation
+
 
 ## Theory of Operation
 
 The following subsections describe the components.
 
-### `@Service` Implementations
 
-The
-[`voyeur`](https://allen-ball.github.io/voyeur/voyeur/package-summary.html)
-package defines a number of (annotated) `@Service`s:
+### @Service Implementations
 
-| `@Service`                                                                                              | Description                                                                                                                                                               |
-| ---                                                                                                     | ---                                                                                                                                                                       |
-| [`ArpCache`](https://allen-ball.github.io/voyeur/voyeur/ARPCache.html)                   | `Map` of `InetAddress` to hardware address periodically updated by reading `/proc/net/arp` or parsing the output of `arp -an`                                             |
-| [`NetworkInterfaces`](https://allen-ball.github.io/voyeur/voyeur/NetworkInterfaces.html) | `Set` of `NetworkInterface`s                                                                                                                                              |
-| [`Nmap`](https://allen-ball.github.io/voyeur/voyeur/Nmap.html)                           | `Map` of XML output of the `nmap` command for each `InetAddress` discovered via `ARPCache`, `NetworkInterfaces`, and/or `SSDP`                                            |
-| [`SSDP`](https://allen-ball.github.io/voyeur/voyeur/SSDP.html)                           | SSDP hosts discovered via [`SSDPDiscoveryCache`](https://repo.hcf.dev/javadoc/ball-api/20200622.0/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true) |
+The [`voyeur`][voyeur] package defines a number of (annotated)
+[`@Service`s][Service]:
 
-Each of these services implement a `Set` or `Map`, which may be
-[`@Autowire`d](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html?is-external=true)
-into other components, and periodically update themselves with a
-[`@Scheduled`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true)
-method.  The `Nmap` service is examined in detail.
+| [`@Service`][Service]                           | Description                                                                                                                                         |
+| ---                                             | ---                                                                                                                                                 |
+| [`ArpCache`][voyeur.ArpCache]                   | [`Map`][Map] of [`InetAddress`][InetAddress] to hardware address periodically updated by reading `/proc/net/arp` or parsing the output of `arp -an` |
+| [`NetworkInterfaces`][voyeur.NetworkInterfaces] | [`Set`][Set] of [`NetworkInterface`s][NetworkInterface]                                                                                             |
+| [`Nmap`][voyeur.Nmap]                           | `Map` of XML output of the `nmap` command for each `InetAddress` discovered via `ARPCache`, `NetworkInterfaces`, and/or `SSDP`                      |
+| [`SSDP`][voyeur.SSDP]                           | SSDP hosts discovered via [`SSDPDiscoveryCache`][SSDPDiscoveryCache]                                                                                |
 
-First, the
-[`@PostConstruct`](https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PostConstruct.html?is-external=true)
-method (in addition to performing other initialization chores) tests to
-determine if the `nmap` command is available:
+Each of these services implement a [`Set`][Set] or [`Map`][Map], which may
+be [`@Autowire`d][Autowired] into other components, and periodically update
+themselves with a [`@Scheduled`][Scheduled] method.  The
+[`Nmap`][voyeur.Nmap] service is examined in detail.
+
+First, the [`@PostConstruct`][PostConstruct] method (in addition to
+performing other initialization chores) tests to determine if the
+[`nmap`][nmap] command is available:
 
 ```java
 ...
@@ -130,23 +131,19 @@ public class Nmap extends InetAddressMap<Document> ... {
 }
 ```
 
-If the `nmap` command is successful, its version is logged.  Otherwise,
-`disabled` is set to `true` and no further attempt is made to run the `nmap`
-command in other methods.
+If the [`nmap`][nmap] command is successful, its version is logged.
+Otherwise, `disabled` is set to `true` and no further attempt is made to run
+the `nmap` command in other methods.
 
-The
-[`@Scheduled`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true)
-[`update()`](https://allen-ball.github.io/voyeur/voyeur/Nmap.html#update--)
-method is invoked every 30 seconds and ensures a map entry exists for every
-[`InetAddress`](https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true)
-previously discovered by the `NetworkInterfaces`, `ARPCache`, and `SSDP`
-components and then queues a `Worker` `Runnable` for any value whose output
-is more than `INTERVAL` (60 minutes) old.  The
-[`@EventListener`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/event/EventListener.html?is-external=true)
-(with
-[`ApplicationReadyEvent`](https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/context/event/ApplicationReadyEvent.html?is-external=true))
-guarantees the method won't be called before the application is ready (to
-serve requests).
+The [`@Scheduled`][Scheduled] [`update()`][voyeur.Nmap.update] method is
+invoked every 30 seconds and ensures a map entry exists for every
+[`InetAddress`][InetAddress] previously discovered by the
+[`NetworkInterfaces`][voyeur.NetworkInterfaces],
+[`ARPCache`][voyeur.ARPCache], and [`SSDP`][voyeur.SSDP] components and then
+queues a `Worker` `Runnable` for any value whose output is more than
+`INTERVAL` (60 minutes) old.  The [`@EventListener`][EventListener] (with
+[`ApplicationReadyEvent`][ApplicationReadyEvent] guarantees the method won't
+be called before the application is ready (to serve requests).
 
 ```java
 public class Nmap extends InetAddressMap<Document> ... {
@@ -227,9 +224,8 @@ public class Nmap extends InetAddressMap<Document> ... {
 }
 ```
 
-Spring Boot's
-[`ThreadPoolTaskExecutor`](https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api/org/springframework/scheduling/concurrent/ThreadPoolTaskExecutor.html)
-is injected.  To guarantee more than one thread is allocated the
+[Spring Boot]'s [`ThreadPoolTaskExecutor`][ThreadPoolTaskExecutor] is
+injected.  To guarantee more than one thread is allocated the
 [`application.properties`](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/application.properties)
 contains the following property:
 
@@ -287,15 +283,14 @@ The `Worker` implementation is given below.
     ...
 ```
 
-Note that the `InetAddress` will be removed from the `Map` if the
-[`Process`](https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html)
-fails.
+Note that the [`InetAddress`][InetAddress] will be removed from the
+[`Map`][Map] if the [`Process`][Process] fails.
 
-### UI `@Controller`, Model, and Thymeleaf Template
 
-The complete
-[`UIController`](https://allen-ball.github.io/voyeur/voyeur/UIController.html)
-implementation is given below.
+### UI @Controller, Model, and Thymeleaf Template
+
+The complete [`UIController`][voyeur.UIController] implementation is given
+below.
 
 ```java
 @Controller
@@ -343,21 +338,19 @@ public class UIController extends AbstractController {
 }
 ```
 
-The `@Controller` populates the
-[`Model`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html)
-with five attributes and implements the
+The [`@Controller`][Controller] populates the [`Model`][Model] with five
+attributes and implements the
 [`root`](https://allen-ball.github.io/voyeur/voyeur/UIController.html#root-org.springframework.ui.Model-)
-method[^1] to serve the UI request paths.  The
-[superclass](https://repo.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html?is-external=true)
+method<sup id="ref1">[1](#endnote1)</sup> to serve the UI request paths.
+The
+[superclass]({{ page.javadoc.ball-api }}/ball/spring/AbstractController.html?is-external=true)
 implements
-[`getViewName()`](https://repo.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html#getViewName--)
+[`getViewName()`]({{ page.javadoc.ball-api }}/ball/spring/AbstractController.html#getViewName--)
 which creates a view name based on the implementing class's package which
 translates to
 [classpath:/templates/voyeur.html](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.html),
-a [Thymeleaf](https://www.thymeleaf.org/) template to
-generate a pure HTML5 document.  Its outline is shown below.
-
-[^1]: A misleading method name at best.
+a [Thymeleaf] template to generate a pure HTML5 document.  Its outline is
+shown below.
 
 ```xml
 <!DOCTYPE html>
@@ -466,20 +459,15 @@ path is shown below:
 The template generates a `<table/>` with a row (`<tr/>`) for each key in the
 `Nmap`.  Each row consists of two columns (`<td/>`):
 
-1. The `InetAddress` of the host with a link to the `nmap` command
-output[^2] and a list of open TCP ports
+1. The [`InetAddress`][InetAddress] of the host with a link to the `nmap`
+command output<sup id="ref2">[2](#endnote2)</sup> and a list of open TCP
+ports
 
 2. The services/products detected
 
-[^2]: The `@RestController` is described in the next subsection.
-
-The
-[`getPorts(InetAddress)`](https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getPorts-java.net.InetAddress-)
-and
-[`getProducts(InetAddress)`](https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getProducts-java.net.InetAddress-)
-methods are provided to avoid
-[`XPath`](https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/XPath.html)
-calculations within the Thymeleaf template.
+The [`getPorts(InetAddress)`][voyeur.Nmap.getPorts] and
+[`getProducts(InetAddress)`][voyeur.Nmap.getProducts] methods are provided
+to avoid [`XPath`][XPath] calculations within the [Thymeleaf] template.
 
 ```java
 ...
@@ -503,24 +491,17 @@ public class Nmap extends InetAddressMap<Document> ... {
 }
 ```
 
-The `getProducts(InetAddress)` implementation is similar with an
-[`XPathExression`](https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/XPathExpression.html)
-of `/nmaprun/host/ports/port/service/@product`.
+The [`getProducts(InetAddress)`][voyeur.Nmap.getProducts] implementation is
+similar with an [`XPathExression`][XPathExression] of
+`/nmaprun/host/ports/port/service/@product`.
 
-The `UIController` instance combined with the Thymeleaf template described
-so far will only generate pure HTML5 with no style markup.  This
-implementation uses Thymeleaf's
-[Decoupled Template Logic](https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic)
-feature and can be found at
-[classpath:/templates/voyeur.th.xml](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.th.xml).[^3]
-The decoupled logic for the table described in this section is shown below.
-
-[^3]: The
-[common application properties](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/appendix-application-properties.html)
-do not provide an option to enable this functionality.  It is enabled in the
-`UIController` suprclass with by configuring the injected
-`SpringResourceTemplateResolver`.
-
+The [`UIController`][voyeur.UIController] instance combined with the
+[Thymeleaf] template described so far will only generate pure HTML5 with no
+style markup.  This implementation uses Thymeleaf's [Decoupled Template
+Logic] feature and can be found at
+[classpath:/templates/voyeur.th.xml](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.th.xml).<sup id="ref3">[3](#endnote3)</sup>
+The decoupled logic for the table described
+in this section is shown below.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -541,10 +522,10 @@ do not provide an option to enable this functionality.  It is enabled in the
 </thlogic>
 ```
 
-The `UIController` superclass provides one more feature: To inject the
-proprties defined in
+The [`UIController`][voyeur.UIController] superclass provides one more
+feature: To inject the proprties defined in
 [classpath:/templates/voyeur.model.properties](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.model.properties)
-into the `Model`.
+into the [`Model`][Model].
 
 ```properties
 brand = ${application.brand:}
@@ -568,12 +549,13 @@ which demonstrates the HTML5 differences.
 The `/network/nmap` request is shown rendered in the image in the
 [Introduction](#introduction) of this article.
 
-### `nmap` Output `@RestController`
 
-`nmap` XML output can be served by implementing a `@RestController`.  The
-`Nmap` class is annotated with `@RestController` and
-[`@RequestMapping`](https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html?is-external=true)
-to requests for `/network/nmap/` and the
+### nmap Output @RestController
+
+`nmap` XML output can be served by implementing a
+[`@RestController`][RestController].  The `Nmap` class is annotated with
+`@RestController` and [`@RequestMapping`][RequestMapping] to requests for
+`/network/nmap/` and the
 [`nmap(String)`](https://allen-ball.github.io/voyeur/voyeur/Nmap.html#nmap-java.lang.String-)
 method provides the XML serialized to a String.
 
@@ -596,14 +578,14 @@ public class Nmap ... {
 }
 ```
 
+
 ### Packaging
 
-The
-[`spring-boot-maven-plugin`](https://docs.spring.io/spring-boot/docs/2.4.5/maven-plugin/reference/html/)
-has a `repackage` goal which may be used to create a self-contained JAR with
-an embedded launch script.  That goal is used in the project
-[`pom`](https://github.com/allen-ball/voyeur/blob/master/pom.xml)
-to create and attach a self-contained JAR atifact.
+The [`spring-boot-maven-plugin`][spring-boot-maven-plugin] has a `repackage`
+goal which may be used to create a self-contained JAR with an embedded
+launch script.  That goal is used in the project
+[`pom`](https://github.com/allen-ball/voyeur/blob/master/pom.xml) to create
+and attach a self-contained JAR atifact.
 
 ```xml
 <project ...>
@@ -646,6 +628,7 @@ Please see the project GitHub
 [page](https://github.com/allen-ball/voyeur) for instructions
 on how to run the JAR.
 
+
 ## Summary
 
 This article discusses aspects of the
@@ -655,6 +638,72 @@ and provides specific examples of:
 * `@Service` implementation and `@Autowired` components with `@Scheduled`
   methods
 
-* `@Controller` implementation, `Model` population, and Thymeleaf templates and decoupled logic
+* `@Controller` implementation, [`Model`][Model] population, and [Thymeleaf]
+  templates and decoupled logic
 
 * `@RestController` implementation
+
+
+<b id="endnote1">[1]</b>
+A misleading method name at best.
+[↩](#ref1)
+
+<b id="endnote2">[2]</b>
+The `@RestController` is described in the next subsection.
+[↩](#ref2)
+
+<b id="endnote3">[3]</b>
+The [common application properties] do not provide an option to enable this
+functionality.  It is enabled in the `UIController` suprclass by configuring
+the injected `SpringResourceTemplateResolver`.
+[↩](#ref3)
+
+
+[InetAddress]: {{ page.javadoc.javase }}/java/net/InetAddress.html?is-external=true
+[Map]: {{ page.javadoc.javase }}/java/util/Map.html
+[NetworkInterface]: {{ page.javadoc.javase }}/java/net/NetworkInterface.html?is-external=true
+[Process]: {{ page.javadoc.javase }}/java/lang/Process.html
+[Set]: {{ page.javadoc.javase }}/java/util/Set.html
+[ThreadPoolTaskExecutor]: {{ page.javadoc.spring-framework }}/org/springframework/scheduling/concurrent/ThreadPoolTaskExecutor.html
+[XPath]: {{ page.javadoc.javase }}/javax/xml/xpath/XPath.html
+[XPathExression]: {{ page.javadoc.javase }}/javax/xml/xpath/XPathExpression.html
+
+[PostConstruct]: https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PostConstruct.html?is-external=true
+[PreDestroy]: https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PreDestroy.html?is-external=true
+
+[Spring Boot]: https://spring.io/projects/spring-boot
+[spring-boot-maven-plugin]: https://docs.spring.io/spring-boot/docs/2.4.5/maven-plugin/reference/html/
+[common application properties]: https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/appendix-application-properties.html
+
+[Autowired]: {{ page.javadoc.spring-framework }}/org/springframework/beans/factory/annotation/Autowired.html
+[Controller]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Controller.html
+[EventListener]: {{ page.javadoc.spring }}/org/springframework/context/event/EventListener.html?is-external=true
+[Model]: {{ page.javadoc.spring }}/org/springframework/ui/Model.html
+[RequestMapping]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RequestMapping.html
+[RestController]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RestController.html
+[Scheduled]: {{ page.javadoc.spring }}/org/springframework/scheduling/annotation/Scheduled.html?is-external=true
+[Scheduled]: {{ page.javadoc.spring }}/org/springframework/scheduling/annotation/Scheduled.html?is-external=true
+[Service]: {{ page.javadoc.spring }}/org/springframework/stereotype/Service.html?is-external=true
+
+[ApplicationReadyEvent]: {{ page.javadoc.spring-boot }}/org/springframework/boot/context/event/ApplicationReadyEvent.html?is-external=true)
+
+[Thymeleaf]: https://www.thymeleaf.org
+[Decoupled Template Logic]: https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic
+
+[nmap]: https://nmap.org/
+
+[SSDP]: https://tools.ietf.org/id/draft-cai-ssdp-v1-03.txt
+
+[UPNP]: https://openconnectivity.org/developer/specifications/upnp-resources/upnp-developer-resources
+
+[SSDPDiscoveryCache]: {{ page.javadoc.ball-api }}/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true
+
+[voyeur]: https://allen-ball.github.io/voyeur/voyeur/package-summary.html
+[voyeur.ArpCache]: https://allen-ball.github.io/voyeur/voyeur/ARPCache.html
+[voyeur.NetworkInterfaces]: https://allen-ball.github.io/voyeur/voyeur/NetworkInterfaces.html
+[voyeur.Nmap]: https://allen-ball.github.io/voyeur/voyeur/Nmap.html
+[voyeur.Nmap.getPorts]: https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getPorts-java.net.InetAddress-
+[voyeur.Nmap.getProducts]: https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getProducts-java.net.InetAddress-
+[voyeur.Nmap.update]: https://allen-ball.github.io/voyeur/voyeur/Nmap.html#update--
+[voyeur.SSDP]: https://allen-ball.github.io/voyeur/voyeur/SSDP.html
+[voyeur.UIController]: https://allen-ball.github.io/voyeur/voyeur/UIController.html
