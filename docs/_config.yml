@@ -7,7 +7,7 @@ email: ball@hcf.dev
 github_username:  allen-ball
 
 #baseurl: "" # the subpath of your site, e.g. /blog
-#url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: https://blog.hcf.dev
 
 blog_javadoc_url: https://allen-ball.github.io/blog-javadoc
 
