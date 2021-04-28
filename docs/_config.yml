@@ -1,4 +1,6 @@
 ---
+url: https://blog.hcf.dev/
+
 title: Allen D. Ball
 description: >-
   A blog about Java and other stuff.
@@ -6,13 +8,7 @@ description: >-
 email: ball@hcf.dev
 github_username:  allen-ball
 
-baseurl: "" # the subpath of your site, e.g. /blog
-#url: https://blog.hcf.dev/
-
 blog_javadoc_url: https://allen-ball.github.io/javadoc
-
-theme: minima
-show_excerpts: true
 
 footer-links:
   email: ball@hcf.dev
@@ -21,6 +17,9 @@ footer-links:
   stackoverflow: users/11866308/allen-d-ball
 
 google_analytics: UA-137275928-1
+
+theme: minima
+show_excerpts: true
 
 markdown: kramdown
 kramdown:
