@@ -177,17 +177,16 @@ This process is purely `git`-administrative:
 2. Create a subdirectory and copy the javadoc for each post/article
 3. `git add ...` / `git push ...`
 
-To publish, browse <https://github.com/USER/javadoc/settings> and
-scroll down to "GitHub Pages" and select "Pages settings now has its own
-dedicated tab! [Check it out
-here!](https://github.com/USER/javadoc/settings/pages)" and change "/
-(root)" to "/docs" and press the "Save" button.  The javadoc assets are now
-published at <https://USER.github.io/javadoc/>.  However, since no
-`index.html` has been specified in the above process GitHub will return a
-`404 File not found` page for the root URL but the article-specific javadoc
-artifacts may be found with <https://USER.github.io/javadoc/ARTICLE/>
-(as in this
-[example](https://allen-ball.github.io/javadoc/2019-03-28-java-streams-and-spliterators/)).
+To publish, browse <https://github.com/USER/javadoc/settings> and scroll
+down to "GitHub Pages" and select "Pages settings now has its own dedicated
+tab! [Check it out here!](https://github.com/USER/javadoc/settings/pages)"
+and change "/ (root)" to "/docs" and press the "Save" button.  The javadoc
+assets are now published at <https://USER.github.io/javadoc/>.  However,
+since no `index.html` has been specified in the above process GitHub will
+return a `404 File not found` page for the root URL but the article-specific
+javadoc artifacts may be found with
+<https://USER.github.io/javadoc/ARTICLE/> (as in this
+[example](https://allen-ball.github.io/javadoc/article/2019-03-28-java-streams-and-spliterators/)).
 
 # Create the blog Jekyll Hierarchy
 
