@@ -1,0 +1,38 @@
+---
+title: Allen D. Ball
+description: >-
+  A blog about Java and other stuff.
+
+email: ball@hcf.dev
+github_username:  allen-ball
+
+#baseurl: "" # the subpath of your site, e.g. /blog
+#url: "" # the base hostname & protocol for your site, e.g. http://example.com
+
+blog_javadoc_url: https://allen-ball.github.io/blog-javadoc
+
+theme: minima
+show_excerpts: false
+
+footer-links:
+  email: ball@hcf.dev
+  github: allen-ball/allen-ball
+  linkedin: https://www.linkedin.com/in/allen-ball/
+  stackoverflow: users/11866308/allen-d-ball
+
+google_analytics: UA-137275928-1
+
+highlighter: none
+markdown: kramdown
+kramdown:
+  syntax_highlighter_opts:
+    disable: true
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+exclude:
+  - LICENSE
+  - README.md
+  - CNAME
