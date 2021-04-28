@@ -26,7 +26,7 @@ generated site.
 
 * Create a GitHub repository ("blog") to host Jekyll generated site
 
-* Create a GitHub repository ("blog-javadoc") to host the auxiliary javadoc
+* Create a GitHub repository ("javadoc") to host the auxiliary javadoc
 
 * Store assets, javadoc, and legacy articles with consistent paths
 
@@ -91,7 +91,7 @@ $ git branch --set-upstream-to=origin/gh-pages gh-pages
 Branch 'gh-pages' set up to track remote branch 'gh-pages' from 'origin'.
 ```
 
-To create the blog-javadoc repository either repeat the above procedure or
+To create the javadoc repository either repeat the above procedure or
 create from a mirror of the newly created blog repository.  If the latter,
 create an *empty* repository with the <https://github.com/new> workflow and
 then:
@@ -105,14 +105,14 @@ remote: Compressing objects: 100% (4/4), done.
 remote: Total 6 (delta 0), reused 3 (delta 0), pack-reused 0
 Receiving objects: 100% (6/6), done.
 $ cd blog.git
-$ git push --mirror https://github.com/USER/blog-javadoc.git
+$ git push --mirror https://github.com/USER/javadoc.git
 Enumerating objects: 6, done.
 Counting objects: 100% (6/6), done.
 Delta compression using up to 12 threads
 Compressing objects: 100% (4/4), done.
 Writing objects: 100% (6/6), 863 bytes | 863.00 KiB/s, done.
 Total 6 (delta 0), reused 6 (delta 0), pack-reused 0
-To https://github.com/USER/blog-javadoc.git
+To https://github.com/USER/javadoc.git
  * [new branch]      gh-pages -> gh-pages
  * [new branch]      trunk -> trunk
 ```
@@ -169,7 +169,7 @@ export PATH=/usr/local/lib/ruby/gems/3.0.0/bin:$PATH
 ```
 
 
-# Populate the blog-javadoc Hierarchy
+# Populate the javadoc Hierarchy
 
 This process is purely `git`-administrative:
 
@@ -177,17 +177,17 @@ This process is purely `git`-administrative:
 2. Create a subdirectory and copy the javadoc for each post/article
 3. `git add ...` / `git push ...`
 
-To publish, browse <https://github.com/USER/blog-javadoc/settings> and
+To publish, browse <https://github.com/USER/javadoc/settings> and
 scroll down to "GitHub Pages" and select "Pages settings now has its own
 dedicated tab! [Check it out
-here!](https://github.com/USER/blog-javadoc/settings/pages)" and change "/
+here!](https://github.com/USER/javadoc/settings/pages)" and change "/
 (root)" to "/docs" and press the "Save" button.  The javadoc assets are now
-published at <https://USER.github.io/blog-javadoc/>.  However, since no
+published at <https://USER.github.io/javadoc/>.  However, since no
 `index.html` has been specified in the above process GitHub will return a
 `404 File not found` page for the root URL but the article-specific javadoc
-artifacts may be found with <https://USER.github.io/blog-javadoc/ARTICLE/>
+artifacts may be found with <https://USER.github.io/javadoc/ARTICLE/>
 (as in this
-[example](https://allen-ball.github.io/blog-javadoc/2019-03-28-java-streams-and-spliterators/)).
+[example](https://allen-ball.github.io/javadoc/2019-03-28-java-streams-and-spliterators/)).
 
 # Create the blog Jekyll Hierarchy
 
@@ -285,7 +285,7 @@ hierarchy.
 3. Change links to javadoc assets.
    E.g., change `[AbstractTaglet](javadoc/ball/tools/javadoc/AbstractTaglet.html)`
    to
-   {% raw %}`[AbstractTaglet](https://USER.github.io/blog-javadoc/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html)`{% endraw %}
+   {% raw %}`[AbstractTaglet](https://USER.github.io/javadoc/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html)`{% endraw %}
 
 4. Convert endnotes/footnotes to HTML compatible with GFM
 
