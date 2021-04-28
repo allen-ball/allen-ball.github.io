@@ -22,7 +22,6 @@ footer-links:
 
 google_analytics: UA-137275928-1
 
-highlighter: none
 markdown: kramdown
 kramdown:
   syntax_highlighter_opts:
