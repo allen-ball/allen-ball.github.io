@@ -23,6 +23,7 @@ javadoc:
     https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
+excerpt_separator: <!--more-->
 ---
 
 This article explores integrating [Spring Security] into a [Spring Boot]
@@ -36,6 +37,8 @@ as customized menus corresponding to a user's grants)
 
 3. Creating a REST controller with Basic Authentication and Spring Method
 Security
+
+<!--more-->
 
 The MVC application and REST controller will each have functions requiring
 various granted authorities.  E.g., a "who-am-i" function may be executed by

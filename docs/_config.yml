@@ -12,7 +12,7 @@ url: https://blog.hcf.dev/
 blog_javadoc_url: https://allen-ball.github.io/javadoc
 
 theme: minima
-show_excerpts: false
+show_excerpts: true
 
 footer-links:
   email: ball@hcf.dev

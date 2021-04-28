@@ -17,13 +17,15 @@ javadoc:
     https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
+excerpt_separator: <!--more-->
 ---
 
 [Spring Security] provides multiple [`PasswordEncoder`][PasswordEncoder]
 implementations with [`BCRYPT`][BCRYPT] as the recommended implementation.
 However, the use-case of sharing an authentication database with an external
-application, [Dovecot], is examined in this article.  Dovecot uses an
-`MD5-CRYPT` algorithm.
+application, [Dovecot], is examined in this article.
+<!--more-->
+Dovecot uses an `MD5-CRYPT` algorithm.
 
 Complete [javadoc] is provided.
 

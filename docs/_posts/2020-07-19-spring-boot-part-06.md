@@ -17,6 +17,7 @@ javadoc:
     https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
+excerpt_separator: <!--more-->
 ---
 
 [Spring Boot] allows for the creation of "starters:" Convenient dependency
@@ -31,6 +32,8 @@ testing (a REST controller @ `/jig/bean/{name}.json` and
 starter.  It also describes a starter for the embedded MySQL server process
 described in
 ["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld/).
+
+<!--more-->
 
 Complete [javadoc] is provided.
 

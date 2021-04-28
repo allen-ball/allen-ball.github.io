@@ -8,6 +8,7 @@ tags:
   - automount
   - Ansible
 permalink: article/2018-08-22-aws-user-data-script
+excerpt_separator: <!--more-->
 ---
 
 Creators of [Amazon Elastic Compute Cloud (EC2)][EC2] instances may stuff a
@@ -18,9 +19,10 @@ instance until *after* the instance has been created and started.
 
 This article presents a script which leverages the functions provided in the
 `aws.rc` script described in a previous
-[article](/article/2018-08-20-auto-ebs-map).  The "user data"
-script described herein provides the following services to Redhat and CentOS
-instances:
+[article](/article/2018-08-20-auto-ebs-map).
+<!--more-->
+The "user data" script described herein provides the following
+services to Redhat and CentOS instances:
 
 1. Update OS software:
 

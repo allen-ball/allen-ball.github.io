@@ -8,6 +8,7 @@ permalink: article/2019-10-29-java-enums-as-predicates
 javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
+excerpt_separator: <!--more-->
 ---
 
 This article examines extending Java [`Enum`s][Enum] used as property values
@@ -16,6 +17,8 @@ within [JavaBeans] combined with the Java [Stream API] to create and extend
 [Wikipedia](https://en.wikipedia.org/wiki/Main_Page):
 
 > [In software engineering, a fluent interface ... is a method for designing object oriented APIs based extensively on method chaining with the goal of making the readability of the source code close to that of ordinary written prose, essentially creating a domain-specific language within the interface.](https://en.wikipedia.org/wiki/Fluent_interface)
+
+<!--more-->
 
 The Java Stream API provides the method chaining; this article will examine
 how Java [`Enum`s][Enum] may be extended (specifically to implement

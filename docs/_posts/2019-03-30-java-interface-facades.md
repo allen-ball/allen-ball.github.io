@@ -12,6 +12,7 @@ permalink: article/2019-03-30-java-interface-facades
 javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
+excerpt_separator: <!--more-->
 ---
 
 This article discusses extending final implementation classes through the
@@ -19,8 +20,10 @@ use of [`Proxy`][Proxy] [`InvocationHandler`s][InvocationHandler] and
 [Default Interface Methods] introduced in [Java 8].  The specific use case
 described here is to add fluent methods to [Document Object Model (DOM)] to
 enable [Javadoc] [Taglet] implementations to provide snippets of well-formed
-HTML/XML.  The various fluent `add()` methods implemented in
-[`FluentNode`][FluentNode] (the "facade"):
+HTML/XML.
+<!--more-->
+The various fluent `add()` methods implemented in [`FluentNode`][FluentNode]
+(the "facade"):
 
 ```java
     default FluentNode add(Stream<Node> stream) {

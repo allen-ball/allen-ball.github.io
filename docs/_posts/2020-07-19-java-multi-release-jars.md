@@ -7,23 +7,28 @@ permalink: article/2020-07-19-java-multi-release-jars
 javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
+excerpt_separator: <!--more-->
 ---
 
-["Adding Support to Java InvocationHandler Implementations for Interface Default Methods"](/article/2019-01-31-java-invocationhandler-interface-default-methods/)
+["Adding Support to Java InvocationHandler Implementations for Interface
+Default
+Methods"](/article/2019-01-31-java-invocationhandler-interface-default-methods/)
 describes how to implement an [`InvocationHandler`][InvocationHandler] to
 invoke `default` interface methods.  This mechanism is critical to the
 [`FluentNode`][FluentNode] implementation described in
 ["Java Interface Facades"](/article/2019-03-30-java-interface-facades/).
 The first article also notes that the
-[`MethodHandle.Lookup`][MethodHandle.Lookup] method used with [Java 8] would
-not work with [Java 9] *which means the whole API will not work on Java 9
-and subsequent JVMs*.
+[`MethodHandles.Lookup`][MethodHandles.Lookup] method used with [Java 8]
+would not work with [Java 9] *which means the whole API will not work on
+Java 9 and subsequent JVMs*.
 
 This article describes the [Java 9]-specific solution, refactoring the
 [`InvocationHandler`][InvocationHandler] implementation to separate and
 compartmentalize the Java 8 and Java 9-specific solution logic, and
-introduces ["JEP 238: Multi-Release JAR Files"][JEP 238] to deliver a [Java
-8] and Java 9 (and later) solutions simultaneously in the same JAR.
+introduces ["JEP 238: Multi-Release JAR Files"][JEP 238] to deliver a
+[Java 8] and Java 9 (and later) solutions simultaneously in the same JAR.
+
+<!--more-->
 
 
 ## Theory of Operation

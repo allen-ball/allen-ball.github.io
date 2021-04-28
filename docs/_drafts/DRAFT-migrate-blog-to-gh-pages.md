@@ -1,12 +1,15 @@
 ---
 title: Notes on Migrating a Blog to GitHub Pages
+excerpt_separator: <!--more-->
 ---
 
 This post discusses my experience migrating my blog from a custom-built
-Spring application to GitHub pages.  Unique to the application is the
-ability to simultaneously serve markdown and auxiliary HTML files (javadoc)
-from the same server.  The application has been hosted on GCP but no longer
-works due to some change/upgrade/etc. of a component outside my control.
+Spring application to GitHub pages.
+<!--more-->
+Unique to the application is the ability to simultaneously serve markdown
+and auxiliary HTML files (javadoc) from the same server.  The application
+has been hosted on GCP but no longer works due to some
+change/upgrade/etc. of a component outside my control.
 
 
 # Requirements

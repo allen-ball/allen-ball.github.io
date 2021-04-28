@@ -8,6 +8,7 @@ permalink: article/2020-08-11-java-util-concurrent-forkjoinpool
 javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
+excerpt_separator: <!--more-->
 ---
 
 The combination of [`RecursiveTask`][RecursiveTask] implementations running
@@ -19,6 +20,8 @@ This article presents a simple calculator application to evaluate a formula
 defined as a [`List`][List] presents a single-threaded recursive solution,
 and then converts that solution to use [`RecursiveTasks`][RecursiveTask]
 executed in a [`ForkJoinPool`][ForkJoinPool].
+
+<!--more-->
 
 
 ## Recursive Solution

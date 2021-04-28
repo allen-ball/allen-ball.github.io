@@ -5,11 +5,14 @@ tags:
   - CentOS
   - Ansible
 permalink: article/2020-03-15-centos-in-place-upgrade
+excerpt_separator: <!--more-->
 ---
 
 [CentOS] 8.0 was released on September 24th, 2019 and [8.1][CentOS 8] on
 January 15, 2020.  This article describes how a [CentOS 7] may be upgraded
-in place.  The steps are captured in an [Ansible] role published on
+in place.
+<!--more-->
+The steps are captured in an [Ansible] role published on
 [GitHub](https://github.com/allen-ball/ball-ansible/blob/master/roles/centos/tasks/main.yml).
 
 

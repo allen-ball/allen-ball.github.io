@@ -10,6 +10,7 @@ tags:
   - systemd
   - Ansible
 permalink: article/2018-08-20-auto-ebs-map
+excerpt_separator: <!--more-->
 ---
 
 [Amazon Web Services (AWS)][AWS] provides their
@@ -25,6 +26,8 @@ This article presents an implementation of an executable automount map which
 may be leveraged to attach and mount [EBS] volumes on demand.  The
 implementation includes a mechanism for detaching unmounted EBS volumes so
 they me be attached to different instances in the future.
+
+<!--more-->
 
 
 ## Theory of Operation

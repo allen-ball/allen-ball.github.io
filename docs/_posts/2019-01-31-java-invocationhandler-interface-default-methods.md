@@ -9,13 +9,16 @@ permalink: article/2019-01-31-java-invocationhandler-interface-default-methods
 javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
+excerpt_separator: <!--more-->
 ---
 
 [Java 8] introduced default methods to interfaces.  Existing
 [`InvocationHandler`][InvocationHandler] implementations will not invoke
 default interface methods.  This short article documents the necessary
-changes.  Note: It first describes the implementation based on a reading of
-the documents and then provides a working implementation for Java 8.
+changes.
+<!--more-->
+Note: It first describes the implementation based on a reading of the
+documents and then provides a working implementation for Java 8.
 
 Given the [`InvocationHandler`][InvocationHandler] implementation:
 

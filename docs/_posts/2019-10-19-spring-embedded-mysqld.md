@@ -17,16 +17,18 @@ javadoc:
     https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
+excerpt_separator: <!--more-->
 ---
 
 This article describes a method to create a `mysqld` [`Process`][Process]
 managed by the Spring Boot Application conditioned on the definition of an
-`application.properties` property, `${mysqld.home}`.  If the property is
-defined, the corresponding bean [`@Configuration`][Configuration] with
-invoke `mysqld` with the `--initialize-insecure` option to create the
-database and then create and manage the `mysqld` `Process` for the life of
-the Spring Boot application including graceful shutdown at application
-shutdown.
+`application.properties` property, `${mysqld.home}`.
+<!--more-->
+If the property is defined, the corresponding bean
+[`@Configuration`][Configuration] with invoke `mysqld` with the
+`--initialize-insecure` option to create the database and then create and
+manage the `mysqld` `Process` for the life of the Spring Boot application
+including graceful shutdown at application shutdown.
 
 Complete [javadoc] is provided.
 
