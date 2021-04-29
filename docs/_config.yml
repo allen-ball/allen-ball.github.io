@@ -28,6 +28,7 @@ show_excerpts: true
 
 markdown: kramdown
 kramdown:
+  hard_wrap: false
   syntax_highlighter_opts:
     disable: true
 
