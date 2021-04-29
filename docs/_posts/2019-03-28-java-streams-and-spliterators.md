@@ -322,13 +322,13 @@ Obtained by calling the implementatioon of
 [Stream]: {{ page.javadoc.javase }}/java/util/stream/Stream.html
 [Supplier]: {{ page.javadoc.javase }}/java/util/function/Supplier.html
 
-[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html
-[Combinations]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/stream/Combinations.html
-[DispatchSpliterator]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html
-[ForSize]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177
-[Permutations]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/stream/Permutations.html
-[Start]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144
-[binomial]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#binomial-long-long-
-[ForPrefix]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208
-[ForCombination]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265
-[SpliteratorSupplier]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.html#line.106
+[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/overview-summary.html
+[Combinations]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/stream/Combinations.html
+[DispatchSpliterator]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html
+[ForSize]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177
+[Permutations]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/stream/Permutations.html
+[Start]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144
+[binomial]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#binomial-long-long-
+[ForPrefix]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208
+[ForCombination]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265
+[SpliteratorSupplier]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.html#line.106

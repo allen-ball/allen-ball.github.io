@@ -149,7 +149,7 @@ from `getProxyClassFor(Object)` for any `Class` to be enhanced.
 have to implement the sub-interface that corresponds to
 [Node.getNodeType()][Node.getNodeType] so both the [`Object`][Object]'s
 class hierarchy and node type are analyzed and the results are cached in the
-[`getProxyClassFor(Object)`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/xml/FluentNode.InvocationHandler.html#line.358) implementation.
+[`getProxyClassFor(Object)`]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/xml/FluentNode.InvocationHandler.html#line.358) implementation.
 
 ```java
         private final HashMap<List<Class<?>>,Class<?>> map = new HashMap<>();
@@ -194,7 +194,7 @@ class hierarchy and node type are analyzed and the results are cached in the
 ```
 
 The corresponding
-["fluent"]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/xml/FluentNode.InvocationHandler.html#line.398)
+["fluent"]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/xml/FluentNode.InvocationHandler.html#line.398)
 interface is found through reflection:
 
 ```java
@@ -222,7 +222,7 @@ The [`DocumentBuilderFactory`][DocumentBuilderFactory],
 [`DocumentBuilder`][DocumentBuilder],
 [`FluentDocument.Builder`][FluentDocument.Builder], implementations are both
 straightforward.  The two `DocumentBuilder`
-[methods]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/xml/FluentDocument.Builder.html#line.75)
+[methods]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/xml/FluentDocument.Builder.html#line.75)
 that create new [`Document`s][Document] are implemented by creating a new
 [`FluentNode.InvocationHandler`][FluentNode.InvocationHandler]:
 
@@ -267,7 +267,7 @@ error similar to:
 The `com.sun.org.apache.xerces.internal.dom` implementation classes expect
 to have package access to other package classes.  This requires adjusting
 the
-[`invoke(Object,Method,Object[])`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.164)
+[`invoke(Object,Method,Object[])`]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.164)
 implementation to choose the wider of the [`Proxy`][Proxy] facade or the
 *reverse* depending on the required context:
 
@@ -345,7 +345,7 @@ This requires keeping an [`IdentityHashMap`][IdentityHashMap] of enhanced
 ```
 
 and providing the necessary "reverse" methods contained in the
-[source]({{ site.blog_javadoc_url }}/{{ page.permalink }}/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.104).
+[source]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.104).
 
 
 ## Integration
@@ -426,21 +426,21 @@ Default Methods"]).
 [Object]: {{ page.javadoc.javase }}/java/lang/Object.html
 [Proxy]: {{ page.javadoc.javase }}/java/lang/reflect/Proxy.html
 
-[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/overview-summary.html
-[AbstractTaglet]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html
-[DefaultInvocationHandler.invoke]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
-[DefaultInvocationHandler]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html
-[FacadeProxyInvocationHandler.getProxyClassFor]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor-java.lang.Object-
-[FacadeProxyInvocationHandler.invoke]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
-[FacadeProxyInvocationHandler]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html
-[FluentDocument.Builder]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocument.Builder.html
-[FluentDocumentBuilderFactory]:{{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocumentBuilderFactory.html
-[FluentDocument]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentDocument.html
-[FluentNode.InvocationHandler]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.InvocationHandler.html
-[FluentNode]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/FluentNode.html
-[HTMLTemplates]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/HTMLTemplates.html
-[JavadocHTMLTemplates]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/tools/javadoc/JavadocHTMLTemplates.html
-[XMLServices.document]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/XMLServices.html#document--
-[XMLServices]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/xml/XMLServices.html
+[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/overview-summary.html
+[AbstractTaglet]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/tools/javadoc/AbstractTaglet.html
+[DefaultInvocationHandler.invoke]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
+[DefaultInvocationHandler]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html
+[FacadeProxyInvocationHandler.getProxyClassFor]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor-java.lang.Object-
+[FacadeProxyInvocationHandler.invoke]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
+[FacadeProxyInvocationHandler]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/FacadeProxyInvocationHandler.html
+[FluentDocument.Builder]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/FluentDocument.Builder.html
+[FluentDocumentBuilderFactory]:{{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/FluentDocumentBuilderFactory.html
+[FluentDocument]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/FluentDocument.html
+[FluentNode.InvocationHandler]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/FluentNode.InvocationHandler.html
+[FluentNode]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/FluentNode.html
+[HTMLTemplates]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/HTMLTemplates.html
+[JavadocHTMLTemplates]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/tools/javadoc/JavadocHTMLTemplates.html
+[XMLServices.document]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/XMLServices.html#document--
+[XMLServices]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/XMLServices.html
 
 ["Adding Support to Java InvocationHandler Implementations for Interface Default Methods"]: /article/2019-01-31-java-invocationhandler-interface-default-methods/

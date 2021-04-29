@@ -392,9 +392,9 @@ used in combination with [`Stream`][Stream].
 [TemporalAccessor]: {{ page.javadoc.javase }}/java/time/temporal/TemporalAccessor.html
 [TemporalAdjuster]: {{ page.javadoc.javase }}/java/time/temporal/TemporalAdjuster.html
 
-[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html
-[Card.Rank]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Rank.html
-[Card.Suit]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.Suit.html
-[Card]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/Card.html
-[Evaluator]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Evaluator.html
-[Ranking]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/game/card/poker/Ranking.html
+[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/allclasses-noframe.html
+[Card.Rank]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/Card.Rank.html
+[Card.Suit]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/Card.Suit.html
+[Card]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/Card.html
+[Evaluator]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/poker/Evaluator.html
+[Ranking]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/poker/Ranking.html

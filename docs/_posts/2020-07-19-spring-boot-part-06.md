@@ -220,7 +220,7 @@ software has been configured and/or is on the class path.
 
 Finally, `META-INF/spring.factories` must be configured in the starter JAR
 to notify Spring Boot to add the
-[`AutoConfiguration`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html).
+[`AutoConfiguration`]({{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html).
 
 <figcaption style="text-align: center">META-INF/spring.factories</figcaption>
 ```properties
@@ -277,7 +277,7 @@ implementations do not benefit from separate auto-configuration artifacts.
 [Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html
 [Import]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Import.html?is-external=true
 
-[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html
-[jig.AutoConfiguration]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html
-[mysql.AutoConfiguration]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/autoconfigure/AutoConfiguration.html
-[BeanRestController]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/jig/BeanRestController.html
+[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/allclasses-noframe.html
+[jig.AutoConfiguration]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html
+[mysql.AutoConfiguration]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/mysqld/autoconfigure/AutoConfiguration.html
+[BeanRestController]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/jig/BeanRestController.html

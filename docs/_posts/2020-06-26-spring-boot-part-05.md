@@ -19,7 +19,7 @@ javadoc:
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
   ball-api: >-
-    https://allen-ball.github.io/javadoc/ball-api/20200622.0
+    https://blog.hcf.dev/javadoc/ball-api/20200622.0
 ---
 
 [This](/article/2019-11-16-spring-boot-part-01/)

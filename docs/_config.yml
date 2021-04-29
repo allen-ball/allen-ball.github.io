@@ -1,14 +1,19 @@
 ---
-url: https://blog.hcf.dev/
+# Source: https://allen-ball.github.io/
+url: >-
+  https://blog.hcf.dev/
+
+# Source: https://allen-ball.github.io/javadoc/
+javadoc:
+  url: >-
+    https://blog.hcf.dev/javadoc
 
 title: Allen D. Ball
 description: >-
   A blog about Java and other stuff.
 
 email: ball@hcf.dev
-github_username:  allen-ball
-
-blog_javadoc_url: https://allen-ball.github.io/javadoc
+github_username: allen-ball
 
 footer-links:
   email: ball@hcf.dev

@@ -292,7 +292,7 @@ applications (e.g., PostgreSQL).
 [ConditionalOnProperty]: https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnProperty.html?is-external=true
 [Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html?is-external=true
 
-[javadoc]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/allclasses-noframe.html
-[EntityManagerFactoryComponent]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/EntityManagerFactoryComponent.html
-[MysqldComponent]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldComponent.html
-[MysqldConfiguration]: {{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldConfiguration.html
+[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/allclasses-noframe.html
+[EntityManagerFactoryComponent]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/mysqld/EntityManagerFactoryComponent.html
+[MysqldComponent]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldComponent.html
+[MysqldConfiguration]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/mysqld/MysqldConfiguration.html
