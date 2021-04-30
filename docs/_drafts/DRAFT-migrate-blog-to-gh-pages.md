@@ -1,5 +1,6 @@
 ---
 title: Notes on Migrating a Blog to GitHub Pages
+permalink: article/DRAFT-migrate-blog-to-gh-pages
 excerpt_separator: <!--more-->
 ---
 
