@@ -1,0 +1,27 @@
+---
+layout: default
+---
+
+<div>
+  {{ content }}
+
+  {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+  {%- if site.posts.size > 0 -%}
+    {%- for post in site.posts -%}
+    <div class="card">
+      <div class="card-body">
+        <span>{{ post.date | date: date_format }}</span>
+        <h3 class="card-title">
+          <a href="{{ post.url | relative_url }}">
+            {{ post.title | escape }}
+          </a>
+        </h3>
+        {%- if site.show_excerpts -%}{{ post.excerpt }}{%- endif -%}
+      </div>
+    </div>
+    {%- endfor -%}
+
+    <p>Subscribe <a href="{{ "/feed.xml" | relative_url }}">via RSS</a></p>
+  {%- endif -%}
+
+</div>
