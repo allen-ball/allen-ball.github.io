@@ -1032,17 +1032,17 @@ be done on [GitHub](https://github.com/):
 
 4. Click ["OAuth Apps" from the left column](https://github.com/settings/developers)
 
-    ![](github-01.png)
+    ![](/assets/{{ page.permalink }}/github-01.png)
 
 5. Click "Register a new application."  Fill in the form with the following values:
     * Homepage URL: <http://localhost:8080/>
     * Authorization callback URL: <http://localhost:8080/login/oauth2/code/github>
 
-    ![](github-02.png)
+    ![](/assets/{{ page.permalink }}/github-02.png)
 
 6. Note the Client ID and Secret as it will be required in the application [configuration](#application-oauth.yml)
 
-    ![](github-03.png)
+    ![](/assets/{{ page.permalink }}/github-03.png)
 
 The POM `oauth` profile enables the Spring Boot `oauth` profile.  In
 addition, the required Spring Security dependencies for OAuth are added: An
