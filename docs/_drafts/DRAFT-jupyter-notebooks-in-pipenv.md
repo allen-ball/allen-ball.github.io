@@ -6,6 +6,8 @@ tags:
  - Jupyter
 ---
 
+Notes from setting up `jupyter notebook` in a `pipenv` environment.
+
 ## Prerequisites
 
 ```
