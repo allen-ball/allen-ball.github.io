@@ -1,6 +1,6 @@
 ---
 title: Java Stream Tree Walker
-canonical_url: https://blog.hcf.dev/article/2020-06-17-java-stream-tree-walker/
+canonical_url: https://blog.hcf.dev/article/2020-06-17-java-stream-tree-walker
 tags:
  - Java
  - Stream
@@ -19,7 +19,7 @@ because only a single per-type method need be defined (often as a Java
 lambda).
 
 Please refer to this
-[article](/article/2019-03-28-java-streams-and-spliterators/) for an
+[article](/article/2019-03-28-java-streams-and-spliterators) for an
 in-depth discussion of creating [`Spliterator`s][Spliterator].
 
 

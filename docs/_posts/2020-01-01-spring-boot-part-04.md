@@ -1,7 +1,7 @@
 ---
 title: >-
     Spring Boot Part 4: Spring MVC with Thymeleaf
-canonical_url: https://blog.hcf.dev/article/2020-01-01-spring-boot-part-04/
+canonical_url: https://blog.hcf.dev/article/2020-01-01-spring-boot-part-04
 tags:
  - Java
  - Spring
@@ -140,7 +140,7 @@ syntax.
 The following shows the template's rendered `HTML`.  The Bootstrap
 artifacts' paths have been rendered "`href`" and "`src`" attributes (with
 version handling in their paths as decribed in
-[part 2](/article/2019-11-17-spring-boot-part-02/)) and with
+[part 2](/article/2019-11-17-spring-boot-part-02)) and with
 the Thymeleaf expressions evaluated.
 
 ``` html
@@ -429,7 +429,7 @@ implementing a simple, but internationalized, clock web application.
 
 
 <b id="endnote1">[1]</b>
-[Part 2](/article/2019-11-17-spring-boot-part-02/) of
+[Part 2](/article/2019-11-17-spring-boot-part-02) of
 this series demonstrated the inclusion of Bulma artifacts and the use of
 Bootstrap here is to provide contrast.
 [↩](#ref1)

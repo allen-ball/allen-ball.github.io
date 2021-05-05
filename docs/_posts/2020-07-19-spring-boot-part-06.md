@@ -1,7 +1,7 @@
 ---
 title: >-
     Spring Boot Part 6: Auto Configuration and Starters
-canonical_url: https://blog.hcf.dev/article/2020-07-19-spring-boot-part-06/
+canonical_url: https://blog.hcf.dev/article/2020-07-19-spring-boot-part-06
 tags:
  - Java
  - Spring
@@ -31,7 +31,7 @@ testing (a REST controller @ `/jig/bean/{name}.json` and
 `/jig/bean/{name}.xml`) and the steps necessary to create a Spring Boot
 starter.  It also describes a starter for the embedded MySQL server process
 described in
-["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld/).
+["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld).
 
 <!--more-->
 
@@ -41,7 +41,7 @@ Complete [javadoc] is provided.
 ## Theory of Operation
 
 As discussed in
-[part 1](/article/2019-11-16-spring-boot-part-01/), the
+[part 1](/article/2019-11-16-spring-boot-part-01), the
 `spring-boot-starter-actuator` may be configured.  One of its sevices may be
 used to get the list (with attributes) of the configured beans.  Sample
 partial output below:
@@ -228,7 +228,7 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.jig.
 ```
 
 Creating a starter for the embedded MySQL process described in
-["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld/)
+["Spring Embedded MySQL Server"](/article/2019-10-19-spring-embedded-mysqld)
 is equally straightforward.  Its
 [`AutoConfiguration`][mysql.AutoConfiguration] class is shown below:
 

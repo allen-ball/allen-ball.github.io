@@ -1,6 +1,6 @@
 ---
 title: Spring PasswordEncoder Implementation
-canonical_url: https://blog.hcf.dev/article/2019-06-03-spring-passwordencoder-implementation/
+canonical_url: https://blog.hcf.dev/article/2019-06-03-spring-passwordencoder-implementation
 tags:
  - Java
  - Spring Boot

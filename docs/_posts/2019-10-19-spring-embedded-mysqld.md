@@ -1,6 +1,6 @@
 ---
 title: Spring Embedded MySQL Server
-canonical_url: https://blog.hcf.dev/article/2019-10-19-spring-embedded-mysqld/
+canonical_url: https://blog.hcf.dev/article/2019-10-19-spring-embedded-mysqld
 tags:
  - Java
  - Spring
@@ -169,7 +169,7 @@ domain sockets, the above code waits for the `mysqld` server to create the
 socket to be sure the server is running before continuing.  The
 [`MysqldComponent`][MysqldComponent] will simply monitor that the `Process`
 is still alive.  This [`@Component`][Component] is dependent on the `mysqld`
-[`@Bean`][Bean]` which in turn is dependent on the `${mysqld.home}` property.
+[`@Bean`][Bean] which in turn is dependent on the `${mysqld.home}` property.
 
 ``` java
 @Component

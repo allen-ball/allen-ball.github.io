@@ -1,6 +1,6 @@
 ---
 title: Maven toolchains.xml Script
-canonical_url: https://blog.hcf.dev/article/2019-09-15-maven-toolchains-xml-script/
+canonical_url: https://blog.hcf.dev/article/2019-09-15-maven-toolchains-xml-script
 tags:
   - Maven
   - Java

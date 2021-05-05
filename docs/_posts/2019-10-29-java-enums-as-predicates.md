@@ -1,6 +1,6 @@
 ---
 title: Java Enums as Predicates
-canonical_url: https://blog.hcf.dev/article/2019-10-29-java-enums-as-predicates/
+canonical_url: https://blog.hcf.dev/article/2019-10-29-java-enums-as-predicates
 tags:
  - Java
  - fluent
@@ -299,7 +299,7 @@ public enum Ranking implements Predicate<List<Card>> {
 
 The [`Ranking`][Ranking] [`Predicate`][Predicate] [`Enum`][Enum] combined
 with the `Combinations` [`Stream`][Stream] introduced in
-[this article](/article/2019-03-28-java-streams-and-spliterators/) may be
+[this article](/article/2019-03-28-java-streams-and-spliterators) may be
 used to test for a specific Poker hand.
 
 ``` java

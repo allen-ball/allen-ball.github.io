@@ -1,6 +1,6 @@
 ---
 title: FiveThirtyEight "What’s Your Best Scrabble String?" Solution
-canonical_url: https://blog.hcf.dev/article/2019-07-08-fivethirtyeight-best-scrabble-string/
+canonical_url: https://blog.hcf.dev/article/2019-07-08-fivethirtyeight-best-scrabble-string
 tags:
  - Java
  - Scrabble

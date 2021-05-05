@@ -1,7 +1,7 @@
 ---
 title: >-
     Spring Boot Part 1: Minimum Web Server, Devtools, and Actuator
-canonical_url: https://blog.hcf.dev/article/2019-11-16-spring-boot-part-01/
+canonical_url: https://blog.hcf.dev/article/2019-11-16-spring-boot-part-01
 tags:
  - Java
  - Spring
@@ -436,7 +436,7 @@ application.  The projects described in subsequent articles in this series
 will benefit by having both Spring Boot Devtools and the Spring Boot
 Actuator activated during development runs of the application.
 
-[Part 2](/article/2019-11-17-spring-boot-part-02/) of this
+[Part 2](/article/2019-11-17-spring-boot-part-02) of this
 series demonstrates how static resources may be added to be served by the
 web server.
 

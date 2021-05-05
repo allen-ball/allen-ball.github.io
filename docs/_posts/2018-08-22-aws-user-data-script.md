@@ -1,6 +1,6 @@
 ---
 title: AWS EC2 User Data Shell Script
-canonical_url: https://blog.hcf.dev/article/2018-08-22-aws-user-data-script/
+canonical_url: https://blog.hcf.dev/article/2018-08-22-aws-user-data-script
 tags:
   - AWS
   - EBS

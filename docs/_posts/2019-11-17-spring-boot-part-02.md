@@ -1,7 +1,7 @@
 ---
 title: >-
     Spring Boot Part 2: Static Resources
-canonical_url: https://blog.hcf.dev/article/2019-11-17-spring-boot-part-02/
+canonical_url: https://blog.hcf.dev/article/2019-11-17-spring-boot-part-02
 tags:
  - Java
  - Spring
@@ -22,7 +22,7 @@ javadoc:
 This series of articles will examine
 [Spring Boot](https://spring.io/projects/spring-boot)
 features.  This second article builds on the
-[first article](/article/2019-11-16-spring-boot-part-01/)
+[first article](/article/2019-11-16-spring-boot-part-01)
 by demonstrating how to serve static resources from the `classpath` and
 WebJars.
 
@@ -51,7 +51,7 @@ This is demonstrated by creating
 ```
 
 Starting the application as described in
-[part 1](/article/2019-11-16-spring-boot-part-01/) and
+[part 1](/article/2019-11-16-spring-boot-part-01) and
 browsing `http://localhost:8080/` produces something similar to:
 
 ![](/assets/{{ page.permalink }}/hello-world.png)
@@ -129,7 +129,7 @@ This article demonstrates how static resources may be provided to be served
 by the Spring Web Server.  These resources may be included on the
 `classpath` under the `/static` folder or within WebJars.
 
-[Part 3](/article/2019-12-15-spring-boot-part-03/) of this series discusses
+[Part 3](/article/2019-12-15-spring-boot-part-03) of this series discusses
 dependency injection and implements a simple
 [`@RestController`][RestController].
 

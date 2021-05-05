@@ -1,6 +1,6 @@
 ---
 title: Java Multi-Release JARs
-canonical_url: https://blog.hcf.dev/article/2020-07-19-java-multi-release-jars/
+canonical_url: https://blog.hcf.dev/article/2020-07-19-java-multi-release-jars
 tags:
  - Java
 permalink: article/2020-07-19-java-multi-release-jars
@@ -10,13 +10,11 @@ javadoc:
 excerpt_separator: <!--more-->
 ---
 
-["Adding Support to Java InvocationHandler Implementations for Interface
-Default
-Methods"](/article/2019-01-31-java-invocationhandler-interface-default-methods/)
+["Adding Support to Java InvocationHandler Implementations for Interface Default Methods"](/article/2019-01-31-java-invocationhandler-interface-default-methods)
 describes how to implement an [`InvocationHandler`][InvocationHandler] to
 invoke `default` interface methods.  This mechanism is critical to the
 [`FluentNode`][FluentNode] implementation described in
-["Java Interface Facades"](/article/2019-03-30-java-interface-facades/).
+["Java Interface Facades"](/article/2019-03-30-java-interface-facades).
 The first article also notes that the
 [`MethodHandles.Lookup`][MethodHandles.Lookup] method used with [Java 8]
 would not work with [Java 9] *which means the whole API will not work on

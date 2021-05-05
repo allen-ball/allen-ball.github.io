@@ -1,6 +1,6 @@
 ---
 title: automount/autofs Executable Map for Amazon EBS Volumes
-canonical_url: https://blog.hcf.dev/article/2018-08-20-auto-ebs-map/
+canonical_url: https://blog.hcf.dev/article/2018-08-20-auto-ebs-map
 tags:
   - AWS
   - EBS

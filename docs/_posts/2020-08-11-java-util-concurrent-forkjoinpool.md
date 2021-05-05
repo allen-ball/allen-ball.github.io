@@ -1,6 +1,6 @@
 ---
 title: java.util.concurrent.ForkJoinPool Example
-canonical_url: https://blog.hcf.dev/article/2020-08-11-java-util-concurrent-forkjoinpool/
+canonical_url: https://blog.hcf.dev/article/2020-08-11-java-util-concurrent-forkjoinpool
 tags:
  - Java
  - Concurrency

@@ -2,7 +2,7 @@
 title: >-
     Spring Boot Part 7: Spring Security, Basic Authentication
     and Form Login, and Oauth2
-canonical_url: https://blog.hcf.dev/article/2020-10-31-spring-boot-part-07/
+canonical_url: https://blog.hcf.dev/article/2020-10-31-spring-boot-part-07
 tags:
  - Java
  - Spring Boot
@@ -451,7 +451,7 @@ public class RestControllerImpl {
 ### Runtime Environment
 
 The POM (`pom.xml`) has a similar `spring-boot:run` profile to that
-described in [part 1](/article/2019-11-16-spring-boot-part-01/) of this
+described in [part 1](/article/2019-11-16-spring-boot-part-01) of this
 series.  The relevant parts of the
 [`application.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-07/application.properties)
 file are shown below.
@@ -510,9 +510,9 @@ spring.datasource.password:
 ```
 
 The `mysql` profile requires the embedded MySQL server described in
-[Spring Embedded MySQL Server](/article/2019-10-19-spring-embedded-mysqld/)
+[Spring Embedded MySQL Server](/article/2019-10-19-spring-embedded-mysqld)
 and packaged in the starter described in
-[part 6](/article/2020-07-19-spring-boot-part-06/)
+[part 6](/article/2020-07-19-spring-boot-part-06)
 of this series.
 
 ```xml
@@ -1466,7 +1466,7 @@ With a successful (Google) login:
 <b id="endnote1">[1]</b>
 Implementing a [`PasswordEncoder`][PasswordEncoder] is discussed in detail
 in
-[Spring PasswordEncoder Implementation](/article/2019-06-03-spring-passwordencoder-implementation/).
+[Spring PasswordEncoder Implementation](/article/2019-06-03-spring-passwordencoder-implementation).
 [↩](#ref1)
 
 <b id="endnote2">[2]</b>

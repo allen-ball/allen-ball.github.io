@@ -1,7 +1,7 @@
 ---
 title: >-
     Spring Boot Part 5: voyeur, A Non-Trivial Application
-canonical_url: https://blog.hcf.dev/article/2020-06-26-spring-boot-part-05/
+canonical_url: https://blog.hcf.dev/article/2020-06-26-spring-boot-part-05
 tags:
  - Java
  - Spring
@@ -22,10 +22,10 @@ javadoc:
     https://blog.hcf.dev/javadoc/ball-api/20200622.0
 ---
 
-[This](/article/2019-11-16-spring-boot-part-01/)
-[series](/article/2019-11-17-spring-boot-part-02/)
-[of](/article/2019-12-15-spring-boot-part-03/)
-[articles](/article/2020-01-01-spring-boot-part-04/) examines [Spring Boot]
+[This](/article/2019-11-16-spring-boot-part-01)
+[series](/article/2019-11-17-spring-boot-part-02)
+[of](/article/2019-12-15-spring-boot-part-03)
+[articles](/article/2020-01-01-spring-boot-part-04) examines [Spring Boot]
 features.  This fifth article in the series presents a non-trivial
 application which probes local hosts (with the help of the [`nmap`][nmap]
 command) to assist in developing [UPNP] and [SSDP] applications.

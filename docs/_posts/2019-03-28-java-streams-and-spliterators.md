@@ -1,6 +1,6 @@
 ---
 title: Java Streams and Spliterators
-canonical_url: https://blog.hcf.dev/article/2019-03-28-java-streams-and-spliterators/
+canonical_url: https://blog.hcf.dev/article/2019-03-28-java-streams-and-spliterators
 tags:
  - Java
  - Stream
@@ -300,7 +300,7 @@ for callers to dynamically short-circuit all or part of the iteration.  The
 
 If a [`Predicate`][Predicate] is supplied and the current combination does
 not satisfy the `Predicate`, that *path* is pruned immediately.
-A [future blog post](/article/2019-10-29-java-enums-as-predicates/) will
+A [future blog post](/article/2019-10-29-java-enums-as-predicates) will
 discuss using this feature to quickly evaluate Poker hands.
 
 

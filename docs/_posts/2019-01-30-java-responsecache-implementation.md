@@ -1,6 +1,6 @@
 ---
 title: A java.net.ResponseCache Implementation
-canonical_url: https://blog.hcf.dev/article/2019-01-30-java-responsecache-implementation/
+canonical_url: https://blog.hcf.dev/article/2019-01-30-java-responsecache-implementation
 tags:
  - Java
 permalink: article/2019-01-30-java-responsecache-implementation

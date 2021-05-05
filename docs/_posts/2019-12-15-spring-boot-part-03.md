@@ -1,7 +1,7 @@
 ---
 title: >-
     Spring Boot Part 3: Dependency Injection and @RestController
-canonical_url: https://blog.hcf.dev/article/2019-12-15-spring-boot-part-03/
+canonical_url: https://blog.hcf.dev/article/2019-12-15-spring-boot-part-03
 tags:
  - Java
  - Spring
@@ -39,8 +39,8 @@ arguably most common) features of Spring's dependency injection.
 
 The Spring Boot process starts in the `Launcher::main` method (unchanged
 from the implementation described in parts
-[1](/article/2019-11-16-spring-boot-part-01/) and
-[2](/article/2019-11-17-spring-boot-part-02/) of this series) with the
+[1](/article/2019-11-16-spring-boot-part-01) and
+[2](/article/2019-11-17-spring-boot-part-02) of this series) with the
 [construction][SpringBootApplication.init] of a
 [`SpringApplication`][SpringApplication] and invocation of its
 [`run`][SpringApplication.run] method.  Annotating the class with
@@ -96,7 +96,7 @@ on handwaving but should be enough to get started.
 The
 [sample code](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-03)
 for this article does not require [`@Value`][Value] injection but a previous
-[article](/article/2019-10-19-spring-embedded-mysqld/) provides examples in
+[article](/article/2019-10-19-spring-embedded-mysqld) provides examples in
 its `MysqldConfiguration` implementation:
 
 ``` java
@@ -261,7 +261,7 @@ And the implementation of `/dictionary/keySet` follows the same pattern.
 The [Maven](http://maven.apache.org/) project
 [POM](http://maven.apache.org/guides/introduction/introduction-to-the-pom.html)
 provides a `spring-boot:run` profile described in the first
-[article](/article/2019-11-16-spring-boot-part-01/) of this series and the
+[article](/article/2019-11-16-spring-boot-part-01) of this series and the
 server may be started with `mvn -B -Pspring-boot:run`.  When started with
 this profile, the [Spring Boot Actuator] is available.  The
 [`@RestController`][RestController] handler mappings may be verified with
@@ -388,7 +388,7 @@ how "[`@Value`s][Value]" may be calculated and injected and
 "[`@Bean`s][Bean]" may be created and "[`@Autowired`][Autowired]" in a
 [`@RestController`][RestController] implementation.
 
-[Part 4](/article/2020-01-01-spring-boot-part-04/) of this
+[Part 4](/article/2020-01-01-spring-boot-part-04) of this
 series discusses Spring MVC and implements a simple internationalized clock
 application as an example.
 

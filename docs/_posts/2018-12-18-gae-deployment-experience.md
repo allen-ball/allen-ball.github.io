@@ -1,6 +1,6 @@
 ---
 title: Google Cloud Platform App Engine Deployment Experience
-canonical_url: https://blog.hcf.dev/article/2018-12-18-gae-deployment-experience/
+canonical_url: https://blog.hcf.dev/article/2018-12-18-gae-deployment-experience
 tags:
   - Java
   - Spring

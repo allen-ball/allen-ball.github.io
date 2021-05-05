@@ -1,6 +1,6 @@
 ---
 title: Ghost Theme and Site Development
-canonical_url: https://blog.hcf.dev/article/2018-08-06-ghost-blog/
+canonical_url: https://blog.hcf.dev/article/2018-08-06-ghost-blog
 tags:
  - Ghost
  - blog

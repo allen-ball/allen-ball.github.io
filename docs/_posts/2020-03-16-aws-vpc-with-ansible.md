@@ -1,6 +1,6 @@
 ---
 title: AWS VPC Set-Up with Ansible
-canonical_url: https://blog.hcf.dev/article/2020-03-16-aws-vpc-with-ansible/
+canonical_url: https://blog.hcf.dev/article/2020-03-16-aws-vpc-with-ansible
 tags:
   - AWS
   - EC2

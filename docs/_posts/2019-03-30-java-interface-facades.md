@@ -1,6 +1,6 @@
 ---
 title: Java Interface Facades
-canonical_url: https://blog.hcf.dev/article/2019-03-30-java-interface-facades/
+canonical_url: https://blog.hcf.dev/article/2019-03-30-java-interface-facades
 tags:
  - Java
  - XML
@@ -443,4 +443,4 @@ Default Methods"]).
 [XMLServices.document]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/XMLServices.html#document--
 [XMLServices]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/XMLServices.html
 
-["Adding Support to Java InvocationHandler Implementations for Interface Default Methods"]: /article/2019-01-31-java-invocationhandler-interface-default-methods/
+["Adding Support to Java InvocationHandler Implementations for Interface Default Methods"]: /article/2019-01-31-java-invocationhandler-interface-default-methods

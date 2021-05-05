@@ -1,6 +1,6 @@
 ---
 title: CentOS In-Place Upgrade
-canonical_url: https://blog.hcf.dev/article/2020-03-15-centos-in-place-upgrade/
+canonical_url: https://blog.hcf.dev/article/2020-03-15-centos-in-place-upgrade
 tags:
   - CentOS
   - Ansible

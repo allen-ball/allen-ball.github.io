@@ -2,7 +2,7 @@
 title: >-
     Adding Support to Java InvocationHandler Implementations for
     Interface Default Methods
-canonical_url: https://blog.hcf.dev/article/2019-01-31-java-invocationhandler-interface-default-methods/
+canonical_url: https://blog.hcf.dev/article/2019-01-31-java-invocationhandler-interface-default-methods
 tags:
  - Java
 permalink: article/2019-01-31-java-invocationhandler-interface-default-methods
