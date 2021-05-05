@@ -132,7 +132,7 @@ is tried until there are no more `Spliterator`s to be supplied.
 ```
 
 Subclass implementors must supply an implementation of
-[`Iterator<Supplier<Spliterator<T>>> spliterators()`]({{ site.blog_javadoc_url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#spliterators--).
+[`Iterator<Supplier<Spliterator<T>>> spliterators()`][DispatchSpliterator.spliterators].
 In the [`Combinations`][Combinations] implementation, the key
 [`Spliterator`][Spliterator], [`ForPrefix`][ForPrefix], iterates over every
 (sorted) prefix and either supplies more `ForPrefix` `Spliterator`s or a
@@ -325,6 +325,7 @@ Obtained by calling the implementatioon of
 [javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/overview-summary.html
 [Combinations]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/stream/Combinations.html
 [DispatchSpliterator]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html
+[DispatchSpliterator.spliterators]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#spliterators--
 [ForSize]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177
 [Permutations]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/stream/Permutations.html
 [Start]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144
