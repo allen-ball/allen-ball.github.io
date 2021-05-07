@@ -155,7 +155,7 @@ nbextension-enable-%:
 	$(JUPYTER) nbextension enable --py $* --sys-prefix
 ```
 
-![](/assets/{{ page.permalink }}/screen-shot-1.png)
+![](/assets/{{ page.permalink }}/screenshot-1.png)
 
 ## Emacs
 
