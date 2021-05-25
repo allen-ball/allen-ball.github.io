@@ -14,15 +14,15 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.4.5/api
+    https://docs.spring.io/spring-boot/docs/2.5.0/api
   spring-data: >-
     https://docs.spring.io/spring-data/jpa/docs/2.4.5/api
   spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring-framework/docs/5.3.7/javadoc-api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.4.6/api
+    https://docs.spring.io/spring-security/site/docs/5.5.0/api
 excerpt_separator: <!--more-->
 ---
 
@@ -454,17 +454,18 @@ The POM (`pom.xml`) has a similar `spring-boot:run` profile to that
 described in [part 1](/article/2019-11-16-spring-boot-part-01) of this
 series.  The relevant parts of the
 [`application.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-07/application.properties)
-file are shown below.
+file are shown below.<sup id="ref2">[2](#endnote2)</sup>
 
 <figcaption style="text-align: center">application.properties</figcaption>
 ```properties
+spring.jpa.defer-datasource-initialization: true
 spring.jpa.format-sql: true
 spring.jpa.hibernate.ddl-auto: create
 spring.jpa.open-in-view: true
 spring.jpa.show-sql: false
 
-spring.datasource.initialization-mode: always
-spring.datasource.data: file:data.sql
+spring.sql.init.enabled: true
+spring.sql.init.data-locations: file:data.sql
 ...
 ```
 
@@ -523,7 +524,7 @@ of this series.
         <dependency>
           <groupId>ball</groupId>
           <artifactId>ball-spring-mysqld-starter</artifactId>
-          <version>2.1.0</version>
+          <version>2.1.2.20210415</version>
         </dependency>
       </dependencies>
       <build>
@@ -781,7 +782,7 @@ When selecting "User->Who Am I?" the application shows something similar to:
 ![](/assets/{{ page.permalink }}/application-05-who-am-i.png)
 
 The application [Thymeleaf] template contains to display the method
-parameter [`Principal`][Principal]:<sup id="ref2">[2](#endnote2)</sup>
+parameter [`Principal`][Principal]:<sup id="ref3">[3](#endnote3)</sup>
 
 ```xml
       <section th:case="'/who-am-i'">
@@ -877,7 +878,7 @@ public class RestControllerImpl {
 ```
 
 Invoking without authentication returns
-`HTTP/1.1 403`.<sup id="ref3">[3](#endnote3)</sup>
+`HTTP/1.1 403`.<sup id="ref4">[4](#endnote4)</sup>
 
 ```command-line
 $ curl -is http://localhost:8080/api/who-am-i
@@ -954,7 +955,7 @@ public class RestControllerImpl {
 
 Invoking with an authenticated client *without* "ADMINISTRATOR" authority
 granted returns `HTTP/1.1 403`
-(as expected).<sup id="ref4">[4](#endnote4)</sup>
+(as expected).<sup id="ref5">[5](#endnote5)</sup>
 
 ```command-line
 $ curl -is --basic -u user@example.com:123456 http://localhost:8080/api/who
@@ -1065,7 +1066,7 @@ OAuth 2.0 client and support for Javascript Object Signing and Encryption
     <dependency>
       <groupId>com.okta.spring</groupId>
       <artifactId>okta-spring-boot-starter</artifactId>
-      <version>1.4.0</version>
+      <version>2.0.1</version>
     </dependency>
     ...
     <dependency>
@@ -1113,7 +1114,7 @@ public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAda
 
 Finally, the OAuth client prperties must be configured in the
 profile-specific application properties YAML 
-file:<sup id="ref5">[5](#endnote5)</sup>
+file:<sup id="ref6">[6](#endnote6)</sup>
 
 <a name="application-oauth.yml"></a>
 <figcaption style="text-align: center">application-oauth.yml</figcaption>
@@ -1470,27 +1471,34 @@ in
 [↩](#ref1)
 
 <b id="endnote2">[2]</b>
+This article has been updated for Spring Boot 2.5.x.
+`spring.jpa.defer-datasource-initialization` has been added and
+`spring.datasource.initialization-mode` and `spring.datasource.data` were
+used instead of the `spring.sql.init.*` properties.
+[↩](#ref2)
+
+<b id="endnote3">[3]</b>
 It's important to note that the equivalent value for
 [`Principal`][Principal] is available in the security dialect as
 `${#authentication}` which references an implementation of
 [`Authentication`][Authentication].  The use of `${#authentication}` will be
 explored further in the OAuth discussion in the next chapter.
-[↩](#ref2)
-
-<b id="endnote3">[3]</b>
-Recall the discussion of setting [`HttpSecurity`][HttpSecurity] [basic
-authentication entry point](#authenticationEntryPoint).
 [↩](#ref3)
 
 <b id="endnote4">[4]</b>
-Recall the discussion `RestControllerImpl`'s
-[`@ExceptionHandler` method](#ExceptionHandler).
+Recall the discussion of setting [`HttpSecurity`][HttpSecurity] [basic
+authentication entry point](#authenticationEntryPoint).
 [↩](#ref4)
 
 <b id="endnote5">[5]</b>
+Recall the discussion `RestControllerImpl`'s
+[`@ExceptionHandler` method](#ExceptionHandler).
+[↩](#ref5)
+
+<b id="endnote6">[6]</b>
 YAML is not required but YAML lends itself to expressing the
 configuration compactly.
-[↩](#ref5)
+[↩](#ref6)
 
 
 [Enum]: {{ page.javadoc.javase }}/java/lang/Enum.html
@@ -1501,8 +1509,8 @@ configuration compactly.
 [Converter]: https://docs.oracle.com/javaee/7/api/javax/persistence/Converter.html
 [Entity]: https://docs.oracle.com/javaee/7/api/javax/persistence/Entity.html
 
-[Spring Boot]: https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/index.html
-[Spring Security]: https://docs.spring.io/spring-security/site/docs/5.4.6/reference/html5/
+[Spring Boot]: https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/index.html
+[Spring Security]: https://docs.spring.io/spring-security/site/docs/5.5.0/reference/html5/
 
 [Thymeleaf]: https://www.thymeleaf.org/
 [Spring Security Integration Modules]: https://github.com/thymeleaf/thymeleaf-extras-springsecurity

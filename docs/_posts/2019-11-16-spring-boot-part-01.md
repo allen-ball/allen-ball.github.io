@@ -10,13 +10,13 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.4.5/api
+    https://docs.spring.io/spring-boot/docs/2.5.0/api
   spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring-framework/docs/5.3.7/javadoc-api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.4.6/api
+    https://docs.spring.io/spring-security/site/docs/5.5.0/api
 ---
 
 This series of articles will examine [Spring Boot] features.  This first
@@ -106,7 +106,7 @@ output:
 
 which indicates Tomcat has been started listening on port 8080.  (Note the
 ASCII-art banner and color in the log lines.)  However, browsing to
-[http://localhost:8080/](http://localhost:8080/) shows:
+<http://localhost:8080/> shows:
 
 ![](/assets/{{ page.permalink }}/whitelabel-error-page.png)
 
@@ -119,7 +119,7 @@ This is to be expected!  This project has not yet defined any content
 The `org.springframework.boot:spring-boot-devtools` artifact may be added to
 the classpath to provide developer tools.  There are a number of features
 documented at
-[docs.spring.io](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/using-spring-boot.html#using-boot-devtools)
+[docs.spring.io](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/using-spring-boot.html#using-boot-devtools)
 including automatic restart and live reload but this article will examine
 features for setting application properties in a development environment.
 
@@ -162,8 +162,8 @@ running test.
 2. Sets the Maven default goal(s) to "`clean`" and "`spring-boot:run`".
 
 The
-[Spring Boot Reference Documentation](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/index.html)
-[Externalized Configuration](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/spring-boot-features.html#boot-features-external-config)
+[Spring Boot Reference Documentation](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/index.html)
+[Externalized Configuration](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/spring-boot-features.html#boot-features-external-config)
 section discusses in detail how, where, and when property values may be
 overridden.  Notably
 `${user.home}/.config/spring-boot/spring-boot-devtools.properties`
@@ -194,7 +194,7 @@ output.
 ## Spring Boot Actuator
 
 The
-[Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/production-ready-features.html#production-ready)
+[Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/production-ready-features.html#production-ready)
 provides monitoring and management features.  All that is required to enable
 it is to include its "starter" as a dependency which has been added to the
 `spring-boot:run` `<profile/>`:
@@ -240,7 +240,7 @@ Executing `mvn -B -Pspring-boot:run` gives the following log output:
 ![](/assets/{{ page.permalink }}/spring-boot-run+actuator.png)
 
 Which indicates Tomcat is listening on ports 8080 and 8081.
-`http://localhost:8081/actuator` returns the following JSON which lists the
+<http://localhost:8081/actuator> returns the following JSON which lists the
 available endpoints:
 
 ``` json
@@ -330,7 +330,7 @@ available endpoints:
 }
 ```
 
-For example, `http://localhost:8081/actuator/metrics` returns:
+For example, <http://localhost:8081/actuator/metrics> returns:
 
 ``` json
 {
@@ -371,7 +371,7 @@ For example, `http://localhost:8081/actuator/metrics` returns:
 ```
 
 And "process start time" can be retrieved through
-`http://localhost:8081/actuator/metrics/process.start.time` which returns
+<http://localhost:8081/actuator/metrics/process.start.time> which returns
 something like:
 
 ``` json

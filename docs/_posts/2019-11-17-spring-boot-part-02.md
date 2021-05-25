@@ -10,13 +10,13 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.4.5/api
+    https://docs.spring.io/spring-boot/docs/2.5.0/api
   spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring-framework/docs/5.3.7/javadoc-api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.4.6/api
+    https://docs.spring.io/spring-security/site/docs/5.5.0/api
 ---
 
 This series of articles will examine
@@ -51,8 +51,8 @@ This is demonstrated by creating
 ```
 
 Starting the application as described in
-[part 1](/article/2019-11-16-spring-boot-part-01) and
-browsing `http://localhost:8080/` produces something similar to:
+[part 1](/article/2019-11-16-spring-boot-part-01) and browsing
+<http://localhost:8080/> produces something similar to:
 
 ![](/assets/{{ page.permalink }}/hello-world.png)
 
@@ -90,7 +90,7 @@ The POM has been so modified to provide
     <dependency>
       <groupId>org.webjars.npm</groupId>
       <artifactId>bulma</artifactId>
-      <version>0.8.0</version>
+      <version>0.9.2</version>
     </dependency>
     ...
   </dependencies>
@@ -109,7 +109,7 @@ After adding the corresponding stylesheet link to
   ...
 ```
 
-And browsing `http://localhost:8080/` shows the integration of the Bulma
+And browsing <http://localhost:8080/> shows the integration of the Bulma
 styles.
 
 ![](/assets/{{ page.permalink }}/hello-world-bulma.png)
@@ -117,8 +117,8 @@ styles.
 One additional feature is the developer does not need to be concerned with
 the frontend versions when linking into HTML.  The
 `org.webjars:webjars-locator-core` serves `bulma.css` at both
-`http://localhost:8080/webjars/bulma/0.8.0/css/bulma.css` and
-`http://localhost:8080/webjars/bulma/css/bulma.css`.
+<http://localhost:8080/webjars/bulma/0.9.2/css/bulma.css> and
+<http://localhost:8080/webjars/bulma/css/bulma.css>.
 
 Note: Again, no additional Java code is required to serve static resources.
 

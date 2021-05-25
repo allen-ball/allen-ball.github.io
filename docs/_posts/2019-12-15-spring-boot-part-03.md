@@ -10,13 +10,13 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.4.5/api
+    https://docs.spring.io/spring-boot/docs/2.5.0/api
   spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring-framework/docs/5.3.7/javadoc-api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.4.6/api
+    https://docs.spring.io/spring-security/site/docs/5.5.0/api
 ---
 
 This series of articles will examine [Spring Boot] features.  This third
@@ -79,7 +79,7 @@ For each class annotated with [`@Component`][Component], Spring:
 1. Instantiates a single instance,
 
 2. For each instance field annotated with [`@Value`][Value], evaluate the
-[SpEL](https://docs.spring.io/spring/docs/5.3.6/spring-framework-reference/core.html#expressions-beandef)
+[SpEL](https://docs.spring.io/spring-framework/docs/5.3.x/reference/html/core.html#expressions-beandef)
 expression<sup id="ref1">[1](#endnote1)</sup> and initialize the field with
 the result,
 
@@ -155,16 +155,16 @@ The next section describes the implementation of the
 
 ## @RestController Implementation
 
-The `@RestController` implemented here-in provides the following web API:
+The [`@RestController`][RestController] implemented here-in provides the following web API:
 
 | Method                                   | URI                                         | Query Parameters | Returns                                                    |
-| ---                                      | ---                                         | ---              | ---                                                        |
-| `GET`                                    | `http://localhost:8080/dictionary/get`      | *key*            | The value associated with *key* (may be `null`)            |
-| `GET`<sup id="ref2">[2](#endnote2)</sup> | `http://localhost:8080/dictionary/put`      | *key*=*value*    | The previous value associated with *key* (may be `null`)   |
-| `GET`                                    | `http://localhost:8080/dictionary/remove`   | *key*            | The value previously associated with *key* (may be `null`) |
-| `GET`                                    | `http://localhost:8080/dictionary/size`     | NONE             | int                                                        |
-| `GET`                                    | `http://localhost:8080/dictionary/entrySet` | NONE             | Array of key-value pairs                                   |
-| `GET`                                    | `http://localhost:8080/dictionary/keySet`   | NONE             | Array of key values                                        |
+|------------------------------------------|---------------------------------------------|------------------|------------------------------------------------------------|
+| `GET`                                    | <http://localhost:8080/dictionary/get>      | *key*            | The value associated with *key* (may be `null`)            |
+| `GET`<sup id="ref2">[2](#endnote2)</sup> | <http://localhost:8080/dictionary/put>      | *key*=*value*    | The previous value associated with *key* (may be `null`)   |
+| `GET`                                    | <http://localhost:8080/dictionary/remove>   | *key*            | The value previously associated with *key* (may be `null`) |
+| `GET`                                    | <http://localhost:8080/dictionary/size>     | NONE             | int                                                        |
+| `GET`                                    | <http://localhost:8080/dictionary/entrySet> | NONE             | Array of key-value pairs                                   |
+| `GET`                                    | <http://localhost:8080/dictionary/keySet>   | NONE             | Array of key values                                        |
 
 [`DictionaryRestController`][DictionaryRestController] is annotated with
 [`@RestController`][RestController] and [`@RequestMapping`][RequestMapping]
@@ -422,7 +422,7 @@ reasonably use `POST` or `PUT` methods for their semantic value.
 [Value]: {{ page.javadoc.spring-framework }}/org/springframework/beans/factory/annotation/Value.html
 
 [Spring Boot]: https://spring.io/projects/spring-boot
-[Spring Boot Actuator]: https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/production-ready-features.html#production-ready
+[Spring Boot Actuator]: https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/production-ready-features.html#production-ready
 [SpringApplication.run]: {{ page.javadoc.spring-boot }}/org/springframework/boot/SpringApplication.html#run-java.lang.String...-
 [SpringApplication]: {{ page.javadoc.spring-boot }}/org/springframework/boot/SpringApplication.html
 [SpringBootApplication]: {{ page.javadoc.spring-boot }}/org/springframework/boot/autoconfigure/SpringBootApplication.html
