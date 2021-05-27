@@ -13,7 +13,7 @@ January 15, 2020.  This article describes how a [CentOS 7] may be upgraded
 in place.
 <!--more-->
 The steps are captured in an [Ansible] role published on
-[GitHub](https://github.com/allen-ball/ball-ansible/blob/master/roles/centos/tasks/main.yml).
+[GitHub](https://github.com/allen-ball/ball-ansible/blob/trunk/roles/centos/tasks/main.yml).
 
 
 ## Theory of Operation

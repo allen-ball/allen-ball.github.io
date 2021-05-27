@@ -54,7 +54,7 @@ integrating OAuth authentication.
 Source code for the
 [series](https://github.com/allen-ball/spring-boot-web-server)
 and for this
-[part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-07)
+[part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-07)
 are available on [Github](https://github.com/allen-ball).
 
 
@@ -453,7 +453,7 @@ public class RestControllerImpl {
 The POM (`pom.xml`) has a similar `spring-boot:run` profile to that
 described in [part 1](/article/2019-11-16-spring-boot-part-01) of this
 series.  The relevant parts of the
-[`application.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-07/application.properties)
+[`application.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-07/application.properties)
 file are shown below.<sup id="ref2">[2](#endnote2)</sup>
 
 <figcaption style="text-align: center">application.properties</figcaption>
@@ -552,7 +552,7 @@ Depending on the desired database selection, run either
 `mvn -Pspring-boot:run,hsqldb` or `mvn -Pspring-boot:run,mysql` to start the
 application server.
 
-[`data.sql`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-07/data.sql)
+[`data.sql`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-07/data.sql)
 defines two users: `user@example.com` who is granted "USER" authority and
 `admin@example.com` who is granted "USER" and "ADMINISTRATOR" authorities.
 

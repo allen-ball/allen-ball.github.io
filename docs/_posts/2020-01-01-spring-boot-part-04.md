@@ -30,7 +30,7 @@ application will allow the user to select [`Locale`][Locale] and
 Complete source code for the
 [series](https://github.com/allen-ball/spring-boot-web-server)
 and for this
-[part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-04)
+[part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-04)
 are available on [Github](https://github.com/allen-ball).
 
 
@@ -60,7 +60,7 @@ For this project, [Bootstrap] is used as the CSS
 Framework.<sup id="ref1">[1](#endnote1)</sup>
 
 The required dependencies are included in the
-[`pom.xml`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-04/pom.xml):
+[`pom.xml`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/pom.xml):
 
 ``` xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -108,7 +108,7 @@ The following subsections describe the *View*, *Controller*, and `Model`.
 The *Controller* will serve requests at `/clock/time` and the Thymeleaf
 `ViewResolver` (with the default configuration) will look for the
 corresponding template at
-[`classpath:/templates/clock/time.html`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-04/src/main/resources/templates/clock/time.html)
+[`classpath:/templates/clock/time.html`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/src/main/resources/templates/clock/time.html)
 (note the `/templates/` superdirectory and the `.html` suffix).  The
 template with the `<main/>` element is shown below.  The XML Namespace "th"
 is defined for Thymeleaf and a number of "`th:*`" attributes are used.  For
@@ -167,7 +167,7 @@ the Thymeleaf expressions evaluated.
 Spring provides a message catalog facility which allows `<p
 class="browserupgrade" th:utext="#{browserupgrade}"/>` to be evaluated from
 the
-[`message.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-04/src/main/resources/messages.properties).
+[`message.properties`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/src/main/resources/messages.properties).
 The [Tutorial: Thymeleaf + Spring] provides a reference for these and other
 features.  [Tutorial: Using Thymeleaf] provides the reference for standard
 expression syntax, the available "`th:*`" attributes and elements, and
@@ -196,7 +196,7 @@ that the *View* requires the `Model` provide the `time`, `date`, and
 
 The *Controller* is implemented by a class annotated with
 [`@Controller`][Controller],
-[`ClockController`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-04/src/main/java/application/ClockController.java).
+[`ClockController`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/src/main/java/application/ClockController.java).
 The implementation of the `GET` `/clock/time` is outlined below:
 
 ``` java
@@ -450,7 +450,7 @@ To avoid specifying the `@SessionAttribute` `name` attribute, the Java code
 must be compiled with the `javac` `-parameters` option so the method
 parameter names are available through reflection.  Please see the
 configuration of the `maven-compiler-plugin` plug-in in the
-[`pom.xml`](https://github.com/allen-ball/spring-boot-web-server/blob/master/part-04/pom.xml).
+[`pom.xml`](https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/pom.xml).
 [↩](#ref4)
 
 

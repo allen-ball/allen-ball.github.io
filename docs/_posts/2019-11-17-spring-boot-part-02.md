@@ -29,7 +29,7 @@ WebJars.
 Complete source code for the
 [series](https://github.com/allen-ball/spring-boot-web-server)
 and for this
-[part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-02)
+[part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-02)
 are available on [Github](https://github.com/allen-ball).
 
 

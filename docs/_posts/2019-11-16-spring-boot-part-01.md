@@ -30,7 +30,7 @@ specific Spring Boot features.
 Complete source code for the
 [series](https://github.com/allen-ball/spring-boot-web-server)
 and for this
-[part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-01)
+[part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-01)
 are available on [Github](https://github.com/allen-ball).
 
 
@@ -92,12 +92,12 @@ The last is not strictly required but it saves on writing the Java
 
 A static, annotated `main` function must be provided:
 
-<pre data-src="https://raw.githubusercontent.com/allen-ball/spring-boot-web-server/master/part-01/src/main/java/application/Launcher.java"></pre>
+<pre data-src="https://raw.githubusercontent.com/allen-ball/spring-boot-web-server/trunk/part-01/src/main/java/application/Launcher.java"></pre>
 
 And an empty
 `${project.basedir}/src/main/resources/application.properties`:
 
-<pre data-src="https://raw.githubusercontent.com/allen-ball/spring-boot-web-server/master/part-01/src/main/resources/application.properties"></pre>
+<pre data-src="https://raw.githubusercontent.com/allen-ball/spring-boot-web-server/trunk/part-01/src/main/resources/application.properties"></pre>
 
 Executing `mvn -B spring-boot:run` in the project directory gives the log
 output:

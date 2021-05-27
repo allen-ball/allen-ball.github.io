@@ -28,7 +28,7 @@ shared property server where clients may put and get property values.
 Complete source code for the
 [series](https://github.com/allen-ball/spring-boot-web-server)
 and for this
-[part](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-03)
+[part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-03)
 are available on [Github](https://github.com/allen-ball).
 
 
@@ -94,7 +94,7 @@ Again, the above is a gross oversimplification, not exhaustive, and relies
 on handwaving but should be enough to get started.
 
 The
-[sample code](https://github.com/allen-ball/spring-boot-web-server/tree/master/part-03)
+[sample code](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-03)
 for this article does not require [`@Value`][Value] injection but a previous
 [article](/article/2019-10-19-spring-embedded-mysqld) provides examples in
 its `MysqldConfiguration` implementation:
@@ -428,6 +428,6 @@ reasonably use `POST` or `PUT` methods for their semantic value.
 [SpringBootApplication]: {{ page.javadoc.spring-boot }}/org/springframework/boot/autoconfigure/SpringBootApplication.html
 [SpringBootApplication.init]: {{ page.javadoc.spring-boot }}/org/springframework/boot/SpringApplication.html#SpringApplication-java.lang.Class...-
 
-[application.Launcher]: https://github.com/allen-ball/spring-boot-web-server/blob/master/part-03/src/main/java/application/Launcher.java
-[DictionaryConfiguration]: https://github.com/allen-ball/spring-boot-web-server/blob/master/part-03/src/main/java/application/DictionaryConfiguration.java
-[DictionaryRestController]: https://github.com/allen-ball/spring-boot-web-server/blob/master/part-03/src/main/java/application/DictionaryRestController.java
+[application.Launcher]: https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-03/src/main/java/application/Launcher.java
+[DictionaryConfiguration]: https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-03/src/main/java/application/DictionaryConfiguration.java
+[DictionaryRestController]: https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-03/src/main/java/application/DictionaryRestController.java

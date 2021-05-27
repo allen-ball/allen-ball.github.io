@@ -226,7 +226,7 @@ public class Nmap extends InetAddressMap<Document> ... {
 
 [Spring Boot]'s [`ThreadPoolTaskExecutor`][ThreadPoolTaskExecutor] is
 injected.  To guarantee more than one thread is allocated the
-[`application.properties`](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/application.properties)
+[`application.properties`](https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/application.properties)
 contains the following property:
 
 ```properties
@@ -348,7 +348,7 @@ implements
 [`getViewName()`]({{ page.javadoc.ball-api }}/ball/spring/AbstractController.html#getViewName--)
 which creates a view name based on the implementing class's package which
 translates to
-[classpath:/templates/voyeur.html](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.html),
+[classpath:/templates/voyeur.html](https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.html),
 a [Thymeleaf] template to generate a pure HTML5 document.  Its outline is
 shown below.
 
@@ -499,7 +499,7 @@ The [`UIController`][voyeur.UIController] instance combined with the
 [Thymeleaf] template described so far will only generate pure HTML5 with no
 style markup.  This implementation uses Thymeleaf's [Decoupled Template
 Logic] feature and can be found at
-[classpath:/templates/voyeur.th.xml](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.th.xml).<sup id="ref3">[3](#endnote3)</sup>
+[classpath:/templates/voyeur.th.xml](https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.th.xml).<sup id="ref3">[3](#endnote3)</sup>
 The decoupled logic for the table described
 in this section is shown below.
 
@@ -524,7 +524,7 @@ in this section is shown below.
 
 The [`UIController`][voyeur.UIController] superclass provides one more
 feature: To inject the proprties defined in
-[classpath:/templates/voyeur.model.properties](https://github.com/allen-ball/voyeur/blob/master/src/main/resources/templates/voyeur.model.properties)
+[classpath:/templates/voyeur.model.properties](https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.model.properties)
 into the [`Model`][Model].
 
 ```properties
@@ -543,7 +543,7 @@ logic and the model properties to use an alternate framework.  This goal was
 defeated in this implementation because different frameworks support to
 different degrees HTML5 elements.  A partial Bulma implementation is
 available in
-https://github.com/allen-ball/voyeur/tree/master/src/main/resources/templates-bulma
+https://github.com/allen-ball/voyeur/tree/trunk/src/main/resources/templates-bulma
 which demonstrates the HTML5 differences.
 
 The `/network/nmap` request is shown rendered in the image in the
@@ -584,7 +584,7 @@ public class Nmap ... {
 The [`spring-boot-maven-plugin`][spring-boot-maven-plugin] has a `repackage`
 goal which may be used to create a self-contained JAR with an embedded
 launch script.  That goal is used in the project
-[`pom`](https://github.com/allen-ball/voyeur/blob/master/pom.xml) to create
+[`pom`](https://github.com/allen-ball/voyeur/blob/trunk/pom.xml) to create
 and attach a self-contained JAR atifact.
 
 ```xml

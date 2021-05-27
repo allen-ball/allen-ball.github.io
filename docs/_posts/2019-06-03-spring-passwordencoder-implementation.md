@@ -33,7 +33,7 @@ Complete [javadoc] is provided.
 ## Reference
 
 The actual encryption algorithm is captured in the Dovecot source file
-[`password-scheme-md5crypt.c`](https://github.com/dovecot/core/blob/master/src/auth/password-scheme-md5crypt.c).
+[`password-scheme-md5crypt.c`](https://github.com/dovecot/core/blob/trunk/src/auth/password-scheme-md5crypt.c).
 
 
 ## Implementation

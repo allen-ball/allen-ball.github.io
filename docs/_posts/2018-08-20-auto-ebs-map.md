@@ -550,6 +550,6 @@ distributions.
 [EBS]: https://aws.amazon.com/ebs/
 [EC2]: https://aws.amazon.com/ec2/
 
-[Source]: https://github.com/allen-ball/ball-ansible/tree/master/roles/auto.ebs
+[Source]: https://github.com/allen-ball/ball-ansible/tree/trunk/roles/auto.ebs
 
 [systemd]: https://en.wikipedia.org/wiki/Systemd

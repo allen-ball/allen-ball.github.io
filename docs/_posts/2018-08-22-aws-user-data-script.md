@@ -339,7 +339,7 @@ script is given below.
 [EC2]: https://aws.amazon.com/ec2/
 [AWS Management Console]: https://console.aws.amazon.com/organizations/home
 
-[Source]: https://github.com/allen-ball/ball-ansible/tree/master/roles/aws-user-data
+[Source]: https://github.com/allen-ball/ball-ansible/tree/trunk/roles/aws-user-data
 
 [automount/autofs Executable Map for Amazon EBS Volumes]: /article/2018-08-20-auto-ebs-map
 
