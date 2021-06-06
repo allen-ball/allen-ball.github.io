@@ -14,8 +14,6 @@ javadoc:
     https://docs.spring.io/spring/docs/5.3.6/javadoc-api
   spring-boot: >-
     https://docs.spring.io/spring-boot/docs/2.4.5/api
-  spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
   ball-api: >-
@@ -664,7 +662,6 @@ the injected `SpringResourceTemplateResolver`.
 [NetworkInterface]: {{ page.javadoc.javase }}/java/net/NetworkInterface.html?is-external=true
 [Process]: {{ page.javadoc.javase }}/java/lang/Process.html
 [Set]: {{ page.javadoc.javase }}/java/util/Set.html
-[ThreadPoolTaskExecutor]: {{ page.javadoc.spring-framework }}/org/springframework/scheduling/concurrent/ThreadPoolTaskExecutor.html
 [XPath]: {{ page.javadoc.javase }}/javax/xml/xpath/XPath.html
 [XPathExression]: {{ page.javadoc.javase }}/javax/xml/xpath/XPathExpression.html
 
@@ -675,8 +672,8 @@ the injected `SpringResourceTemplateResolver`.
 [spring-boot-maven-plugin]: https://docs.spring.io/spring-boot/docs/2.4.5/maven-plugin/reference/html/
 [common application properties]: https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/appendix-application-properties.html
 
-[Autowired]: {{ page.javadoc.spring-framework }}/org/springframework/beans/factory/annotation/Autowired.html
-[Controller]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Controller.html
+[Autowired]: {{ page.javadoc.spring }}/org/springframework/beans/factory/annotation/Autowired.html
+[Controller]: {{ page.javadoc.spring }}/org/springframework/stereotype/Controller.html
 [EventListener]: {{ page.javadoc.spring }}/org/springframework/context/event/EventListener.html?is-external=true
 [Model]: {{ page.javadoc.spring }}/org/springframework/ui/Model.html
 [RequestMapping]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RequestMapping.html
@@ -684,6 +681,7 @@ the injected `SpringResourceTemplateResolver`.
 [Scheduled]: {{ page.javadoc.spring }}/org/springframework/scheduling/annotation/Scheduled.html?is-external=true
 [Scheduled]: {{ page.javadoc.spring }}/org/springframework/scheduling/annotation/Scheduled.html?is-external=true
 [Service]: {{ page.javadoc.spring }}/org/springframework/stereotype/Service.html?is-external=true
+[ThreadPoolTaskExecutor]: {{ page.javadoc.spring }}/org/springframework/scheduling/concurrent/ThreadPoolTaskExecutor.html
 
 [ApplicationReadyEvent]: {{ page.javadoc.spring-boot }}/org/springframework/boot/context/event/ApplicationReadyEvent.html?is-external=true)
 

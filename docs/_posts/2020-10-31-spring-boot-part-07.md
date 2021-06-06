@@ -19,8 +19,6 @@ javadoc:
     https://docs.spring.io/spring-boot/docs/2.5.0/api
   spring-data: >-
     https://docs.spring.io/spring-data/jpa/docs/2.4.5/api
-  spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.7/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.5.0/api
 excerpt_separator: <!--more-->
@@ -1518,7 +1516,7 @@ configuration compactly.
 
 [Model]: {{ page.javadoc.spring }}/org/springframework/ui/Model.html
 
-[Controller]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Controller.html
+[Controller]: {{ page.javadoc.spring }}/org/springframework/stereotype/Controller.html
 
 [Authentication]: {{ page.javadoc.spring-security }}/index.html?org/springframework/security/core/Authentication.html
 [BCryptPasswordEncoder]: {{ page.javadoc.spring-security }}/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html

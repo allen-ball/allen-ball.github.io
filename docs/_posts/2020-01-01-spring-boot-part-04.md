@@ -15,8 +15,6 @@ javadoc:
     https://docs.spring.io/spring/docs/5.3.6/javadoc-api
   spring-boot: >-
     https://docs.spring.io/spring-boot/docs/2.4.5/api
-  spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
 ---
@@ -469,7 +467,7 @@ configuration of the `maven-compiler-plugin` plug-in in the
 [Spring MVC]: https://docs.spring.io/spring/docs/5.3.6/spring-framework-reference/web.html
 [Handler Methods]: https://docs.spring.io/spring-framework/docs/5.3.x/reference/html/web.html#mvc-ann-methods
 
-[Controller]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Controller.html
+[Controller]: {{ page.javadoc.spring }}/org/springframework/stereotype/Controller.html
 [RequestParam]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RequestParam.html
 [SessionAttribute]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/SessionAttribute.html
 

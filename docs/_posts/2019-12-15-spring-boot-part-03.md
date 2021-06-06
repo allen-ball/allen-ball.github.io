@@ -13,8 +13,6 @@ javadoc:
     https://docs.spring.io/spring/docs/5.3.7/javadoc-api
   spring-boot: >-
     https://docs.spring.io/spring-boot/docs/2.5.0/api
-  spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.7/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.5.0/api
 ---
@@ -409,17 +407,17 @@ reasonably use `POST` or `PUT` methods for their semantic value.
 [Set]: {{ page.javadoc.javase }}/java/util/Set.html
 [String]: {{ page.javadoc.javase }}/java/lang/String.html
 
-[Autowired]: {{ page.javadoc.spring-framework }}/org/springframework/beans/factory/annotation/Autowired.html
+[Autowired]: {{ page.javadoc.spring }}/org/springframework/beans/factory/annotation/Autowired.html
 [Bean]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Bean.html?is-external=true
 [ComponentScan]: {{ page.javadoc.spring }}/index.html?org/springframework/context/annotation/ComponentScan.html
-[Component]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Component.html
+[Component]: {{ page.javadoc.spring }}/org/springframework/stereotype/Component.html
 [Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html
-[Configuration]: {{ page.javadoc.spring-framework }}/org/springframework/context/annotation/Configuration.html
-[Controller]: {{ page.javadoc.spring-framework }}/org/springframework/stereotype/Controller.html
+[Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html
+[Controller]: {{ page.javadoc.spring }}/org/springframework/stereotype/Controller.html
 [EnableAutoConfiguration]: {{ page.javadoc.spring-boot }}/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html
 [RequestMapping]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RequestMapping.html
 [RestController]: {{ page.javadoc.spring }}/org/springframework/web/bind/annotation/RestController.html
-[Value]: {{ page.javadoc.spring-framework }}/org/springframework/beans/factory/annotation/Value.html
+[Value]: {{ page.javadoc.spring }}/org/springframework/beans/factory/annotation/Value.html
 
 [Spring Boot]: https://spring.io/projects/spring-boot
 [Spring Boot Actuator]: https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/production-ready-features.html#production-ready

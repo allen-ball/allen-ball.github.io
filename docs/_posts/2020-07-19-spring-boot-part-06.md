@@ -13,8 +13,6 @@ javadoc:
     https://docs.spring.io/spring/docs/5.3.6/javadoc-api
   spring-boot: >-
     https://docs.spring.io/spring-boot/docs/2.4.5/api
-  spring-framework: >-
-    https://docs.spring.io/spring-framework/docs/5.3.6/javadoc-api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
 excerpt_separator: <!--more-->
