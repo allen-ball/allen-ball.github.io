@@ -129,7 +129,7 @@ $ gem install bundler jekyll webrick
 ```
 
 
-# Install `jekyll`
+# Install jekyll
 
 On MacOS:
 
@@ -321,11 +321,15 @@ references, respectively:
 <head>
   ...
   <link rel="stylesheet" href="{{ "/assets/prism.css" | relative_url }}">
+  ...
+</head>
 ```
 {% endraw %}
 
 {% raw %}
 ```html
+<footer ...>
+  ...
   <script src="{{ "/assets/prism.js" | relative_url }}"></script>
   ...
 </footer>
