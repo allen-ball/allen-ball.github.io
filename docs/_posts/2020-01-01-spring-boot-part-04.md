@@ -12,11 +12,11 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.6/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.9/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.4.5/api
+    https://docs.spring.io/spring-boot/docs/2.5.3/api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.4.6/api
+    https://docs.spring.io/spring-security/site/docs/5.5.1/api
 ---
 
 This series of articles will examine [Spring Boot] features.  This fourth
@@ -30,6 +30,10 @@ Complete source code for the
 and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-04)
 are available on [Github](https://github.com/allen-ball).
+
+Note that this post's details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.
 
 
 ## Theory of Operation
@@ -81,17 +85,12 @@ The required dependencies are included in the
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>bootstrap</artifactId>
-      <version>4.4.1</version>
+      <version>4.6.0-1</version>
     </dependency>
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>jquery</artifactId>
-      <version>3.4.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>popper.js</artifactId>
-      <version>1.15.0</version>
+      <version>3.6.0</version>
     </dependency>
   </dependencies>
   ...
@@ -156,8 +155,8 @@ the Thymeleaf expressions evaluated.
     <main class="container">
       ...
     </main>
-    <script src="/webjars/jquery/3.4.1/jquery.js"></script>
-    <script src="/webjars/bootstrap/4.4.1/js/bootstrap.js"></script>
+    <script src="/webjars/jquery/3.6.0/jquery.js"></script>
+    <script src="/webjars/bootstrap/4.6.0-1/js/bootstrap.js"></script>
   </body>
 </html>
 ```

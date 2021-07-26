@@ -10,11 +10,11 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.9/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.5.0/api
+    https://docs.spring.io/spring-boot/docs/2.5.3/api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.5.0/api
+    https://docs.spring.io/spring-security/site/docs/5.5.1/api
 ---
 
 This series of articles will examine [Spring Boot] features.  This first
@@ -26,10 +26,13 @@ skeletal projects which may be quickly and easily used to experiment with
 specific Spring Boot features.
 
 Complete source code for the
-[series](https://github.com/allen-ball/spring-boot-web-server)
-and for this
+[series](https://github.com/allen-ball/spring-boot-web-server) and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-01)
 are available on [Github](https://github.com/allen-ball).
+
+Note that this post's details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.
 
 
 ## Minimum Web Server Project
@@ -54,7 +57,7 @@ The minimum POM for the server is:
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-dependencies</artifactId>
-    <version>2.3.0.RELEASE</version>
+    <version>2.5.3.RELEASE</version>
   </parent>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -117,7 +120,7 @@ This is to be expected!  This project has not yet defined any content
 The `org.springframework.boot:spring-boot-devtools` artifact may be added to
 the classpath to provide developer tools.  There are a number of features
 documented at
-[docs.spring.io](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/using-spring-boot.html#using-boot-devtools)
+[docs.spring.io](https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.devtools)
 including automatic restart and live reload but this article will examine
 features for setting application properties in a development environment.
 
@@ -160,8 +163,8 @@ running test.
 2. Sets the Maven default goal(s) to "`clean`" and "`spring-boot:run`".
 
 The
-[Spring Boot Reference Documentation](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/index.html)
-[Externalized Configuration](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/spring-boot-features.html#boot-features-external-config)
+[Spring Boot Reference Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/index.html)
+[Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
 section discusses in detail how, where, and when property values may be
 overridden.  Notably
 `${user.home}/.config/spring-boot/spring-boot-devtools.properties`
@@ -192,7 +195,7 @@ output.
 ## Spring Boot Actuator
 
 The
-[Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/production-ready-features.html#production-ready)
+[Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator)
 provides monitoring and management features.  All that is required to enable
 it is to include its "starter" as a dependency which has been added to the
 `spring-boot:run` `<profile/>`:

@@ -14,13 +14,13 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.9/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.5.0/api
+    https://docs.spring.io/spring-boot/docs/2.5.3/api
   spring-data: >-
-    https://docs.spring.io/spring-data/jpa/docs/2.4.5/api
+    https://docs.spring.io/spring-data/jpa/docs/2.5.3/api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.5.0/api
+    https://docs.spring.io/spring-security/site/docs/5.5.1/api
 excerpt_separator: <!--more-->
 ---
 
@@ -54,6 +54,10 @@ Source code for the
 and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-07)
 are available on [Github](https://github.com/allen-ball).
+
+Note that this post's details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.
 
 
 ## Application
@@ -462,7 +466,7 @@ spring.jpa.hibernate.ddl-auto: create
 spring.jpa.open-in-view: true
 spring.jpa.show-sql: false
 
-spring.sql.init.enabled: true
+spring.sql.init.mode: ALWAYS
 spring.sql.init.data-locations: file:data.sql
 ...
 ```

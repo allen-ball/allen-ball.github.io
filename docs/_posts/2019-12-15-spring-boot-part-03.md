@@ -10,11 +10,11 @@ javadoc:
   javase: >-
     https://docs.oracle.com/javase/8/docs/api
   spring: >-
-    https://docs.spring.io/spring/docs/5.3.7/javadoc-api
+    https://docs.spring.io/spring/docs/5.3.9/javadoc-api
   spring-boot: >-
-    https://docs.spring.io/spring-boot/docs/2.5.0/api
+    https://docs.spring.io/spring-boot/docs/2.5.3/api
   spring-security: >-
-    https://docs.spring.io/spring-security/site/docs/5.5.0/api
+    https://docs.spring.io/spring-security/site/docs/5.5.1/api
 ---
 
 This series of articles will examine [Spring Boot] features.  This third
@@ -28,6 +28,10 @@ Complete source code for the
 and for this
 [part](https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-03)
 are available on [Github](https://github.com/allen-ball).
+
+Note that this post's details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.
 
 
 ## @ComponentScan and Dependency Injection
@@ -77,7 +81,7 @@ For each class annotated with [`@Component`][Component], Spring:
 1. Instantiates a single instance,
 
 2. For each instance field annotated with [`@Value`][Value], evaluate the
-[SpEL](https://docs.spring.io/spring-framework/docs/5.3.x/reference/html/core.html#expressions-beandef)
+[SpEL](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions-beandef)
 expression<sup id="ref1">[1](#endnote1)</sup> and initialize the field with
 the result,
 
