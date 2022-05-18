@@ -144,7 +144,7 @@ for key in $(metadata public-keys/); do
 
     file=/etc/sudoers.d/user-data-${username}
     echo "${username} ALL=(ALL) NOPASSWD:ALL" > /Users/ball/hcf-dev/blog/2018-08-22-aws-user-data-script/pom.xml
-    chmod a-wx,o-r /Users/ball/hcf-dev/blog/2018-08-22-aws-user-data-script/pom.xml
+    chmod a-wx,o-r ${file}
 done
 ```
 
@@ -163,87 +163,6 @@ a non-nil `fstype`, and non-nil `mntpt`:
    [/etc/fstab][fstab(5)]
 
 ```bash
-export HOST=$(metadata local-ipv4)
-export VOLUMES=$(ec2 describe-volumes \
-                       --filters Name=tag:host,Values=${HOST} \
-                       --output text --query 'Volumes[*].VolumeId')
-
-if [ -n "${VOLUMES}" ]; then
-    for volume in ${VOLUMES}; do
-        fstype=$(ec2-get-tag-value ${volume} fstype)
-
-        if [ "${fstype}" != "" ]; then
-            device=$(next-unattached-block-device)
-
-            ec2-attach-volume ${volume} ${device}
-
-            if [ "$(file -b -s ${device})" == "data" ]; then
-                volume-mkfs ${volume} ${device} ${fstype}
-            fi
-
-            uuid=$(ec2-get-tag-value ${volume} uuid)
-            mntpt=$(ec2-get-tag-value ${volume} mntpt)
-
-            if [ "${uuid}" != "" -a "${mntpt}" != "" ]; then
-                mkdir -p ${mntpt}
-                echo "UUID=${uuid} ${mntpt} ${fstype} defaults 0 2" \
-                     >> /etc/fstab
-            fi
-        fi
-    done
-fi
-```
-
-At this point in the script, the file system could be mounted with
-[`mount -a`][mount(8)].  However, the script reboots the instance and the
-file systems are booted on start-up.
-
-
-## user-data.bash
-
-For reference, the complete `user-data.bash` [Ansible] template is included
-below.  The `aws.rc` script is included through a relative path.  If another
-tool than Ansible is used, the `aws.rc` script must be included to provide
-the functions through that tool's appropriate mechanism.
-
-{% raw %}
-```bash
-#!/bin/bash
-# ----------------------------------------------------------------------------
-# user-data.bash
-# ----------------------------------------------------------------------------
-export LANG=en_US.UTF-8
-export LC_ALL=${LANG}
-
-yum -y update
-yum -y install python
-easy_install --prefix /usr pip
-pip install --prefix /usr --upgrade pip
-pip install --prefix /usr --upgrade awscli
-# ----------------------------------------------------------------------------
-# Functions
-# ----------------------------------------------------------------------------
-{{ lookup('template', '../../aws.rc/templates/etc/aws.rc') }}
-# ----------------------------------------------------------------------------
-# Create users and install respective .ssh/authorized_keys for public-keys'
-# metadata
-# ----------------------------------------------------------------------------
-for key in $(metadata public-keys/); do
-    username=${key#*=}
-
-    useradd -G wheel -m -s /bin/bash -U ${username}
-    userhome=$(eval echo ~${username})
-
-    mkdir -p ${userhome}/.ssh
-    echo "$(metadata public-keys/${key%%=*}/openssh-key)" \
-         >> ${userhome}/.ssh/authorized_keys
-    chown -R ${username}:${username} ${userhome}/.ssh
-    chmod -R go-rwx ${userhome}/.ssh
-
-    file=/etc/sudoers.d/user-data-${username}
-    echo "${username} ALL=(ALL) NOPASSWD:ALL" > /Users/ball/hcf-dev/blog/2018-08-22-aws-user-data-script/pom.xml
-    chmod a-wx,o-r /Users/ball/hcf-dev/blog/2018-08-22-aws-user-data-script/pom.xml
-done
 # ----------------------------------------------------------------------------
 # Attach local volumes and manage file systems
 #
@@ -277,15 +196,117 @@ if [ -n "${VOLUMES}" ]; then
 
             if [ "${uuid}" != "" -a "${mntpt}" != "" ]; then
                 mkdir -p ${mntpt}
-                echo "UUID=${uuid} ${mntpt} ${fstype} defaults 0 2" \
-                     >> /etc/fstab
+                echo "UUID=${uuid} ${mntpt} ${fstype} defaults 0 2" >> /etc/fstab
             fi
         fi
     done
 fi
 
-#mount -a
-shutdown -r now
+mount -a
+
+exit 0
+```
+
+The file systems are then mounted with [`mount -a`][mount(8)].[^1]
+
+[^1]: Previous versions of this script rebooted the instance and the file
+systems were then connected on start-up.
+
+
+## user-data.bash
+
+For reference, the complete `user-data.bash` [Ansible] template is included
+below.  The `aws.rc` script is included through a relative path.  If another
+tool than Ansible is used, the `aws.rc` script must be included to provide
+the functions through that tool's appropriate mechanism.
+
+{% raw %}
+```bash
+#!/bin/bash
+# ----------------------------------------------------------------------------
+# user-data.bash
+# ----------------------------------------------------------------------------
+export LANG=en_US.UTF-8
+export LC_ALL=${LANG}
+
+if [ -e /usr/bin/apt ]; then
+    apt -y update
+    apt -y install awscli
+else
+    yum -y update
+
+    if [ ! -e /usr/libexec/platform-python ]; then
+        yum -y install python
+    fi
+
+    if [ ! -e /usr/bin/pip -a -x /usr/bin/easy_install ]; then
+        /usr/bin/easy_install --prefix /usr pip
+    fi
+
+    /usr/bin/pip install --prefix /usr --upgrade pip
+    /usr/bin/pip install --prefix /usr --upgrade awscli
+fi
+# ----------------------------------------------------------------------------
+# Functions
+# ----------------------------------------------------------------------------
+{{ lookup('template', '../../aws-rc/templates/etc/aws.rc') }}
+# ----------------------------------------------------------------------------
+# Create users and install respective .ssh/authorized_keys for public-keys'
+# metadata
+# ----------------------------------------------------------------------------
+getent group sudo >> /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    wheel=sudo
+else
+    wheel=wheel
+fi
+
+for key in $(metadata public-keys/); do
+    username=${key#*=}
+
+    useradd -G ${wheel} -m -s /bin/bash -U ${username}
+    userhome=$(eval echo ~${username})
+
+    mkdir -p ${userhome}/.ssh
+    echo "$(metadata public-keys/${key%%=*}/openssh-key)" >> ${userhome}/.ssh/authorized_keys
+    chown -R ${username}:${username} ${userhome}/.ssh
+    chmod -R go-rwx ${userhome}/.ssh
+
+    file=/etc/sudoers.d/user-data-${username}
+    echo "${username} ALL=(ALL) NOPASSWD:ALL" > ${file}
+    chmod a-wx,o-r ${file}
+done
+export HOST=$(metadata local-ipv4)
+export VOLUMES=$(ec2 describe-volumes \
+                       --filters Name=tag:host,Values=${HOST} \
+                       --output text --query 'Volumes[*].VolumeId')
+
+if [ -n "${VOLUMES}" ]; then
+    for volume in ${VOLUMES}; do
+        fstype=$(ec2-get-tag-value ${volume} fstype)
+
+        if [ "${fstype}" != "" ]; then
+            device=$(next-unattached-block-device)
+
+            ec2-attach-volume ${volume} ${device}
+
+            if [ "$(file -b -s ${device})" == "data" ]; then
+                volume-mkfs ${volume} ${device} ${fstype}
+            fi
+
+            uuid=$(ec2-get-tag-value ${volume} uuid)
+            mntpt=$(ec2-get-tag-value ${volume} mntpt)
+
+            if [ "${uuid}" != "" -a "${mntpt}" != "" ]; then
+                mkdir -p ${mntpt}
+                echo "UUID=${uuid} ${mntpt} ${fstype} defaults 0 2" >> /etc/fstab
+            fi
+        fi
+    done
+fi
+
+mount -a
 
 exit 0
 ```
@@ -309,7 +330,7 @@ script is given below.
 {% raw %}
 ```yaml
 - name: 172.31.0.4
-  ec2:
+  community.aws.ec2_instance:
     ...
     instance_profile_name: ec2-user
     key_name: ec2-user
@@ -339,7 +360,7 @@ script is given below.
 [EC2]: https://aws.amazon.com/ec2/
 [AWS Management Console]: https://console.aws.amazon.com/organizations/home
 
-[Source]: https://github.com/allen-ball/ball-ansible/tree/trunk/roles/aws-user-data
+[Source]: https://github.com/allen-ball/ball-aws-collection/tree/trunk/roles/aws-user-data
 
 [automount/autofs Executable Map for Amazon EBS Volumes]: /article/2018-08-20-auto-ebs-map
 
