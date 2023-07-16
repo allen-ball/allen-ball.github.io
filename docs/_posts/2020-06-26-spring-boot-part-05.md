@@ -31,19 +31,8 @@ command) to assist in developing [UPNP] and [SSDP] applications.
 ![](/assets/{{ page.permalink }}/screen-shot-nmap.png)
 
 Complete [source](https://github.com/allen-ball/voyeur) and
-[javadoc](https://allen-ball.github.io/voyeur/) are available
-on [GitHub](https://github.com/allen-ball).  Additional
-artifacts (including their respective source and javadoc JARs) are available
-from the Maven repository at:
-
-```xml
-    <repository>
-      <id>repo.hcf.dev-RELEASE</id>
-      <name>hcf.dev RELEASE Repository</name>
-      <url>https://repo.hcf.dev/maven/release/</url>
-      <layout>default</layout>
-    </repository>
-```
+[javadoc](https://allen-ball.github.io/voyeur/) are available on
+[GitHub](https://github.com/allen-ball).
 
 Specific topics covered herein:
 
