@@ -34,6 +34,17 @@ kramdown:
   syntax_highlighter_opts:
     disable: true
 
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: _posts
+      type: posts
+    values:
+      layout: post
+
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
