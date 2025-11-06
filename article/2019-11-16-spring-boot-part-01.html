@@ -1,0 +1,437 @@
+<p>This series of articles will examine <a href="https://spring.io/projects/spring-boot">Spring Boot</a> features.  This first
+article will look at the minimum Spring Boot application, Spring Boot
+Devtools, and the Spring Boot Actuator.  There are already a wealth of
+resources for Spring Boot including the <a href="https://start.spring.io/">Spring Initializr</a>; these articles
+do not intend to replace these resources but instead provide a collection of
+skeletal projects which may be quickly and easily used to experiment with
+specific Spring Boot features.</p>
+
+<p>Complete source code for the
+<a href="https://github.com/allen-ball/spring-boot-web-server">series</a> and for this
+<a href="https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-01">part</a>
+are available on <a href="https://github.com/allen-ball">Github</a>.</p>
+
+<p>Note that this post’s details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.</p>
+
+<h2 id="minimum-web-server-project">Minimum Web Server Project</h2>
+
+<p>The minimum web server project consists of a <a href="https://maven.apache.org/">Maven</a> <a href="http://maven.apache.org/guides/introduction/introduction-to-the-pom.html">POM</a>, a
+“Launcher” class with static <code>main</code> function, and an
+<code>applications.properties</code> file.  The web server will be launched from Maven
+by invoking the <code>spring-boot:run</code> plug-in.</p>
+
+<p>The minimum POM for the server is:</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;ball&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-web-server&lt;/artifactId&gt;
+  &lt;packaging&gt;jar&lt;/packaging&gt;
+  &lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-dependencies&lt;/artifactId&gt;
+    &lt;version&gt;2.5.3.RELEASE&lt;/version&gt;
+  &lt;/parent&gt;
+  &lt;properties&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+  &lt;/properties&gt;
+  &lt;dependencies verbose="true"&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+      &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;
+</code></pre>
+
+<p>This POM:</p>
+
+<ol>
+  <li>
+    <p>Specifies the parent POM as
+<code>org.springframework.boot:spring-boot-dependencies</code>,<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+  </li>
+  <li>
+    <p>Sets the <code>${project.build.sourceEncoding}</code> property to <code>UTF-8</code> avoid
+Maven warnings,</p>
+  </li>
+  <li>
+    <p>Specifies the one required Spring Boot dependency,
+<code>org.springframework.boot:spring-boot-starter-web</code>, and,</p>
+  </li>
+  <li>
+    <p>Provides the <a href="https://projectlombok.org/"><code>org.projectlombok:lombok</code></a> artifact</p>
+  </li>
+</ol>
+
+<p>The last is not strictly required but it saves on writing the Java
+“boilerplate” required by the implementation beans.</p>
+
+<p>A static, annotated <code>main</code> function must be provided:</p>
+
+<pre data-src="https://raw.githubusercontent.com/allen-ball/spring-boot-web-server/trunk/part-01/src/main/java/application/Launcher.java"></pre>
+
+<p>And an empty
+<code>${project.basedir}/src/main/resources/application.properties</code>:</p>
+
+<pre data-src="https://raw.githubusercontent.com/allen-ball/spring-boot-web-server/trunk/part-01/src/main/resources/application.properties"></pre>
+
+<p>Executing <code>mvn -B spring-boot:run</code> in the project directory gives the log
+output:</p>
+
+<p><img src="/assets/article/2019-11-16-spring-boot-part-01/spring-boot-run.png" alt="" /></p>
+
+<p>which indicates Tomcat has been started listening on port 8080.  (Note the
+ASCII-art banner and color in the log lines.)  However, browsing to
+<a href="http://localhost:8080/">http://localhost:8080/</a> shows:</p>
+
+<p><img src="/assets/article/2019-11-16-spring-boot-part-01/whitelabel-error-page.png" alt="" /></p>
+
+<p>This is to be expected!  This project has not yet defined any content
+(static or dynamic) to be served.<sup id="ref2"><a href="#endnote2">2</a></sup></p>
+
+<h2 id="spring-boot-devtools">Spring Boot Devtools</h2>
+
+<p>The <code>org.springframework.boot:spring-boot-devtools</code> artifact may be added to
+the classpath to provide developer tools.  There are a number of features
+documented at
+<a href="https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.devtools">docs.spring.io</a>
+including automatic restart and live reload but this article will examine
+features for setting application properties in a development environment.</p>
+
+<p>The changes to the POM are encapsulated in the <code>spring-boot:run</code>
+<code>&lt;profile/&gt;</code>:</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project ...&gt;
+  ...
+  &lt;profiles&gt;
+    &lt;profile&gt;
+      &lt;id&gt;spring-boot:run&lt;/id&gt;
+      &lt;properties&gt;
+        &lt;maven.source.skip&gt;true&lt;/maven.source.skip&gt;
+        &lt;maven.javadoc.skip&gt;true&lt;/maven.javadoc.skip&gt;
+        &lt;maven.test.skip&gt;true&lt;/maven.test.skip&gt;
+      &lt;/properties&gt;
+      &lt;dependencies&gt;
+        &lt;dependency&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-devtools&lt;/artifactId&gt;
+          &lt;scope&gt;runtime&lt;/scope&gt;
+        &lt;/dependency&gt;
+      &lt;/dependencies&gt;
+      &lt;build&gt;
+        &lt;defaultGoal&gt;clean spring-boot:run&lt;/defaultGoal&gt;
+      &lt;/build&gt;
+    &lt;/profile&gt;
+  &lt;/profiles&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>This profile:</p>
+
+<ol>
+  <li>
+    <p>Sets Maven properties to skip source generation, javadoc generation, and
+running test.</p>
+  </li>
+  <li>
+    <p>Sets the Maven default goal(s) to “<code>clean</code>” and “<code>spring-boot:run</code>”.</p>
+  </li>
+</ol>
+
+<p>The
+<a href="https://docs.spring.io/spring-boot/docs/current/reference/html/index.html">Spring Boot Reference Documentation</a>
+<a href="https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config">Externalized Configuration</a>
+section discusses in detail how, where, and when property values may be
+overridden.  Notably
+<code>${user.home}/.config/spring-boot/spring-boot-devtools.properties</code>
+may be used to store a developer’s default settings for all projects and
+<code>${project.basedir}/application.properties</code> (typically outside
+source control) may be used to store properties used for development such as
+database authentication details.</p>
+
+<p>This author includes the following in his
+<code>${user.home}/.config/spring-boot/spring-boot-devtools.properties</code>
+to reduce log output during testing:</p>
+
+<pre><code class="language-properties">spring.main.banner-mode: OFF
+spring.main.headless: false
+spring.main.log-startup-info: false
+
+spring.output.ansi.enabled: NEVER
+</code></pre>
+
+<p>and executing the application with devtools through the new profile
+(<code>mvn -B -Pspring-boot:run</code>) gives the following shorter and less colorful
+output.</p>
+
+<p><img src="/assets/article/2019-11-16-spring-boot-part-01/spring-boot-run+devtools.png" alt="" /></p>
+
+<h2 id="spring-boot-actuator">Spring Boot Actuator</h2>
+
+<p>The
+<a href="https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator">Spring Boot Actuator</a>
+provides monitoring and management features.  All that is required to enable
+it is to include its “starter” as a dependency which has been added to the
+<code>spring-boot:run</code> <code>&lt;profile/&gt;</code>:</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project ...&gt;
+  ...
+  &lt;profiles&gt;
+    &lt;profile&gt;
+      &lt;id&gt;spring-boot:run&lt;/id&gt;
+      ...
+      &lt;dependencies&gt;
+        ...
+        &lt;dependency&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+          &lt;scope&gt;runtime&lt;/scope&gt;
+        &lt;/dependency&gt;
+        ...
+      &lt;/dependencies&gt;
+      ...
+    &lt;/profile&gt;
+  &lt;/profiles&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>The Spring Boot Actuator also needs to be configured by setting application
+properties (e.g., in
+<code>${user.home}/.config/spring-boot/spring-boot-devtools.properties</code>).</p>
+
+<pre><code class="language-properties">management.server.address: 127.0.0.1
+management.server.port: 8081
+management.endpoints.web.exposure.include: *
+management.endpoints.enabled-by-default: true
+management.endpoint.shutdown.enabled: true
+</code></pre>
+
+<p>Executing <code>mvn -B -Pspring-boot:run</code> gives the following log output:</p>
+
+<p><img src="/assets/article/2019-11-16-spring-boot-part-01/spring-boot-run+actuator.png" alt="" /></p>
+
+<p>Which indicates Tomcat is listening on ports 8080 and 8081.
+<a href="http://localhost:8081/actuator">http://localhost:8081/actuator</a> returns the following JSON which lists the
+available endpoints:</p>
+
+<pre><code class="language-json">{
+  "_links": {
+    "self": {
+      "href": "http://localhost:8081/actuator",
+      "templated": false
+    },
+    "beans": {
+      "href": "http://localhost:8081/actuator/beans",
+      "templated": false
+    },
+    "caches": {
+      "href": "http://localhost:8081/actuator/caches",
+      "templated": false
+    },
+    "caches-cache": {
+      "href": "http://localhost:8081/actuator/caches/{cache}",
+      "templated": true
+    },
+    "health": {
+      "href": "http://localhost:8081/actuator/health",
+      "templated": false
+    },
+    "health-path": {
+      "href": "http://localhost:8081/actuator/health/{*path}",
+      "templated": true
+    },
+    "info": {
+      "href": "http://localhost:8081/actuator/info",
+      "templated": false
+    },
+    "conditions": {
+      "href": "http://localhost:8081/actuator/conditions",
+      "templated": false
+    },
+    "shutdown": {
+      "href": "http://localhost:8081/actuator/shutdown",
+      "templated": false
+    },
+    "configprops": {
+      "href": "http://localhost:8081/actuator/configprops",
+      "templated": false
+    },
+    "env": {
+      "href": "http://localhost:8081/actuator/env",
+      "templated": false
+    },
+    "env-toMatch": {
+      "href": "http://localhost:8081/actuator/env/{toMatch}",
+      "templated": true
+    },
+    "loggers": {
+      "href": "http://localhost:8081/actuator/loggers",
+      "templated": false
+    },
+    "loggers-name": {
+      "href": "http://localhost:8081/actuator/loggers/{name}",
+      "templated": true
+    },
+    "heapdump": {
+      "href": "http://localhost:8081/actuator/heapdump",
+      "templated": false
+    },
+    "threaddump": {
+      "href": "http://localhost:8081/actuator/threaddump",
+      "templated": false
+    },
+    "metrics": {
+      "href": "http://localhost:8081/actuator/metrics",
+      "templated": false
+    },
+    "metrics-requiredMetricName": {
+      "href": "http://localhost:8081/actuator/metrics/{requiredMetricName}",
+      "templated": true
+    },
+    "scheduledtasks": {
+      "href": "http://localhost:8081/actuator/scheduledtasks",
+      "templated": false
+    },
+    "mappings": {
+      "href": "http://localhost:8081/actuator/mappings",
+      "templated": false
+    }
+  }
+}
+</code></pre>
+
+<p>For example, <a href="http://localhost:8081/actuator/metrics">http://localhost:8081/actuator/metrics</a> returns:</p>
+
+<pre><code class="language-json">{
+  "names": [
+    "jvm.memory.max",
+    "jvm.threads.states",
+    "process.files.max",
+    "jvm.gc.memory.promoted",
+    "system.load.average.1m",
+    "jvm.memory.used",
+    "jvm.gc.max.data.size",
+    "jvm.memory.committed",
+    "system.cpu.count",
+    "logback.events",
+    "jvm.buffer.memory.used",
+    "tomcat.sessions.created",
+    "jvm.threads.daemon",
+    "system.cpu.usage",
+    "jvm.gc.memory.allocated",
+    "tomcat.sessions.expired",
+    "jvm.threads.live",
+    "jvm.threads.peak",
+    "process.uptime",
+    "tomcat.sessions.rejected",
+    "process.cpu.usage",
+    "jvm.classes.loaded",
+    "jvm.classes.unloaded",
+    "tomcat.sessions.active.current",
+    "tomcat.sessions.alive.max",
+    "jvm.gc.live.data.size",
+    "process.files.open",
+    "jvm.buffer.count",
+    "jvm.buffer.total.capacity",
+    "tomcat.sessions.active.max",
+    "process.start.time"
+  ]
+}
+</code></pre>
+
+<p>And “process start time” can be retrieved through
+<a href="http://localhost:8081/actuator/metrics/process.start.time">http://localhost:8081/actuator/metrics/process.start.time</a> which returns
+something like:</p>
+
+<pre><code class="language-json">{
+  "name": "process.start.time",
+  "description": "Start time of the process since unix epoch.",
+  "baseUnit": "seconds",
+  "measurements": [
+    {
+      "statistic": "VALUE",
+      "value": 1573860137.896
+    }
+  ],
+  "availableTags": []
+}
+</code></pre>
+
+<h2 id="spring-boot-properties-migrator">Spring Boot Properties Migrator</h2>
+
+<p>Spring Boot relies on numerous properties whose names may change from
+release to release.  The <code>spring-boot-properties-migrator</code> is configured in
+the <code>spring-boot:run</code> <code>&lt;profile/&gt;</code>:</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project ...&gt;
+  ...
+  &lt;profiles&gt;
+    &lt;profile&gt;
+      &lt;id&gt;spring-boot:run&lt;/id&gt;
+      ...
+      &lt;dependencies&gt;
+        ...
+        &lt;dependency&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-properties-migrator&lt;/artifactId&gt;
+          &lt;scope&gt;runtime&lt;/scope&gt;
+        &lt;/dependency&gt;
+        ...
+      &lt;/dependencies&gt;
+      ...
+    &lt;/profile&gt;
+  &lt;/profiles&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>In the event that a property name changes it will be noted in the log
+output:</p>
+
+<p><img src="/assets/article/2019-11-16-spring-boot-part-01/spring-boot-run+properties-migrator.png" alt="" /></p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This article demonstrates the use of the <code>spring-boot-starter-web</code>, the use
+of <code>spring-boot-devtools</code>,<sup id="ref3"><a href="#endnote3">3</a></sup> and the
+integration of <code>spring-boot-starter-actuator</code>.  The POM defines a
+<code>spring-boot:run</code> <code>&lt;profile/&gt;</code> which can be used for testing the
+application.  The projects described in subsequent articles in this series
+will benefit by having both Spring Boot Devtools and the Spring Boot
+Actuator activated during development runs of the application.</p>
+
+<p><a href="/article/2019-11-17-spring-boot-part-02">Part 2</a> of this
+series demonstrates how static resources may be added to be served by the
+web server.</p>
+
+<p><b id="endnote1">[1]</b>
+This author prefers this specific method if only because versions of
+provided dependencies may be updated simply by updating the corresponding
+property value in the project POM.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+In fact, serving content is not covered here and will be the subject of
+subsequent articles in this series.
+<a href="#ref2">↩</a></p>
+
+<p><b id="endnote3">[3]</b>
+With <code>spring-boot-properties-migrator</code>.
+<a href="#ref3">↩</a></p>
+

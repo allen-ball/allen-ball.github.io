@@ -1,0 +1,371 @@
+<p>This article discusses extending final implementation classes through the
+use of <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html"><code>Proxy</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code>s</a> and
+<a href="https://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html">Default Interface Methods</a> introduced in <a href="https://www.java.com/en/download/help/java8.html">Java 8</a>.  The specific use case
+described here is to add fluent methods to <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/package-summary.html">Document Object Model (DOM)</a> to
+enable <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/taglet/overview.html">Javadoc</a> implementations to provide snippets of well-formed
+HTML/XML.
+<!--more-->
+The various fluent <code>add()</code> methods implemented in <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentNode.html"><code>FluentNode</code></a>
+(the “facade”):</p>
+
+<pre><code class="language-java">    default FluentNode add(Stream&lt;Node&gt; stream) {
+        return add(stream.toArray(Node[]::new));
+    }
+
+    default FluentNode add(Iterable&lt;Node&gt; iterable) {
+        return add(toArray(iterable));
+    }
+
+    default FluentNode add(Node... nodes) {
+        for (Node node : nodes) {
+            switch (node.getNodeType()) {
+            case ATTRIBUTE_NODE:
+                getAttributes().setNamedItem(node);
+                break;
+
+            default:
+                appendChild(node);
+                break;
+            }
+        }
+
+        return this;
+    }
+</code></pre>
+
+<p>which allows the creation of fluent methods to create <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Element.html"><code>Element</code>s</a>:</p>
+
+<pre><code class="language-java">    default FluentNode element(String name, Stream&lt;Node&gt; stream) {
+        return element(name, stream.toArray(Node[]::new));
+    }
+
+    default FluentNode element(String name, Iterable&lt;Node&gt; iterable) {
+        return element(name, toArray(iterable));
+    }
+
+    default FluentNode element(String name, Node... nodes) {
+        return ((FluentNode) owner().createElement(name)).add(nodes);
+    }
+</code></pre>
+
+<p>that can be built up in to templates (e.g.,
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/HTMLTemplates.html"><code>HTMLTemplates</code></a>):</p>
+
+<pre><code class="language-java">    default FluentNode pre(String content) {
+        return element("pre").content(content);
+    }
+</code></pre>
+
+<p>Allowing the creation of methods to be trivially invoked to return XML
+snippets:</p>
+
+<pre><code class="language-java">        return a(href, text)
+                   .add(map.entrySet()
+                        .stream()
+                        .map(t -&gt; attr(t.getKey(), t.getValue())));
+</code></pre>
+
+<p>to produce something like</p>
+
+<pre><code class="language-xml">&lt;a href="https://www.rfc-editor.org/rfc/rfc2045.txt" target="newtab"&gt;RFC2045&lt;/a&gt;
+</code></pre>
+
+<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/overview-summary.html">javadoc</a> is provided.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>An application can add a facade to a class hierarchy by extending
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a><sup id="ref1"><a href="#endnote1">1</a></sup>
+and implementing
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor-java.lang.Object-"><code>getProxyClassFor(Object)</code></a>
+where the
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-"><code>invoke(Object,Method,Object[])</code></a>
+“enhances” any eligible return types.  Conceptually:</p>
+
+<pre><code class="language-java">    public Object enhance(Object in) {
+        Object out = null;
+        Class&lt;?&gt; type = getProxyClassFor(in);
+
+        if (type != null) {
+            try {
+                out =
+                    type.getConstructor(InvocationHandler.class)
+                    .newInstance(this);
+            } catch (RuntimeException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                throw new IllegalStateException(exception);
+            }
+        }
+
+        return (out != null) ? out : in;
+    }
+
+    protected abstract Class&lt;?&gt; getProxyClassFor(Object object);
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] argv) throws Throwable {
+        Object result = super.invoke(proxy, method, argv);
+
+        return enhance(result);
+    }
+</code></pre>
+
+<p>There are additional details that are discussed in the next section.  The
+implementor must return a interface <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html?is-external=true"><code>Class</code></a> to <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html"><code>Proxy</code></a>
+from <code>getProxyClassFor(Object)</code> for any <code>Class</code> to be enhanced.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p><a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html"><code>Node</code></a> will be enhanced by <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentNode.html"><code>FluentNode</code></a> and
+<a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Document.html"><code>Document</code></a> will be enhanced by
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocument.html"><code>FluentDocument</code></a>.  Note: A <code>Node</code> does not necessarily
+have to implement the sub-interface that corresponds to
+<a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html#getNodeType--">Node.getNodeType()</a> so both the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html"><code>Object</code></a>’s
+class hierarchy and node type are analyzed and the results are cached in the
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/xml/FluentNode.InvocationHandler.html#line.358"><code>getProxyClassFor(Object)</code></a> implementation.</p>
+
+<pre><code class="language-java">        private final HashMap&lt;List&lt;Class&lt;?&gt;&gt;,Class&lt;?&gt;&gt; map = new HashMap&lt;&gt;();
+        ...
+        @Override
+        protected Class&lt;?&gt; getProxyClassFor(Object object) {
+            Class&lt;?&gt; type = null;
+
+            if (object instanceof Node &amp;&amp; (! (object instanceof FluentNode))) {
+                Node node = (Node) object;
+                List&lt;Class&lt;?&gt;&gt; key =
+                    Arrays.asList(NODE_TYPE_MAP.getOrDefault(node.getNodeType(), Node.class),
+                                  node.getClass());
+
+                type = map.computeIfAbsent(key, k -&gt; compute(k));
+            }
+
+            return type;
+        }
+
+        private Class&lt;?&gt; compute(List&lt;Class&lt;?&gt;&gt; key) {
+            LinkedHashSet&lt;Class&lt;?&gt;&gt; implemented =
+                key.stream()
+                .flatMap(t -&gt; getImplementedInterfacesOf(t).stream())
+                .filter(t -&gt; Node.class.isAssignableFrom(t))
+                .filter(t -&gt; Node.class.getPackage().equals(t.getPackage()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+            LinkedHashSet&lt;Class&lt;?&gt;&gt; interfaces =
+                implemented.stream()
+                .map(t -&gt; fluent(t))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            interfaces.addAll(implemented);
+
+            new ArrayList&lt;&gt;(interfaces)
+                .stream()
+                .forEach(t -&gt; interfaces.removeAll(Arrays.asList(t.getInterfaces())));
+
+            return getProxyClass(interfaces.toArray(new Class&lt;?&gt;[] { }));
+        }
+</code></pre>
+
+<p>The corresponding
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/xml/FluentNode.InvocationHandler.html#line.398">“fluent”</a>
+interface is found through reflection:</p>
+
+<pre><code class="language-java">        private Class&lt;?&gt; fluent(Class&lt;?&gt; type) {
+            Class&lt;?&gt; fluent = null;
+
+            if (Node.class.isAssignableFrom(type) &amp;&amp; Node.class.getPackage().equals(type.getPackage())) {
+                try {
+                    String name =
+                        String.format("%s.Fluent%s",
+                                      FluentNode.class.getPackage().getName(),
+                                      type.getSimpleName());
+
+                    fluent = Class.forName(name).asSubclass(FluentNode.class);
+                } catch (Exception exception) {
+                }
+            }
+
+            return fluent;
+        }
+</code></pre>
+
+<p>The <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/parsers/DocumentBuilderFactory.html"><code>DocumentBuilderFactory</code></a>,
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocumentBuilderFactory.html"><code>FluentDocumentBuilderFactory</code></a>, and
+<a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/parsers/DocumentBuilder.html"><code>DocumentBuilder</code></a>,
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocument.Builder.html"><code>FluentDocument.Builder</code></a>, implementations are both
+straightforward.  The two <code>DocumentBuilder</code>
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/xml/FluentDocument.Builder.html#line.75">methods</a>
+that create new <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Document.html"><code>Document</code>s</a> are implemented by creating a new
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentNode.InvocationHandler.html"><code>FluentNode.InvocationHandler</code></a>:</p>
+
+<pre><code class="language-java">        @Override
+        public FluentDocument newDocument() {
+            Document document = builder.newDocument();
+
+            return (FluentDocument) new FluentNode.InvocationHandler().enhance(document);
+        }
+
+        @Override
+        public Document parse(InputSource in) throws SAXException, IOException {
+            Document document = builder.parse(in);
+
+            return (FluentDocument) new FluentNode.InvocationHandler().enhance(document);
+        }
+</code></pre>
+
+<p>Creating a new <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocument.html"><code>FluentDocument</code></a> is as simple as:</p>
+
+<pre><code class="language-java">            document =
+                FluentDocumentBuilderFactory.newInstance()
+                .newDocumentBuilder()
+                .newDocument();
+</code></pre>
+
+<p>Unfortunately, the implementation as described so far will fail with an
+error similar to:</p>
+
+<pre><code class="language-javastacktrace">...
+[ERROR] Caused by: org.w3c.dom.DOMException: WRONG_DOCUMENT_ERR: A node is used in a different document than the one that created it.
+[ERROR] 	at com.sun.org.apache.xerces.internal.dom.AttributeMap.setNamedItem(AttributeMap.java:86)
+[ERROR] 	at ball.xml.FluentNode.add(FluentNode.java:180)
+...
+[ERROR] 	... 35 more
+...
+</code></pre>
+
+<p>The <code>com.sun.org.apache.xerces.internal.dom</code> implementation classes expect
+to have package access to other package classes.  This requires adjusting
+the
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.164"><code>invoke(Object,Method,Object[])</code></a>
+implementation to choose the wider of the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html"><code>Proxy</code></a> facade or the
+<em>reverse</em> depending on the required context:</p>
+
+<pre><code class="language-java">    @Override
+    public Object invoke(Object proxy, Method method, Object[] argv) throws Throwable {
+        Object result = null;
+        Class&lt;?&gt; declarer = method.getDeclaringClass();
+        Object that = map.reverse.get(proxy);
+
+        if (declarer.isAssignableFrom(Object.class)) {
+            result = method.invoke(that, argv);
+        } else {
+            argv = reverseFor(method.getParameterTypes(), argv);
+
+            if (declarer.isAssignableFrom(that.getClass())) {
+                result = method.invoke(that, argv);
+            } else {
+                result = super.invoke(proxy, method, argv);
+            }
+        }
+
+        return enhance(result);
+    }
+</code></pre>
+
+<p>This requires keeping an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/IdentityHashMap.html"><code>IdentityHashMap</code></a> of enhanced
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html"><code>Object</code></a> to <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html"><code>Proxy</code></a> and reverse:</p>
+
+<pre><code class="language-java">    private final ProxyMap map = new ProxyMap();
+
+    public Object enhance(Object in) {
+        Object out = null;
+
+        if (! hasFacade(in)) {
+            Class&lt;?&gt; type = getProxyClassFor(in);
+
+            if (type != null) {
+                out = map.computeIfAbsent(in, k -&gt; compute(type));
+            }
+        }
+
+        return (out != null) ? out : in;
+    }
+
+    private &lt;T&gt; T compute(Class&lt;T&gt; type) {
+        T proxy = null;
+
+        try {
+            proxy =
+                type.getConstructor(InvocationHandler.class)
+                .newInstance(this);
+        } catch (RuntimeException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IllegalStateException(exception);
+        }
+
+        return proxy;
+    }
+
+    private class ProxyMap extends IdentityHashMap&lt;Object,Object&gt; {
+        private final IdentityHashMap&lt;Object,Object&gt; reverse = new IdentityHashMap&lt;&gt;();
+
+        public IdentityHashMap&lt;Object,Object&gt; reverse() { return reverse; }
+
+        @Override
+        public Object put(Object key, Object value) {
+            reverse().put(value, key);
+
+            return super.put(key, value);
+        }
+    }
+</code></pre>
+
+<p>and providing the necessary “reverse” methods contained in the
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.104">source</a>.</p>
+
+<h2 id="integration">Integration</h2>
+
+<p><a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/tools/javadoc/AbstractTaglet.html"><code>AbstractTaglet</code></a> demonstrates the integration.  The class
+must implement <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/XMLServices.html"><code>XMLServices</code></a> and provide an implementation of
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/XMLServices.html#document--"><code>document()</code></a>.</p>
+
+<pre><code class="language-java">    private final FluentDocument document;
+    ...
+    protected AbstractTaglet(boolean isInlineTag, boolean inPackage,
+                             boolean inOverview, boolean inField,
+                             boolean inConstructor, boolean inMethod,
+                             boolean inType) {
+        ...
+        try {
+            ...
+            document =
+                FluentDocumentBuilderFactory.newInstance()
+                .newDocumentBuilder()
+                .newDocument();
+            document
+                .add(element("html",
+                             element("head",
+                                     element("meta",
+                                             attr("charset", "utf-8"))),
+                             element("body")));
+        } catch (Exception exception) {
+            throw new ExceptionInInitializerError(exception);
+        }
+    }
+    ...
+    @Override
+    public FluentDocument document() { return document; }
+</code></pre>
+
+<p><a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/tools/javadoc/AbstractTaglet.html"><code>AbstractTaglet</code></a> also implements
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/HTMLTemplates.html"><code>HTMLTemplates</code></a> which provides <code>default</code> methods for HTML
+elements/nodes.  <code>HTMLTemplates</code> is further extended by
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/tools/javadoc/JavadocHTMLTemplates.html"><code>JavadocHTMLTemplates</code></a> to provide common HTML/XML
+fragments required to generate Javadoc.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a> combined
+with specialized interfaces implementing <code>default</code> methods provides a
+mechanism for extending an otherwise <code>final</code> class hierarchy.</p>
+
+<p><b id="endnote1">[1]</b>
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a> is a subclass
+of <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/DefaultInvocationHandler.html"><code>DefaultInvocationHandler</code></a> whose
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-"><code>invoke(Object,Method,Object[])</code></a>
+implementation is discussed in
+<a href="/article/2019-01-31-java-invocationhandler-interface-default-methods">“Adding Support to Java InvocationHandler Implementations for Interface
+Default Methods”</a>).
+<a href="#ref1">↩</a></p>
+

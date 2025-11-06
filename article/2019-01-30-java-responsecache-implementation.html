@@ -1,0 +1,467 @@
+<p>The Java <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html?is-external=true"><code>URLConnection</code></a> mechanism may be configured to use
+a <a href="https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html?is-external=true"><code>ResponseCache</code></a>.  This article describes a
+<code>ResponseCache</code> implementation.</p>
+
+<h2 id="implementation-outline">Implementation Outline</h2>
+
+<p>The implementation requires subclassing <code>ResponseCache</code>, providing
+implementations of <a href="https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html#get-java.net.URI-java.lang.String-java.util.Map-"><code>get(URI,String,Map&lt;String,List&lt;String&gt;&gt;)</code></a> and
+<a href="https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html#put-java.net.URI-java.net.URLConnection-"><code>put(URI,URLConnection)</code></a>.  Non-trivial implementations of each
+method require providing concrete implementations of
+<a href="https://docs.oracle.com/javase/8/docs/api/java/net/CacheResponse.html"><code>CacheResponse</code></a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/net/CacheRequest.html"><code>CacheRequest</code></a>.  The
+outline of the implementation is:</p>
+
+<pre><code class="language-java">import java.net.CacheRequest;
+import java.net.CacheResponse;
+import java.net.ResponseCache;
+import java.net.URI;
+import java.net.URLConnection;
+
+public class ResponseCacheImpl extends ResponseCache {
+
+    /**
+     * Default {@link ResponseCacheImpl}.
+     */
+    public static final ResponseCacheImpl DEFAULT = new ResponseCacheImpl();
+
+    private ResponseCacheImpl() {
+        super();
+        /*
+         * ...
+         */
+    }
+
+    @Override
+    public CacheResponse get(URI uri, String method,
+                             Map&lt;String,List&lt;String&gt;&gt; headers) {
+        CacheResponseImpl response = null;
+        /*
+         * ...
+         */
+        return response;
+    }
+
+    @Override
+    public CacheRequest put(URI uri, URLConnection connection) {
+        CacheRequestImpl request = null;
+        /*
+         * ...
+         */
+        return request;
+    }
+
+    public class CacheRequestImpl extends CacheRequest {
+        /*
+         * ...
+         */
+    }
+
+    public class CacheResponseImpl extends CacheResponse {
+        /*
+         * ...
+         */
+    }
+}
+</code></pre>
+
+<p>Note: The <code>get()</code> and <code>put()</code> methods may return <code>null</code> indicating that no
+caching facility is available for that <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URI.html"><code>URI</code></a>.</p>
+
+<h2 id="cache-design">Cache Design</h2>
+
+<p>The cache will be a simple file system hierarchy residing under
+<code>${user.home}/.config/java/cache/</code>.  A cached <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URI.html"><code>URI</code></a> will map to a
+directory which will exist and contain two files if the object is cached:
+<code>BODY</code> and <code>HEADERS</code>.</p>
+
+<pre><code class="language-java">    private Path cache(URI uri) {
+        Path path = cache.resolve(uri.getScheme().toLowerCase());
+        String host = uri.getHost().toLowerCase();
+        int port = uri.getPort();
+
+        if (port &gt; 0) {
+            host += ":" + String.valueOf(port);
+        }
+
+        path = path.resolve(host);
+
+        String string = uri.getPath();
+
+        if (string != null) {
+            for (String substring : string.split("[/]+")) {
+                if (isNotEmpty(substring)) {
+                    path = path.resolve(substring);
+                }
+            }
+        }
+
+        return path.normalize();
+    }
+</code></pre>
+
+<p>No attempt will be made to cache “complex” <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URI.html"><code>URI</code></a>s. <code>isCacheable</code> is
+defined as:</p>
+
+<pre><code class="language-java">    private boolean isCacheable(URI uri) {
+        return (uri.isAbsolute()
+                &amp;&amp; (! uri.isOpaque())
+                &amp;&amp; uri.getUserInfo() == null
+                &amp;&amp; uri.getQuery() == null
+                &amp;&amp; uri.getFragment() == null);
+    }
+</code></pre>
+
+<p>A <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URI.html"><code>URI</code></a> is cached if it <code>isCacheable()</code> and its body exists in the
+cache:</p>
+
+<pre><code class="language-java">    private boolean isCached(URI uri) {
+        return isCacheable(uri) &amp;&amp; Files.exists(cache(uri).resolve(BODY));
+    }
+</code></pre>
+
+<h2 id="responsecacheputuriurlconnection-implementation">ResponseCache.put(URI,URLConnection) Implementation</h2>
+
+<p>This method allows the caller to put an object in the cache.
+<a href="https://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html#getHeaderFields--"><code>URLConnection.getHeaderFields()</code></a> are saved
+along with the “body” using an <a href="https://docs.oracle.com/javase/8/docs/api/java/beans/XMLEncoder.html"><code>XMLEncoder</code></a>.</p>
+
+<pre><code class="language-java">    @Override
+    public CacheRequest put(URI uri, URLConnection connection) {
+        CacheRequestImpl request = null;
+
+        if (isCacheable(uri)) {
+            if (! connection.getAllowUserInteraction()) {
+                request =
+                    new CacheRequestImpl(cache(uri),
+                                         connection.getHeaderFields());
+            }
+        }
+
+        return request;
+    }
+
+    public class CacheRequestImpl extends CacheRequest {
+        private final Path path;
+        private final Map&lt;String,List&lt;String&gt;&gt; headers;
+
+        private CacheRequestImpl(Path path, Map&lt;String,List&lt;String&gt;&gt; headers) {
+            super();
+
+            this.path = Objects.requireNonNull(path);
+            this.headers = Objects.requireNonNull(headers);
+        }
+
+        @Override
+        public OutputStream getBody() throws IOException {
+            Files.createDirectories(path);
+
+            XMLEncoder encoder =
+                new XMLEncoder(Files.newOutputStream(path.resolve(HEADERS)));
+
+            encoder.writeObject(headers);
+            encoder.close();
+
+            return Files.newOutputStream(path.resolve(BODY));
+        }
+</code></pre>
+
+<h2 id="responsecachegeturistringmapstringlist-implementation">ResponseCache.get(URI,String,Map&lt;String,List<String>&gt;) Implementation</String></h2>
+
+<p>This method attempts to retrieve the object from cache.  If it is cached,
+<code>CacheResponseImpl</code> provides the previously saved headers and
+<a href="https://docs.oracle.com/javase/8/docs/api/java/io/InputStream.html"><code>InputStream</code></a> from the cached file.  Headers are deserialized
+with an <a href="https://docs.oracle.com/javase/8/docs/api/java/beans/XMLDecoder.html"><code>XMLDecoder</code></a>.</p>
+
+<pre><code class="language-java">    @Override
+    public CacheResponse get(URI uri, String method,
+                             Map&lt;String,List&lt;String&gt;&gt; headers) {
+        CacheResponseImpl response = null;
+
+        if (isCached(uri)) {
+            response = new CacheResponseImpl(cache(uri));
+        }
+
+        return response;
+    }
+
+    public class CacheResponseImpl extends CacheResponse {
+        private final Path path;
+
+        private CacheResponseImpl(Path path) {
+            super();
+
+            this.path = Objects.requireNonNull(path);
+        }
+
+        @Override
+        public Map&lt;String,List&lt;String&gt;&gt; getHeaders() throws IOException {
+            XMLDecoder decoder =
+                new XMLDecoder(Files.newInputStream(path.resolve(HEADERS)));
+            @SuppressWarnings("unchecked")
+            Map&lt;String,List&lt;String&gt;&gt; headers =
+                (Map&lt;String,List&lt;String&gt;&gt;) decoder.readObject();
+
+            decoder.close();
+
+            return headers;
+        }
+
+        @Override
+        public InputStream getBody() throws IOException {
+            return Files.newInputStream(path.resolve(BODY));
+        }
+    }
+</code></pre>
+
+<h2 id="installation">Installation</h2>
+
+<p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html?is-external=true"><code>ResponseCache</code></a> implementation must be configured with
+the <a href="https://docs.oracle.com/javase/8/docs/api/java/net/ResponseCache.html#setDefault-java.net.ResponseCache-"><code>ResponseCache.setDefault(ResponseCache)</code></a>
+static method.  The following code fragment checks to see no other
+<code>ResponseCache</code> is installed before installing the target.</p>
+
+<pre><code class="language-java">        if (ResponseCache.getDefault() == null) {
+            ResponseCache.setDefault(ResponseCacheImpl.DEFAULT);
+        }
+</code></pre>
+
+<h2 id="ant-task">Ant Task</h2>
+
+<p>The critical portions of an Ant Task that uses
+<a href="https://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html?is-external=true"><code>URLConnection</code></a> configured with <code>ResponseCacheImpl</code> for
+download is shown below.</p>
+
+<pre><code class="language-java">@AntTask("download")
+@NoArgsConstructor @ToString
+public class DownloadTask extends Task {
+    static {
+        if (ResponseCache.getDefault() == null) {
+            ResponseCache.setDefault(ResponseCacheImpl.DEFAULT);
+        }
+    }
+
+    @NotNull @Getter @Setter
+    private URI uri = null;
+    @NotNull @Getter @Setter
+    private File toFile = null;
+
+    @Override
+    public void execute() throws BuildException {
+        try {
+            URLConnection connection = getUri().toURL().openConnection();
+
+            IOUtils.copy(connection.getInputStream(),
+                         new FileOutputStream(getToFile()));
+
+            log(getUri() + " --&gt; " + getToFile());
+        } catch (BuildException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new BuildException(exception);
+        }
+    }
+}
+</code></pre>
+
+<h2 id="responsecacheimpljava">ResponseCacheImpl.java</h2>
+
+<p>The complete implementation:</p>
+
+<pre><code class="language-java">/*
+ * $Id: README.md 6485 2020-07-18 03:45:11Z ball $
+ *
+ * Copyright 2019 Allen D. Ball.  All rights reserved.
+ */
+package ball.net;
+
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.CacheRequest;
+import java.net.CacheResponse;
+import java.net.ResponseCache;
+import java.net.URI;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
+import static java.nio.file.attribute.PosixFilePermissions.fromString;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
+/**
+ * {@link ResponseCache} implementation.
+ *
+ * @author {@link.uri mailto:ball@iprotium.com Allen D. Ball}
+ * @version $Revision: 6485 $
+ */
+public class ResponseCacheImpl extends ResponseCache {
+
+    /**
+     * Default {@link ResponseCacheImpl}.
+     */
+    public static final ResponseCacheImpl DEFAULT = new ResponseCacheImpl();
+
+    private static final String BODY = "BODY";
+    private static final String HEADERS = "HEADERS";
+
+    private final Path cache;
+
+    private ResponseCacheImpl() {
+        super();
+
+        try {
+            cache =
+                Paths.get(System.getProperty("user.home"),
+                          ".config", "java", "cache");
+
+            Files.createDirectories(cache,
+                                    asFileAttribute(fromString("rwx------")));
+        } catch (Exception exception) {
+            throw new ExceptionInInitializerError(exception);
+        }
+    }
+
+    @Override
+    public CacheResponse get(URI uri, String method,
+                             Map&lt;String,List&lt;String&gt;&gt; headers) {
+        CacheResponseImpl response = null;
+
+        if (isCached(uri)) {
+            response = new CacheResponseImpl(cache(uri));
+        }
+
+        return response;
+    }
+
+    @Override
+    public CacheRequest put(URI uri, URLConnection connection) {
+        CacheRequestImpl request = null;
+
+        if (isCacheable(uri)) {
+            if (! connection.getAllowUserInteraction()) {
+                request =
+                    new CacheRequestImpl(cache(uri),
+                                         connection.getHeaderFields());
+            }
+        }
+
+        return request;
+    }
+
+    private Path cache(URI uri) {
+        Path path = cache.resolve(uri.getScheme().toLowerCase());
+        String host = uri.getHost().toLowerCase();
+        int port = uri.getPort();
+
+        if (port &gt; 0) {
+            host += ":" + String.valueOf(port);
+        }
+
+        path = path.resolve(host);
+
+        String string = uri.getPath();
+
+        if (string != null) {
+            for (String substring : string.split("[/]+")) {
+                if (isNotEmpty(substring)) {
+                    path = path.resolve(substring);
+                }
+            }
+        }
+
+        return path.normalize();
+    }
+
+    private boolean isCached(URI uri) {
+        return isCacheable(uri) &amp;&amp; Files.exists(cache(uri).resolve(BODY));
+    }
+
+    private boolean isCacheable(URI uri) {
+        return (uri.isAbsolute()
+                &amp;&amp; (! uri.isOpaque())
+                &amp;&amp; uri.getUserInfo() == null
+                &amp;&amp; uri.getQuery() == null
+                &amp;&amp; uri.getFragment() == null);
+    }
+
+    private void delete(Path path) throws IOException {
+        Files.deleteIfExists(path.resolve(HEADERS));
+        Files.deleteIfExists(path.resolve(BODY));
+        Files.deleteIfExists(path);
+    }
+
+    public class CacheRequestImpl extends CacheRequest {
+        private final Path path;
+        private final Map&lt;String,List&lt;String&gt;&gt; headers;
+
+        private CacheRequestImpl(Path path, Map&lt;String,List&lt;String&gt;&gt; headers) {
+            super();
+
+            this.path = Objects.requireNonNull(path);
+            this.headers = Objects.requireNonNull(headers);
+        }
+
+        @Override
+        public OutputStream getBody() throws IOException {
+            Files.createDirectories(path);
+
+            XMLEncoder encoder =
+                new XMLEncoder(Files.newOutputStream(path.resolve(HEADERS)));
+
+            encoder.writeObject(headers);
+            encoder.close();
+
+            return Files.newOutputStream(path.resolve(BODY));
+        }
+
+        @Override
+        public void abort() {
+            try {
+                delete(path);
+            } catch (Exception exception) {
+                throw new IllegalStateException(exception);
+            }
+        }
+    }
+
+    public class CacheResponseImpl extends CacheResponse {
+        private final Path path;
+
+        private CacheResponseImpl(Path path) {
+            super();
+
+            this.path = Objects.requireNonNull(path);
+        }
+
+        @Override
+        public Map&lt;String,List&lt;String&gt;&gt; getHeaders() throws IOException {
+            XMLDecoder decoder =
+                new XMLDecoder(Files.newInputStream(path.resolve(HEADERS)));
+            @SuppressWarnings("unchecked")
+            Map&lt;String,List&lt;String&gt;&gt; headers =
+                (Map&lt;String,List&lt;String&gt;&gt;) decoder.readObject();
+
+            decoder.close();
+
+            return headers;
+        }
+
+        @Override
+        public InputStream getBody() throws IOException {
+            return Files.newInputStream(path.resolve(BODY));
+        }
+    }
+}
+</code></pre>
+

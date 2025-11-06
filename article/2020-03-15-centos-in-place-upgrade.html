@@ -1,0 +1,195 @@
+<p><a href="https://centos.org/">CentOS</a> 8.0 was released on September 24th, 2019 and <a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911">8.1</a> on
+January 15, 2020.  This article describes how a <a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS7.1908">CentOS 7</a> may be upgraded
+in place.
+<!--more-->
+The steps are captured in an <a href="https://www.ansible.com/">Ansible</a> role published on
+<a href="https://github.com/allen-ball/ball-ansible/blob/trunk/roles/centos/tasks/main.yml">GitHub</a>.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The steps to migrate a CentOS 7 instance to CentOS 8.1 are:</p>
+
+<ol>
+  <li>
+    <p>Replace <code>yum</code> with <code>dnf</code></p>
+
+    <p>a. Prepare <code>yum</code> installation</p>
+
+    <p>b. Install <code>dnf</code></p>
+
+    <p>c. Remove <code>yum</code></p>
+  </li>
+  <li>
+    <p>Use <code>dnf</code> to upgrade</p>
+
+    <p>a. Configure CentOS 8.1 packages</p>
+
+    <p>b. Install CentOS 8.1 (userland)</p>
+
+    <p>c. Install CentOS 8.1 kernel</p>
+  </li>
+</ol>
+
+<p>Step #1 is necessitated because
+<a href="https://fedoraproject.org/wiki/DNF?rd=Dnf"><code>dnf</code></a> has
+replaced
+<a href="https://wiki.centos.org/PackageManagement/Yum"><code>yum</code></a> in
+CentOS/RHEL 8 systems.  The implementation is discussed in the next session.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The following subsection describe the major steps of the upgrade.</p>
+
+<h3 id="replace-yum-with-dnf">Replace <code>yum</code> with <code>dnf</code></h3>
+
+<p>The first step is to replace <code>yum</code> with <code>dnf</code>.  The implementation uses the
+fact that <code>/usr/bin/yum</code> is a regular file when <code>yum</code> is installed and a
+symbolic link to <code>dnf-3</code> when dnf is installed.</p>
+
+<pre><code class="language-yaml">- name: /usr/bin/yum
+  stat: path=/usr/bin/yum
+  register: yum
+</code></pre>
+
+<p>The condition <code>yum.stat.isreg is defined and yum.stat.isreg</code>, if true,
+indicates <code>yum</code> was the package manager when Anisble was invoked.  The
+Ansible script takes advantage of this observation to provide idempotent
+operation.  <a href="https://linux.die.net/man/1/package-cleanup"><code>package-cleanup(1)</code></a> is installed from
+<a href="https://fedoraproject.org/wiki/EPEL"><code>epel-release</code></a> and used to remove locally installed RPMs.</p>
+
+<pre><code class="language-yaml">- name: epel-release
+  package:
+    name: epel-release
+    state: latest
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+
+- name: yum-utils
+  package:
+    name: yum-utils
+    state: latest
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+
+- name: package-cleanup
+  command:
+    cmd: "{{ item }}"
+  loop:
+    - package-cleanup --leaves
+    - package-cleanup --orphans
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+</code></pre>
+
+<p>The author’s use case is to upgrade a fresh install of CentOS 7.  However,
+if the upgrade is to be performed on a configured system, then <code>rpmconf</code>
+should be invoked to determine if any configuration files need to be
+preserved and/or migrated:</p>
+
+<pre><code class="language-bash"># yum -y install rpmconf
+# rpmconf -a
+</code></pre>
+
+<p><code>dnf</code> is installed with <code>yum</code> and then <code>yum</code> is removed with the
+corresponding <code>dnf</code> request, <code>/etc/yum</code> is removed, and <code>dnf</code> is updated.
+It is critical that these steps are completed so the system is not left in
+an inconsistent state without a functioning <code>yum</code> or <code>dnf</code>.</p>
+
+<pre><code class="language-yaml">- name: dnf
+  package:
+    name: dnf
+    state: latest
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+
+- name: yum -&gt; dnf
+  shell: |-
+    dnf -y remove yum yum-metadata-parser
+    rm -rf /etc/yum
+    dnf -y upgrade
+  args:
+    warn: false
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+</code></pre>
+
+<p><code>dnf</code> is now installed and available to use for an in-place upgrade.</p>
+
+<h3 id="upgrade-centos">Upgrade CentOS</h3>
+
+<p><a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911">CentOS 8</a> requires 3 <a href="https://centos.org/">CentOS</a> RPMs plus the latest
+<a href="https://fedoraproject.org/wiki/EPEL"><code>epel-release</code></a> (obtained via RPM) which are installed
+explicitly with <code>dnf</code>.  The conditional <code>ansible_distribution_major_version
+is version(releasever, "lt")</code> is leveraged to provide idempotent operation
+and avoid re-running once CentOS 8 is installed.</p>
+
+<pre><code class="language-yaml">- name: centos_packages
+  vars:
+    target: 8.1-1.1911.0.8.el8
+    arch: "{{ ansible_architecture }}"
+    releasever: "{{ target | regex_replace('^([0-9]+)[.].*$', '\\1') }}"
+    BaseOS: "http://mirror.centos.org/centos/{{ releasever }}/BaseOS"
+    Packages: "{{ BaseOS }}/{{ arch }}/os/Packages"
+  set_fact:
+    releasever: "{{ releasever }}"
+    centos_packages:
+      - "{{ Packages }}/centos-gpg-keys-{{ target }}.noarch.rpm"
+      - "{{ Packages }}/centos-release-{{ target }}.{{ arch }}.rpm"
+      - "{{ Packages }}/centos-repos-{{ target }}.{{ arch }}.rpm"
+      - "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ releasever }}.noarch.rpm"
+</code></pre>
+
+<p>The system is now ready for the actual upgrade.  The CentOS Upgrade script
+has to run until reboot or the system will be left in an inconsistent state.
+Unfortunately <code>python</code> is replaced (and moved) so the Anisble client loses
+communication during the process eliminating the possibility of using the
+Anisble <code>reboot</code> module.  Instead, the administrator should reinvoke the
+Ansible play once the update and reboot are complete.</p>
+
+<pre><code class="language-yaml">- name: warn
+  debug:
+    msg: &gt;-
+      Warning: CentOS Upgrade will install kernel and initiate reboot
+  when:
+    - ansible_distribution_major_version is version(releasever, "lt")
+
+- name: CentOS Upgrade
+  shell: |-
+    dnf -y install {{ centos_packages | join(" ") }}
+    dnf clean all
+    rpm -e $(rpm -q kernel)
+    rpm -e --nodeps sysvinit-tools
+    dnf -y --releasever={{ releasever }} --allowerasing --setopt=deltarpm=false distro-sync
+    dnf -y install kernel-core
+    dnf -y groupupdate "Core" "Minimal Install"
+    shutdown -r now
+  args:
+    warn: false
+  when:
+    - ansible_distribution_major_version is version(releasever, "lt")
+</code></pre>
+
+<h3 id="post-upgrade-steps">Post Upgrade Steps</h3>
+
+<p>The script allows for enabling the <code>CentOS-Plus</code> repository and updating
+installed packages <em>after</em> the reboot.</p>
+
+<pre><code class="language-yaml">- name: Enable CentOS-Plus repository
+  ini_file:
+    dest: /etc/yum.repos.d/CentOS-centosplus.repo
+    create: no
+    section: centosplus
+    option: enabled
+    value: "1"
+
+- name: package update
+  package:
+    name: "*"
+    state: latest
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p><a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS7.1908">CentOS 7</a> installation may be upgraded to <a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911">CentOS 8</a> in-place once <code>yum</code> is
+replaced by <code>dnf</code>.</p>
+

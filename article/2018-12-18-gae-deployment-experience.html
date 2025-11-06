@@ -1,0 +1,482 @@
+<p>This article describes some of the challenges and pecularities of deploying
+an annotated
+<a href="https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/using-spring-boot.html#using-boot-using-springbootapplication-annotation"><code>@SpringBootApplication</code></a>
+application to <a href="https://cloud.google.com/appengine/">Google Cloud Platform</a>.</p>
+
+<h2 id="set-up">Set-Up</h2>
+
+<p>This article assumes that the <a href="https://cloud.google.com/sdk/">Google Cloud SDK</a> has been installed and has
+been configured.  Further, this article assumes that a project has been
+set-up within the <a href="https://console.cloud.google.com/home/dashboard">Google Cloud Platform Console</a> (a fictitious
+<code>www-example-com</code> within this article).</p>
+
+<p>The <code>default</code> <a href="https://cloud.google.com/appengine/">Google App Engine</a> service must be created.  It may be
+created from the command line with <code>gcloud app create</code>.</p>
+
+<h2 id="war-maven-project">WAR Maven Project</h2>
+
+<p>The <a href="https://maven.apache.org/">Maven</a> Project to create the WAR for deployment consists
+of the following artifacts:</p>
+
+<pre><code class="language-bash">www-example-com-service-default
+├── pom.xml
+└── src
+    └── main
+        ├── resources
+        │   └── application-gcp.properties
+        └── webapp
+            └── WEB-INF
+                ├── logging.properties
+                └── web.xml
+</code></pre>
+
+<p>For simplicity, this example assumes a Spring Boot application is available
+as a single Maven dependency.  The project POM to deploy the application is
+identified with <code>groupId</code> corresponding to the Google Cloud <code>PROJECT_ID</code>,
+<code>artifactId</code> corresponding to the App Engine service name, and <code>version</code>
+corresponds to the App Engine service version.</p>
+
+<pre><code class="language-xml">&lt;project ...&gt;
+  &lt;groupId&gt;www-example-com&lt;/groupId&gt;
+  &lt;artifactId&gt;default&lt;/artifactId&gt;
+  &lt;version&gt;2018121801&lt;/version&gt;
+  &lt;packaging&gt;war&lt;/packaging&gt;
+  &lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-dependencies&lt;/artifactId&gt;
+    &lt;version&gt;2.1.1.RELEASE&lt;/version&gt;
+    &lt;relativePath/&gt;
+  &lt;/parent&gt;
+  ...
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.example&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-boot-application&lt;/artifactId&gt;
+      &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;/dependency&gt;
+    ...
+  &lt;/dependencies&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>Runtime dependencies should be added, also.  For example, the necessary
+dependencies to connect to a Google <code>mysql</code> SQL instance would include:</p>
+
+<pre><code class="language-xml">  &lt;dependencies&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.google.cloud.sql&lt;/groupId&gt;
+      &lt;artifactId&gt;mysql-socket-factory&lt;/artifactId&gt;
+      &lt;version&gt;1.0.11&lt;/version&gt;
+      &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;mysql&lt;/groupId&gt;
+      &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+      &lt;version&gt;8.0.13&lt;/version&gt;
+      &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;/dependency&gt;
+    ...
+  &lt;/dependencies&gt;
+</code></pre>
+
+<p>The necessary plugins to build the WAR and repackage the WAR as a Spring
+Boot application are:</p>
+
+<pre><code class="language-xml">  ...
+  &lt;properties&gt;
+    ...
+    &lt;start-class&gt;com.example.Launcher&lt;/start-class&gt;
+    ...
+  &lt;/properties&gt;
+  ...
+  &lt;build&gt;
+    &lt;pluginManagement&gt;
+      &lt;plugins&gt;
+        &lt;plugin&gt;
+          &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+          &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
+          &lt;configuration&gt;
+            &lt;delimiters&gt;
+              &lt;delimiter&gt;@&lt;/delimiter&gt;
+            &lt;/delimiters&gt;
+            &lt;useDefaultDelimiters&gt;false&lt;/useDefaultDelimiters&gt;
+            &lt;webResources&gt;
+              &lt;resource&gt;
+                &lt;filtering&gt;true&lt;/filtering&gt;
+                &lt;directory&gt;src/main/webapp&lt;/directory&gt;
+              &lt;/resource&gt;
+            &lt;/webResources&gt;
+          &lt;/configuration&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+          &lt;executions&gt;
+            &lt;execution&gt;
+              &lt;goals&gt;
+                &lt;goal&gt;build-info&lt;/goal&gt;
+                &lt;goal&gt;repackage&lt;/goal&gt;
+              &lt;/goals&gt;
+            &lt;/execution&gt;
+          &lt;/executions&gt;
+          &lt;configuration&gt;
+            &lt;mainClass&gt;${start-class}&lt;/mainClass&gt;
+          &lt;/configuration&gt;
+        &lt;/plugin&gt;
+      &lt;/plugins&gt;
+    &lt;/pluginManagement&gt;
+    ...
+  &lt;/build&gt;
+  ...
+</code></pre>
+
+<p>The additional artifacts used in constructing the WAR include
+<code>src/main/resources/application-gcp.properties</code>,</p>
+
+<pre data-src="/assets/article/2018-12-18-gae-deployment-experience/www-example-com-service-default/src/main/resources/application-gcp.properties"></pre>
+
+<p><code>src/main/webapp/WEB-INF/web.xml</code>,</p>
+
+<pre data-src="/assets/article/2018-12-18-gae-deployment-experience/www-example-com-service-default/src/main/webapp/WEB-INF/web.xml"></pre>
+
+<p>and <code>src/main/webapp/WEB-INF/logging.properties</code>:</p>
+
+<pre data-src="/assets/article/2018-12-18-gae-deployment-experience/www-example-com-service-default/src/main/webapp/WEB-INF/logging.properties"></pre>
+
+<p>The resulting WAR is expected to be executed with the Spring Profile “<code>gcp</code>”
+enabled.  The secrets in the template may be populated by setting the
+corresponding Maven properties in the
+build.<sup id="ref1"><a href="#endnote1">1</a></sup>  While the <code>web.xml</code> is not 
+needed by the annotated Spring Boot Application, it is configured to
+redirect <code>http</code> traffic to <code>https</code> and provide session management.</p>
+
+<p>The WAR may be created by executing <code>mvn clean package</code>.</p>
+
+<h2 id="adjustments-to-deploy-to-google-app-engine">Adjustments to Deploy to Google App Engine</h2>
+
+<p>The “standard” App Engine environment uses <code>Jetty</code> instead of <code>Tomcat</code> so
+the application dependencies need to be adjusted by adding exclusions:</p>
+
+<pre><code class="language-xml">  &lt;dependencies verbose="true"&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.example&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-boot-application&lt;/artifactId&gt;
+      &lt;version&gt;1.0.0&lt;/version&gt;
+      &lt;exclusions&gt;
+        &lt;exclusion&gt;
+          &lt;artifactId&gt;commons-logging&lt;/artifactId&gt;
+          &lt;groupId&gt;commons-logging&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+          &lt;groupId&gt;javax.transaction&lt;/groupId&gt;
+          &lt;artifactId&gt;javax.transaction-api&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-starter-tomcat&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+      &lt;/exclusions&gt;
+    &lt;/dependency&gt;
+    ...
+  &lt;/dependencies&gt;
+</code></pre>
+
+<p>Google offers at least two <a href="http://maven.apache.org/">Maven</a>
+plugins.  As of this writing, the two available plugins are:</p>
+
+<pre><code class="language-xml">  &lt;build&gt;
+    &lt;pluginManagement&gt;
+      ...
+      &lt;plugins&gt;
+        &lt;plugin&gt;
+          &lt;groupId&gt;com.google.appengine&lt;/groupId&gt;
+          &lt;artifactId&gt;appengine-maven-plugin&lt;/artifactId&gt;
+          &lt;version&gt;1.9.70&lt;/version&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+          &lt;groupId&gt;com.google.cloud.tools&lt;/groupId&gt;
+          &lt;artifactId&gt;appengine-maven-plugin&lt;/artifactId&gt;
+          &lt;version&gt;1.3.2&lt;/version&gt;
+        &lt;/plugin&gt;
+      &lt;/plugins&gt;
+      ...
+    &lt;/pluginManagement&gt;
+    ...
+  &lt;/build&gt;
+</code></pre>
+
+<p>Google describes the first as “App Engine SDK-based” and provides a document
+on this plugin
+<a href="https://cloud.google.com/appengine/docs/standard/java/tools/maven">here</a>
+and the second as “Cloud SDK-based” with a document on this plugin
+<a href="https://cloud.google.com/appengine/docs/standard/java/tools/using-maven">here</a>.
+The Cloud SDK-based plugin also requires the <code>app-engine-java</code> component be
+installed with <code>gcloud components install app-engine-java</code>.</p>
+
+<p>Both plugins (as with any deployment to App Engine) require a
+<a href="https://cloud.google.com/appengine/docs/standard/java/config/appref"><code>src/main/webapp/WEB-INF/appengine-web.xml</code></a>
+which is either specified and/or generated.  This application includes the
+following:</p>
+
+<pre data-src="/assets/article/2018-12-18-gae-deployment-experience/www-example-com-service-default/src/main/webapp/WEB-INF/appengine-web.xml"></pre>
+
+<p>which has the following features (in addition to specifying scaling):</p>
+
+<ul>
+  <li>Sets the <code>SPRING_PROFILES_ACTIVE</code> environment variable to <code>gcp</code> to enable
+the Spring profile</li>
+  <li>Configures <code>java.util.logging</code></li>
+</ul>
+
+<p>For this demonstration, the <code>com.google.appengine:appengine-maven-plugin</code> is
+configured in a Maven profile:</p>
+
+<pre><code class="language-xml">  &lt;profiles&gt;
+    ...
+    &lt;profile&gt;
+      &lt;id&gt;com.google.appengine:appengine-maven-plugin&lt;/id&gt;
+      &lt;activation&gt;
+        &lt;file&gt;&lt;missing&gt;${basedir}/src/main/appengine/app.yaml&lt;/missing&gt;&lt;/file&gt;
+      &lt;/activation&gt;
+      &lt;build&gt;
+        &lt;plugins&gt;
+          &lt;plugin&gt;
+            &lt;groupId&gt;com.google.appengine&lt;/groupId&gt;
+            &lt;artifactId&gt;appengine-maven-plugin&lt;/artifactId&gt;
+          &lt;/plugin&gt;
+        &lt;/plugins&gt;
+      &lt;/build&gt;
+    &lt;/profile&gt;
+    ...
+  &lt;/profiles&gt;
+</code></pre>
+
+<p>The application may be built and deployed with
+<code>mvn clean package appengine:deploy</code>.  Example output:</p>
+
+<pre><code class="language-bash">mvn -B clean package appengine:deploy
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ---------------------&lt; www-example-com:default &gt;----------------------
+[INFO] Building www-example-com default 1
+[INFO] --------------------------------[ war ]---------------------------------
+...
+[INFO] --- appengine-maven-plugin:1.9.70:deploy (default-cli) @ default ---
+[INFO]
+[INFO] Google App Engine Java SDK - Updating Application
+[INFO]
+[INFO] Retrieving Google App Engine Java SDK from Maven
+[INFO] Downloading from central: https://repo1.maven.org/maven2/com/google/appengine/appengine-java-sdk/1.9.70/appengine-java-sdk-1.9.70.zip
+[INFO] Downloaded from central: https://repo1.maven.org/maven2/com/google/appengine/appengine-java-sdk/1.9.70/appengine-java-sdk-1.9.70.zip (183 MB at 15 MB/s)
+[INFO] Updating Google App Engine Application
+[INFO] Running -A www-example-com -V 1 --oauth2 update /Users/ball/www-example-com-service-default/target/default-1
+Reading application configuration data...
+
+
+Beginning interaction for module default...
+0% Created staging directory at: '/var/folders/c5/pzywv1k91gqgvkklp5r2twx00000gn/T/appcfg6118757389943856883.tmp'
+5% Scanning for jsp files.
+20% Scanning files on local disk.
+25% Initiating update.
+28% Cloning 162 application files.
+40% Uploading 6 files.
+52% Uploaded 1 files.
+61% Uploaded 2 files.
+68% Uploaded 3 files.
+73% Uploaded 4 files.
+77% Uploaded 5 files.
+80% Uploaded 6 files.
+82% Sending batch containing 6 file(s) totaling 231KB.
+84% Initializing precompilation...
+90% Deploying new version.
+95% Will check again in 1 seconds.
+98% Will check again in 2 seconds.
+99% Will check again in 4 seconds.
+99% Will check again in 8 seconds.
+99% Closing update: new version is ready to start serving.
+99% Uploading index definitions.
+
+Update for module default completed successfully.
+Success.
+Cleaning up temporary files for module default...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  48.730 s
+[INFO] Finished at: 2018-12-18T19:34:33-08:00
+[INFO] ------------------------------------------------------------------------
+</code></pre>
+
+<p>This deploys the service but does not switch the load balancer to the new
+service.</p>
+
+<p>The <code>com.google.cloud.tools:appengine-maven-plugin</code> may be configured with
+an <code>src/main/appengine/app.yaml</code>:</p>
+
+<pre><code class="language-xml">  &lt;profiles&gt;
+    ...
+    &lt;profile&gt;
+      &lt;id&gt;com.google.cloud.tools:appengine-maven-plugin&lt;/id&gt;
+      &lt;activation&gt;
+        &lt;file&gt;&lt;exists&gt;${basedir}/src/main/appengine/app.yaml&lt;/exists&gt;&lt;/file&gt;
+      &lt;/activation&gt;
+      &lt;build&gt;
+        &lt;plugins&gt;
+          &lt;plugin&gt;
+            &lt;groupId&gt;com.google.cloud.tools&lt;/groupId&gt;
+            &lt;artifactId&gt;appengine-maven-plugin&lt;/artifactId&gt;
+            &lt;configuration&gt;
+              &lt;project&gt;${project.groupId}&lt;/project&gt;
+              &lt;service&gt;${project.artifactId}&lt;/service&gt;
+              &lt;version&gt;${project.version}&lt;/version&gt;
+            &lt;/configuration&gt;
+          &lt;/plugin&gt;
+        &lt;/plugins&gt;
+      &lt;/build&gt;
+    &lt;/profile&gt;
+    ...
+  &lt;/profiles&gt;
+</code></pre>
+
+<p>Various articles suggest that a minimal <code>app.yaml</code> can replace the
+<code>appengine-web.xml</code>:</p>
+
+<pre><code class="language-yaml">runtime: java8
+env: standard
+</code></pre>
+
+<p>However, it fails with a cryptic error message:</p>
+
+<pre><code class="language-bash">mvn -B clean package appengine:deploy
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ---------------------&lt; www-example-com:default &gt;----------------------
+[INFO] Building www-example-com default 2
+[INFO] --------------------------------[ war ]---------------------------------
+...
+[INFO] --- appengine-maven-plugin:1.3.2:deploy (default-cli) @ default ---
+[INFO] Staging the application to: /Users/ball/www-example-com-service-default/target/appengine-staging
+[INFO] Detected App Engine flexible environment application.
+Dec 18, 2018 8:16:31 PM com.google.cloud.tools.appengine.cloudsdk.CloudSdk logCommand
+INFO: submitting command: /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin/gcloud app deploy --version 2 --project www-example-com
+[INFO] GCLOUD: Services to deploy:
+[INFO] GCLOUD:
+[INFO] GCLOUD: descriptor:      [/Users/ball/www-example-com-service-default/target/appengine-staging/app.yaml]
+[INFO] GCLOUD: source:          [/Users/ball/www-example-com-service-default/target/appengine-staging]
+[INFO] GCLOUD: target project:  [www-example-com]
+[INFO] GCLOUD: target service:  [default]
+[INFO] GCLOUD: target version:  [2]
+[INFO] GCLOUD: target url:      [http://www-example-com.appspot.com]
+[INFO] GCLOUD:
+[INFO] GCLOUD:
+[INFO] GCLOUD: Beginning deployment of service [default]...
+[INFO] GCLOUD: ERROR: (gcloud.app.deploy) Cannot upload file [/Users/ball/www-example-com-service-default/target/appengine-staging/default-2.war], which has size [74408302] (greater than maximum allowed size of [33554432]). Please delete the file or add to the skip_files entry in your application .yaml file and try again.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.260 s
+[INFO] Finished at: 2018-12-18T20:16:34-08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal com.google.cloud.tools:appengine-maven-plugin:1.3.2:deploy (default-cli) on project default: Execution default-cli of goal com.google.cloud.tools:appengine-maven-plugin:1.3.2:deploy failed: Non zero exit: 1 -&gt; [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/PluginExecutionException
+</code></pre>
+
+<p>This author recommends using <code>com.google.cloud.tools:appengine-maven-plugin</code>
+with a fully defined <code>appengine-web.xml</code> and a trivial <code>app.yaml</code>:</p>
+
+<pre data-src="/assets/article/2018-12-18-gae-deployment-experience/www-example-com-service-default/src/main/appengine/app.yaml"></pre>
+
+<p>With the corresponding output:</p>
+
+<pre><code class="language-bash">mvn -B clean package appengine:deploy
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------------&lt; www-example-com:default &gt;-----------------------
+[INFO] Building www-example-com default 3
+[INFO] --------------------------------[ war ]---------------------------------
+...
+[INFO] --- appengine-maven-plugin:1.3.2:deploy (default-cli) @ default ---
+[INFO] Staging the application to: /Users/ball/www-example-com-service-default/target/appengine-staging
+[INFO] Detected App Engine standard environment application.
+Dec 18, 2018 8:30:22 PM com.google.cloud.tools.appengine.cloudsdk.CloudSdk logCommand
+INFO: submitting command: /Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home/jre/bin/java -cp /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine/google/appengine/tools/java/lib/appengine-tools-api.jar com.google.appengine.tools.admin.AppCfg --disable_update_check stage /Users/ball/www-example-com-service-default/target/default-3 /Users/ball/www-example-com-service-default/target/appengine-staging
+[INFO] GCLOUD: Reading application configuration data...
+[INFO] GCLOUD:
+[INFO] GCLOUD:
+[INFO] GCLOUD: Beginning interaction for module default...
+[INFO] GCLOUD: 0% Scanning for jsp files.
+[INFO] GCLOUD: 2018-12-18 20:30:24.932:INFO::main: Logging initialized @234ms to org.eclipse.jetty.util.log.StdErrLog
+[INFO] GCLOUD: 2018-12-18 20:30:25.048:INFO:oejs.Server:main: jetty-9.4.14.v20181114; built: 2018-11-14T21:20:31.478Z; git: c4550056e785fb5665914545889f21dc136ad9e6; jvm 1.8.0_192-b12
+[INFO] GCLOUD: 2018-12-18 20:30:26.627:INFO:oeja.AnnotationConfiguration:main: Scanning elapsed time=989ms
+[INFO] GCLOUD: 2018-12-18 20:30:26.643:INFO:oejq.QuickStartDescriptorGenerator:main: Quickstart generating
+[INFO] GCLOUD: 2018-12-18 20:30:26.658:INFO:oejsh.ContextHandler:main: Started o.e.j.q.QuickStartWebApp@685cb137{/,file:///Users/ball/www-example-com-service-default/target/appengine-staging/,AVAILABLE}
+[INFO] GCLOUD: 2018-12-18 20:30:26.661:INFO:oejs.Server:main: Started @1964ms
+[INFO] GCLOUD: 2018-12-18 20:30:26.666:INFO:oejsh.ContextHandler:main: Stopped o.e.j.q.QuickStartWebApp@685cb137{/,file:///Users/ball/www-example-com-service-default/target/appengine-staging/,UNAVAILABLE}
+[INFO] GCLOUD: Success.
+[INFO] GCLOUD: Temporary staging for module default directory left in /Users/ball/www-example-com-service-default/target/appengine-staging
+Dec 18, 2018 8:30:26 PM com.google.cloud.tools.appengine.cloudsdk.CloudSdk logCommand
+INFO: submitting command: /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin/gcloud app deploy --version 3 --project www-example-com
+[INFO] GCLOUD: Services to deploy:
+[INFO] GCLOUD:
+[INFO] GCLOUD: descriptor:      [/Users/ball/www-example-com-service-default/target/appengine-staging/app.yaml]
+[INFO] GCLOUD: source:          [/Users/ball/www-example-com-service-default/target/appengine-staging]
+[INFO] GCLOUD: target project:  [www-example-com]
+[INFO] GCLOUD: target service:  [default]
+[INFO] GCLOUD: target version:  [3]
+[INFO] GCLOUD: target url:      [https://www-example-com.appspot.com]
+[INFO] GCLOUD:
+[INFO] GCLOUD:
+[INFO] GCLOUD: Beginning deployment of service [default]...
+[INFO] GCLOUD: #============================================================#
+[INFO] GCLOUD: #= Uploading 3 files to Google Cloud Storage                =#
+[INFO] GCLOUD: #============================================================#
+[INFO] GCLOUD: File upload done.
+[INFO] GCLOUD: Updating service [default]...
+[INFO] GCLOUD: ..............done.
+[INFO] GCLOUD: Setting traffic split for service [default]...
+[INFO] GCLOUD: .......done.
+[INFO] GCLOUD: Stopping version [www-example-com/default/2018121803].
+[INFO] GCLOUD: Sent request to stop version [www-example-com/default/2018121803]. This operation may take some time to complete. If you would like to verify that it succeeded, run:
+[INFO] GCLOUD:   $ gcloud app versions describe -s default 2018121803
+[INFO] GCLOUD: until it shows that the version has stopped.
+[INFO] GCLOUD: Deployed service [default] to [https://www-example-com.appspot.com]
+[INFO] GCLOUD:
+[INFO] GCLOUD: You can stream logs from the command line by running:
+[INFO] GCLOUD:   $ gcloud app logs tail -s default
+[INFO] GCLOUD:
+[INFO] GCLOUD: To view your application in the web browser run:
+[INFO] GCLOUD:   $ gcloud app browse
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  37.537 s
+[INFO] Finished at: 2018-12-18T20:30:51-08:00
+[INFO] ------------------------------------------------------------------------
+</code></pre>
+
+<h2 id="pomxml">pom.xml</h2>
+
+<p>The complete <code>pom.xml</code> used in this example:</p>
+
+<pre data-src="/assets/article/2018-12-18-gae-deployment-experience/www-example-com-service-default/pom.xml"></pre>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://spring.io/projects/spring-boot">Spring Boot</a></li>
+  <li><a href="https://cloud.google.com/">Google Cloud Platform</a></li>
+  <li><a href="https://cloud.google.com/appengine/">Google App Engine</a></li>
+  <li><a href="https://console.cloud.google.com/home/dashboard">Google Cloud Platform Console</a></li>
+</ul>
+
+<p><b id="endnote1">[1]</b>
+Exercise left to the reader.
+<a href="#ref1">↩</a></p>
+

@@ -1,0 +1,98 @@
+<p><a href="https://github.com/">GitHub</a> will render project <code>README</code> and other markdown files to <code>HTML</code>
+when displaying projects on its website.  Those files must be commited and
+pushed before the developer can see the results which can result in
+extraneous and unwanted commits.  This post discusses installing and using
+the <a href="https://github.com/joeyespo/grip">GitHub Readme Instant Preview</a> (GRIP) tool for previewing
+<a href="https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown">GitHub-flavored Markdown</a> locally.
+<!--more-->
+It provides a GRIP-specific configuration file to enable authentication to
+GitHub to prevent the developer from bumping up against GitHub’s
+<a href="https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting">throttles</a>
+for unauthenticated users.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>The <a href="https://github.com/joeyespo/grip">GRIP</a> tool is available for installation from many popular package
+managers.  To install on MacOS with Home Brew:</p>
+
+<pre><code class="language-sh">$ brew install grip
+</code></pre>
+
+<p>Or on Debian:</p>
+
+<pre><code class="language-sh">$ apt install grip
+</code></pre>
+
+<p>To name a few.</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>Usage is straightforward:  Change the working directory to the project
+directory containing the <code>README.md</code> or other markdown and invoke <code>grip</code>.</p>
+
+<pre><code class="language-sh">$ grip
+ * Serving Flask app "grip.app" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://localhost:6419/ (Press CTRL+C to quit)
+</code></pre>
+
+<p>And browse to <a href="http://localhost:6419/">http://localhost:6419/</a> (or the URL specified in the output).
+The output of <a href="https://github.com/joeyespo/grip">GRIP</a> run in the local project is shown below for comparison
+to <a href="https://github.com/allen-ball/spring-boot-web-server">https://github.com/allen-ball/spring-boot-web-server</a>.</p>
+
+<p><img src="/assets/article/2021-07-27-grip/screenshot-1.png" alt="" /></p>
+
+<p>As configured (albeit, without configuration), <a href="https://github.com/joeyespo/grip">GRIP</a> will invoke the
+<a href="https://github.com/">GitHub</a> API without authentication.  GitHub will limit unauthenticated
+requests to as little as 60 per hour which could impact intensive
+read/review cycles (especially if the developer is sumltaneously using other
+GitHub resources in an unauthenticated manner).  The next section discusses
+configuring authentication.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p><a href="https://github.com/joeyespo/grip">GRIP</a> invokes the <code>${HOME}/.grip/settings.py</code> script (if it exists) to
+determine the <code>USERNAME</code> and <code>PASSWORD</code> to use for authentication.  The
+script below offers a more secure option than simply assigning those raw
+values in the script.</p>
+
+<p><a href="https://github.com/">GitHub</a> currently recommends (and sometimes requires) the developer
+<a href="https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">create a personal access token</a>
+and also provides a process for
+<a href="https://docs.github.com/en/get-started/getting-started-with-git/caching-your-github-credentials-in-git">caching GitHub credentials in Git</a>
+(for Mac, Windows, and Linux).  After completing these two procedures, the
+developer’s credentials are available for GitHub <code>https</code> operations through
+the <code>git credential fill</code> command.  The <code>${HOME}/.grip/settings.py</code> script
+below (and available as this
+<a href="https://gist.github.com/allen-ball/fdc974e6e24e391ddcfad3d61b9a5230">Gist</a>)
+retrieves the cached credentials for <a href="https://github.com/joeyespo/grip">GRIP</a>.</p>
+
+<pre><code class="language-python"># settings.py
+# https://github.com/joeyespo/grip
+
+# Uses "git credential fill" to populate USERNAME and PASSWORD
+
+def git_credential_fill():
+    import subprocess
+    argv = ["git", "credential", "fill"]
+    process = subprocess.Popen(argv, text = True, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    output = process.communicate(input = "protocol=https\nhost=github.com\n")[0].strip()
+    map = dict(item.split("=") for item in output.splitlines())
+
+    return (map["username"], map["password"])
+
+(USERNAME, PASSWORD) = git_credential_fill()
+</code></pre>
+
+<p>Notice <a href="https://github.com/joeyespo/grip">GRIP</a> prints <code>Using credentials</code> message when configured.</p>
+
+<pre><code class="language-sh">$ grip
+ * Using credentials: allen-ball
+ * Serving Flask app "grip.app" (lazy loading)
+ * Environment: production
+...
+</code></pre>
+

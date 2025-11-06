@@ -1,0 +1,357 @@
+<p>This article examines extending Java <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code>s</a> used as property values
+within <a href="https://docs.oracle.com/javase/tutorial/javabeans/">JavaBeans</a> combined with the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html">Stream API</a> to create and extend
+<em>fluent interfaces</em>.  From
+<a href="https://en.wikipedia.org/wiki/Main_Page">Wikipedia</a>:</p>
+
+<blockquote>
+  <p><a href="https://en.wikipedia.org/wiki/Fluent_interface">In software engineering, a fluent interface … is a method for designing object oriented APIs based extensively on method chaining with the goal of making the readability of the source code close to that of ordinary written prose, essentially creating a domain-specific language within the interface.</a></p>
+</blockquote>
+
+<!--more-->
+
+<p>The Java Stream API provides the method chaining; this article will examine
+how Java <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code>s</a> may be extended (specifically to implement
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> to contribute to a fluent interface’s quality of
+being similar to “written prose.”  For example:</p>
+
+<pre><code class="language-java">public enum Rank implements Predicate&lt;Card&gt; {
+    JOKER, ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING;
+    ...
+}
+
+public enum Suit implements Predicate&lt;Card&gt; {
+    CLUBS, DIAMONDS, HEARTS, SPADES;
+    ...
+}
+
+public class Card {
+    private final Suit suit;
+    private final Rank rank;
+    ...
+}
+</code></pre>
+
+<p>will allow support for fluent expressions like:</p>
+
+<pre><code class="language-java">    List&lt;Card&gt; hand = ...;
+
+    boolean areAllHearts =
+        hand.stream()
+        .filter(Suit.HEARTS)
+        .allMatch();
+
+    boolean hasKingOfSpades =
+        hand.stream()
+        .filter(Rank.KING.and(Suit.SPADES))
+        .anyMatch();
+</code></pre>
+
+<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/allclasses-noframe.html">javadoc</a> is provided.</p>
+
+<h2 id="extending-enums">Extending Enums</h2>
+
+<p><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> values are constants but they are also subclasses of <code>Enum</code>
+and those subclass implementations may have custom fields and methods.  For
+example, <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html"><code>java.time.DayOfWeek</code></a> implements the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAccessor.html"><code>TemporalAccessor</code></a> and
+<a href="https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAdjuster.html"><code>TemporalAdjuster</code></a> interfaces so <code>DayOfWeek</code> provides
+implementation methods for those interface methods.  The <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a>
+implementation demonstrates how subclass fields may be defined and set by
+defining a custom constructor.</p>
+
+<pre><code class="language-java">    public enum Suit {
+        CLUBS(Color.BLACK, "\u2667"),
+        DIAMONDS(Color.RED, "\u2662"),
+        HEARTS(Color.RED, "\u2661"),
+        SPADES(Color.BLACK, "\u2664");
+        ...
+        private final Color color;
+        private final String string;
+
+        @ConstructorProperties({ "color", EMPTY })
+        private Suit(Color color, String string) {
+            this.color = color;
+            this.string = string;
+        }
+
+        public Color getColor() { return color; }
+
+        @Override
+        public String toString() { return string; }
+        ...
+    }
+</code></pre>
+
+<h2 id="implementing-predicate">Implementing Predicate</h2>
+
+<p>The key to contributing to the fluent interface provided by
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> is for the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> subclass to implement
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>.  Of course, that <code>Predicate</code> must test the bean
+that the <code>Enum</code> is a property for.  For example, <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> and
+<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a> must test <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.html"><code>Card</code></a>:</p>
+
+<pre><code class="language-java">    public enum Rank implements Predicate&lt;Card&gt; {
+        ...
+        @Override
+        public boolean test(Card card) {
+            return is(this).test(card.getRank());
+        }
+        ...
+        public static Predicate&lt;Rank&gt; is(Rank rank) {
+            return t -&gt; Objects.equals(rank, t);
+        }
+        ...
+    }
+
+    public enum Suit implements Predicate&lt;Card&gt; {
+        ...
+        @Override
+        public boolean test(Card card) {
+            return is(this).test(card.getSuit());
+        }
+        ...
+        public static Predicate&lt;Suit&gt; is(Suit rank) {
+            return t -&gt; Objects.equals(rank, t);
+        }
+        ...
+    }
+</code></pre>
+
+<p>Note: Both implementations provide static <code>is</code> methods to further contribute
+to the “fluency” of the API.</p>
+
+<p>To re-inforce the fact that <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> and <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a> are
+bean properties of <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.html"><code>Card</code></a>, <code>Rank</code> and <code>Suit</code> are implemented as
+inner classes of <code>Card</code>.</p>
+
+<h2 id="fluent-implementation---poker-hand-ranking">Fluent Implementation - Poker Hand Ranking</h2>
+
+<p>To demonstrate the “fluency” of the API, a Poker <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> may be defined.</p>
+
+<pre><code class="language-java">public enum Ranking implements Predicate&lt;List&lt;Card&gt;&gt; {
+    Empty(0, Collection::isEmpty),
+        HighCard(1, t -&gt; true),
+        Pair(2, Rank.SAME),
+        TwoPair(4, Pair.with(Pair)),
+        ThreeOfAKind(3, Rank.SAME),
+        Straight(5, Rank.SEQUENCE),
+        Flush(5, Suit.SAME),
+        FullHouse(5, ThreeOfAKind.with(Pair)),
+        FourOfAKind(4, Rank.SAME),
+        StraightFlush(5, holding(ACE, KING).negate().and(Straight).and(Flush)),
+        RoyalFlush(5, holding(ACE, KING).and(Straight).and(Flush)),
+        FiveOfAKind(5, Rank.SAME);
+
+    private final int required;
+    private final Predicate&lt;List&lt;Card&gt;&gt; is;
+
+    private Ranking(int required, Predicate&lt;List&lt;Card&gt;&gt; is) {
+        this.required = required;
+        this.is = Objects.requireNonNull(is);
+    }
+    ...
+    public int required() { return required; }
+    ...
+    @Override
+    public boolean test(List&lt;Card&gt; list) {
+        return (list.size() &gt;= required()
+                &amp;&amp; is.test(subListTo(list, required())));
+    }
+    ...
+}
+</code></pre>
+
+<p>To complete the Poker “domain specific language” the <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> and
+<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a> types must provide static <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>
+<code>SAME</code> fields,</p>
+
+<pre><code class="language-java">    ...
+    private static &lt;T&gt; Predicate&lt;List&lt;T&gt;&gt; same(Function&lt;T,Predicate&lt;T&gt;&gt; mapper) {
+        return t -&gt; ((! t.isEmpty()) &amp;&amp; t.stream().allMatch(mapper.apply(t.get(0))));
+    }
+    ...
+    public enum Rank implements Predicate&lt;Card&gt; {
+        ...
+        public static final Predicate&lt;List&lt;Card&gt;&gt; SAME = same(Card::getRank);
+        ...
+    }
+    ...
+    public enum Suit implements Predicate&lt;Card&gt; {
+        ...
+        public static final Predicate&lt;List&lt;Card&gt;&gt; SAME = same(Card::getSuit);
+        ...
+    }
+    ...
+</code></pre>
+
+<p><a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> must provide a static <code>SEQUENCE</code>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>,</p>
+
+<pre><code class="language-java">    ...
+    private static &lt;T,R&gt; List&lt;R&gt; listOf(Collection&lt;T&gt; collection,
+                                        Function&lt;T,R&gt; mapper) {
+        return collection.stream().map(mapper).collect(Collectors.toList());
+    }
+    ...
+    public enum Rank implements Predicate&lt;Card&gt; {
+        ...
+        public static final List&lt;Rank&gt; ACE_HIGH  =
+            unmodifiableList(asList(JOKER,
+                                    TWO, THREE, FOUR, FIVE,
+                                    SIX, SEVEN, EIGHT, NINE,
+                                    TEN, JACK, QUEEN, KING, ACE));
+        public static final List&lt;Rank&gt; ACE_LOW =
+            unmodifiableList(asList(values()));
+
+        private static final Map&lt;String,Rank&gt; MAP;
+        private static final List&lt;List&lt;Rank&gt;&gt; SEQUENCES;
+
+        static {
+            TreeMap&lt;String,Rank&gt; map =
+                new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);
+
+            for (Rank rank : values()) {
+                map.put(rank.name(), rank);
+                map.put(rank.toString(), rank);
+            }
+
+            MAP = unmodifiableMap(map);
+
+            List&lt;Rank&gt; high = new ArrayList&lt;&gt;(Rank.ACE_HIGH);
+            List&lt;Rank&gt; low = new ArrayList&lt;&gt;(Rank.ACE_LOW);
+
+            reverse(high);
+            reverse(low);
+
+            SEQUENCES =
+                unmodifiableList(asList(unmodifiableList(high),
+                                        unmodifiableList(low)));
+        }
+        ...
+        public static final Predicate&lt;List&lt;Card&gt;&gt; SEQUENCE =
+            t -&gt; ((! t.isEmpty()) &amp;&amp; sequence(listOf(t, Card::getRank)));
+
+        private static boolean sequence(List&lt;Rank&gt; list) {
+            return (SEQUENCES.stream().anyMatch(t -&gt; indexOfSubList(t, list) &gt;= 0));
+        }
+        ...
+    }
+    ...
+</code></pre>
+
+<p>and <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> must provide static <code>with</code> and <code>holding</code> methods:</p>
+
+<pre><code class="language-java">public enum Ranking implements Predicate&lt;List&lt;Card&gt;&gt; {
+    ...
+    private Predicate&lt;List&lt;Card&gt;&gt; with(Predicate&lt;List&lt;Card&gt;&gt; that) {
+        return t -&gt; test(t) &amp;&amp; that.test(subListFrom(t, required()));
+    }
+
+    private static &lt;T&gt; Predicate&lt;List&lt;T&gt;&gt; holding(int count, Predicate&lt;List&lt;T&gt;&gt; predicate) {
+        return t -&gt; (t.isEmpty() || predicate.test(subListTo(t, count)));
+    }
+
+    @SafeVarargs
+    @SuppressWarnings({ "varargs" })
+    private static &lt;T&gt; Predicate&lt;List&lt;T&gt;&gt; holding(Predicate&lt;T&gt;... array) {
+        return holding(Stream.of(array).collect(Collectors.toList()));
+    }
+
+    private static &lt;T&gt; Predicate&lt;List&lt;T&gt;&gt; holding(List&lt;Predicate&lt;T&gt;&gt; list) {
+        return t -&gt; ((list.isEmpty() || t.isEmpty())
+                     || (list.get(0).test(t.get(0))
+                         &amp;&amp; (holding(subListFrom(list, 1)).test(subListFrom(t, 1)))));
+    }
+
+    private static &lt;T&gt; List&lt;T&gt; subListTo(List&lt;T&gt; list, int to) {
+        return list.subList(0, Math.min(to, list.size()));
+    }
+
+    private static &lt;T&gt; List&lt;T&gt; subListFrom(List&lt;T&gt; list, int from) {
+        return list.subList(from, list.size());
+    }
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> combined
+with the <code>Combinations</code> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> introduced in
+<a href="/article/2019-03-28-java-streams-and-spliterators">this article</a> may be
+used to test for a specific Poker hand.</p>
+
+<pre><code class="language-java">    List&lt;Card&gt; hand = ...;
+    int size = Math.min(5, hand.size());
+
+    boolean isStraight =
+        Combinations.of(size, hand)
+        .filter(Ranking.STRAIGHT)
+        .anyMatch();
+</code></pre>
+
+<p>While this implementation is complete, the <code>Combinations</code> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a>
+provides an <code>of(int,int,Predicate&lt;List&lt;T&gt;&gt;,Collection&lt;T&gt;)</code> method that
+allows the specification of a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> that when it
+evaluates to <code>false</code> will stop iterating over that branch.  The
+<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> may be extended to provide that
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> by providing a <code>possible()</code> method:</p>
+
+<pre><code class="language-java">public enum Ranking implements Predicate&lt;List&lt;Card&gt;&gt; {
+    Empty(0, null, Collection::isEmpty),
+        HighCard(1, t -&gt; true, t -&gt; true),
+        Pair(2, Rank.SAME, Rank.SAME),
+        TwoPair(4, holding(2, Rank.SAME), Pair.with(Pair)),
+        ThreeOfAKind(3, Rank.SAME, Rank.SAME),
+        Straight(5, Rank.SEQUENCE, Rank.SEQUENCE),
+        Flush(5, Suit.SAME, Suit.SAME),
+        FullHouse(5, holding(3, Rank.SAME), ThreeOfAKind.with(Pair)),
+        FourOfAKind(4, Rank.SAME, Rank.SAME),
+        StraightFlush(5,
+                      holding(ACE, KING).negate().and(Rank.SEQUENCE).and(Suit.SAME),
+                      holding(ACE, KING).negate().and(Straight).and(Flush)),
+        RoyalFlush(5,
+                   holding(ACE, KING).and(Rank.SEQUENCE).and(Suit.SAME),
+                   holding(ACE, KING).and(Straight).and(Flush)),
+        FiveOfAKind(5, Rank.SAME, Rank.SAME);
+
+    private final int required;
+    private final Predicate&lt;List&lt;Card&gt;&gt; possible;
+    private final Predicate&lt;List&lt;Card&gt;&gt; is;
+
+    private Ranking(int required, Predicate&lt;List&lt;Card&gt;&gt; possible, Predicate&lt;List&lt;Card&gt;&gt; is) {
+        this.required = required;
+        this.possible = possible;
+        this.is = Objects.requireNonNull(is);
+    }
+    ...
+    public Predicate&lt;List&lt;Card&gt;&gt; possible() {
+        return t -&gt; (possible == null || possible.test(subListTo(t, required())));
+    }
+    ...
+}
+</code></pre>
+
+<p>which in combination with the
+<code>Combinations.of(int,int,Predicate&lt;List&lt;T&gt;&gt;,Collection&lt;T&gt;)</code> method will
+optimize the search for <code>ThreeOfAKind</code> by escaping a branch if the first
+<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.html"><code>Card</code>s</a> are not the same <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a>, <code>Straight</code> if the
+first <code>Card</code>s are not a sequence, etc.</p>
+
+<pre><code class="language-java">    List&lt;Card&gt; hand = ...;
+    int size = Math.min(5, hand.size());
+
+    boolean isStraight =
+        Combinations.of(size, size, STRAIGHT.possible(), hand)
+        .filter(Ranking.STRAIGHT)
+        .anyMatch();
+</code></pre>
+
+<p>The logic in <code>Ranking.find(Collection&lt;Card&gt;)</code> and <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Evaluator.html"><code>Evaluator</code></a>
+demonstrate more sophisticated logic.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>Implementing <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate(BEAN)</code></a> for <code>BEAN</code> property types
+(including <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a>) will contribute to making an API “fluent” when
+used in combination with <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a>.</p>
+

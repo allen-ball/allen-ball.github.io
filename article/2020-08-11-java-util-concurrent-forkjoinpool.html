@@ -1,0 +1,229 @@
+<p>The combination of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTask</code></a> implementations running
+in a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a> allows tasks to be defined that may
+spawn subtasks that in turn may run asynchronously.  The <code>ForkJoinPool</code>
+manages efficient processing of those tasks.</p>
+
+<p>This article presents a simple calculator application to evaluate a formula
+defined as a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List</code></a> presents a single-threaded recursive solution,
+and then converts that solution to use <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTasks</code></a>
+executed in a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a>.</p>
+
+<!--more-->
+
+<h2 id="recursive-solution">Recursive Solution</h2>
+
+<p>A formula to be computed is defined as follows:</p>
+
+<pre><code class="language-java">    public enum Operator { ADD, MULTIPLY; }
+
+    public static List&lt;?&gt; FORMULA =
+        List.of(Operator.ADD,
+                List.of(Operator.MULTIPLY, 1, 2, 3), 4, 5,
+                List.of(Operator.ADD, 6, 7, 8,
+                        List.of(Operator.MULTIPLY, 9, 10, 11)));
+</code></pre>
+
+<p>A formula is either a <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Number.html"><code>Number</code></a> or a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List</code></a> consisting of
+an <code>Operator</code> followed by other formulae.  For illustration, the Lisp
+equivalent of <code>FORMULA</code> would be:</p>
+
+<pre><code class="language-scheme">(+ (* 1 2 3) 4 5
+   (+ 6 7 8
+      (* 9 10 11)))
+</code></pre>
+
+<p>A <code>Task</code> class is defined to solve formulae:</p>
+
+<pre><code class="language-java">    public static class Task {
+        private final Object formula;
+
+        public Task(Object formula) { this.formula = formula; }
+
+        public Integer compute() {
+            Integer result = null;
+
+            if (formula instanceof Number) {
+                result = ((Number) formula).intValue();
+            } else {
+                List&lt;?&gt; list = (List&lt;?&gt;) formula;
+                Operator operator = (Operator) list.get(0);
+                List&lt;Task&gt; subtasks =
+                    list.subList(1, list.size())
+                    .stream()
+                    .map(Task::new)
+                    .collect(toList());
+                IntStream operands =
+                    subtasks.stream()
+                    .map(Task::compute)
+                    .mapToInt(Integer::intValue);
+
+                switch (operator) {
+                case ADD:
+                    result = operands.sum();
+                    break;
+
+                case MULTIPLY:
+                    result = operands.reduce(1, (x, y) -&gt; x * y);
+                    break;
+                }
+            }
+
+            System.out.println(formula + " -&gt; " + result);
+
+            return result;
+        }
+    }
+</code></pre>
+
+<p>The <code>compute()</code> method evaluates the formula by creating another <code>Task</code>
+instance to evaluate each operand recursively by calling <code>compute()</code>.  The
+actual mechanics are to create a <code>List</code> of <code>Task</code>s and then map the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> of <code>Task</code>s to an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/IntStream.html"><code>IntStream</code></a> by calling
+<code>Task.compute()</code> which is evaluated based on the operator.</p>
+
+<p>The static <code>main(String[])</code> function simply instantiates a <code>Task</code> and calls
+<code>compute()</code>.</p>
+
+<pre><code class="language-java">    public static void main(String[] argv) {
+        Task task = new Task(FORMULA);
+
+        System.out.println("Result: " + task.compute());
+    }
+</code></pre>
+
+<p>Which generates the following output:</p>
+
+<pre><code class="language-javastacktrace">1 -&gt; 1
+2 -&gt; 2
+3 -&gt; 3
+[MULTIPLY, 1, 2, 3] -&gt; 6
+4 -&gt; 4
+5 -&gt; 5
+6 -&gt; 6
+7 -&gt; 7
+8 -&gt; 8
+9 -&gt; 9
+10 -&gt; 10
+11 -&gt; 11
+[MULTIPLY, 9, 10, 11] -&gt; 990
+[ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]] -&gt; 1011
+[ADD, [MULTIPLY, 1, 2, 3], 4, 5, [ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]]] -&gt; 1026
+Result: 1026
+</code></pre>
+
+<p>The next chapter details how to convert this solution to use
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a> to enable some level of parallel processing.</p>
+
+<h2 id="forkjoinpool-solution">ForkJoinPool Solution</h2>
+
+<p>The <code>Task</code> class is modified to extend
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTask&lt;Integer&gt;</code></a>.  When a subtask is instantiated,
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html#fork--"><code>RecursiveTask.fork()</code></a> is called to asynchronously
+execute this task in the pool the current task is running in.  In the
+<code>IntStream</code>, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html#join--"><code>RecursiveTask.join()</code></a> is called to wait
+for the subtask to complete (if it hasn’t already) and return the result of
+the <code>compute()</code> method.</p>
+
+<pre><code class="language-java">    public static class Task extends RecursiveTask&lt;Integer&gt; {
+        ...
+        @Override
+        public Integer compute() {
+            Integer result = null;
+
+            if (formula instanceof Number) {
+                ...
+            } else {
+                ...
+                List&lt;Task&gt; subtasks =
+                    list.subList(1, list.size())
+                    .stream()
+                    .map(Task::new)
+                    .peek(RecursiveTask::fork)
+                    .collect(toList());
+                IntStream operands =
+                    subtasks.stream()
+                    .map(RecursiveTask::join)
+                    .mapToInt(Integer::intValue);
+                ...
+            }
+
+            System.out.println(Thread.currentThread() + "\t"
+                               + formula + " -&gt; " + result);
+
+            return result;
+        }
+    }
+</code></pre>
+
+<p>The executing <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html"><code>Thread</code></a> is included in the output to demonstrate
+the behavior.  The <code>main(String[])</code> function creates a
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a>, the <code>Task</code> to compute <code>FORMULA</code>, and uses
+the pool to invoke the <code>Task</code>.  The result is obtained through <code>Task.join()</code>
+to wait for the computation to complete.</p>
+
+<pre><code class="language-java">    public static int N = 10;
+
+    public static void main(String[] argv) {
+        ForkJoinPool pool = new ForkJoinPool(N);
+        RecursiveTask&lt;Integer&gt; task = new Task(FORMULA);
+
+        pool.invoke(task);
+
+        System.out.println("Result: " + task.join());
+    }
+</code></pre>
+
+<p>Output using 10 threads (<code>N = 10</code>):</p>
+
+<pre><code class="language-javastacktrace">Thread[ForkJoinPool-1-worker-31,5,main]	2 -&gt; 2
+Thread[ForkJoinPool-1-worker-19,5,main]	8 -&gt; 8
+Thread[ForkJoinPool-1-worker-23,5,main]	4 -&gt; 4
+Thread[ForkJoinPool-1-worker-17,5,main]	3 -&gt; 3
+Thread[ForkJoinPool-1-worker-9,5,main]	1 -&gt; 1
+Thread[ForkJoinPool-1-worker-27,5,main]	5 -&gt; 5
+Thread[ForkJoinPool-1-worker-3,5,main]	7 -&gt; 7
+Thread[ForkJoinPool-1-worker-21,5,main]	6 -&gt; 6
+Thread[ForkJoinPool-1-worker-17,5,main]	11 -&gt; 11
+Thread[ForkJoinPool-1-worker-23,5,main]	10 -&gt; 10
+Thread[ForkJoinPool-1-worker-31,5,main]	9 -&gt; 9
+Thread[ForkJoinPool-1-worker-5,5,main]	[MULTIPLY, 1, 2, 3] -&gt; 6
+Thread[ForkJoinPool-1-worker-31,5,main]	[MULTIPLY, 9, 10, 11] -&gt; 990
+Thread[ForkJoinPool-1-worker-13,5,main]	[ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]] -&gt; 1011
+Thread[ForkJoinPool-1-worker-19,5,main]	[ADD, [MULTIPLY, 1, 2, 3], 4, 5, [ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]]] -&gt; 1026
+Result: 1026
+</code></pre>
+
+<p>And with 1 pool thread (<code>N = 1</code>):</p>
+
+<pre><code class="language-javastacktrace">Thread[ForkJoinPool-1-worker-3,5,main]	1 -&gt; 1
+Thread[ForkJoinPool-1-worker-3,5,main]	2 -&gt; 2
+Thread[ForkJoinPool-1-worker-3,5,main]	3 -&gt; 3
+Thread[ForkJoinPool-1-worker-3,5,main]	[MULTIPLY, 1, 2, 3] -&gt; 6
+Thread[ForkJoinPool-1-worker-3,5,main]	4 -&gt; 4
+Thread[ForkJoinPool-1-worker-3,5,main]	5 -&gt; 5
+Thread[ForkJoinPool-1-worker-3,5,main]	6 -&gt; 6
+Thread[ForkJoinPool-1-worker-3,5,main]	7 -&gt; 7
+Thread[ForkJoinPool-1-worker-3,5,main]	8 -&gt; 8
+Thread[ForkJoinPool-1-worker-3,5,main]	9 -&gt; 9
+Thread[ForkJoinPool-1-worker-3,5,main]	10 -&gt; 10
+Thread[ForkJoinPool-1-worker-3,5,main]	11 -&gt; 11
+Thread[ForkJoinPool-1-worker-3,5,main]	[MULTIPLY, 9, 10, 11] -&gt; 990
+Thread[ForkJoinPool-1-worker-3,5,main]	[ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]] -&gt; 1011
+Thread[ForkJoinPool-1-worker-3,5,main]	[ADD, [MULTIPLY, 1, 2, 3], 4, 5, [ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]]] -&gt; 1026
+Result: 1026
+</code></pre>
+
+<p>Which (unsurprisingly) calculates the formulae in the same order as the
+recursive solution.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>Single threaded recursive solutions may be converted to
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTask</code></a><sup id="ref1"><a href="#endnote1">1</a></sup>
+implementations and invoked through a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a> to
+enable efficient processing of subtasks.</p>
+
+<p><b id="endnote1">[1]</b>
+Implementation class of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html"><code>ForkJoinTask</code></a>.
+<a href="#ref1">↩</a></p>
+

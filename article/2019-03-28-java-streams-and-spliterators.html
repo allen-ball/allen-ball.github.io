@@ -1,0 +1,284 @@
+<p>This article discusses implementing <a href="https://www.java.com/en/download/help/java8.html">Java 8</a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code>s</a> and
+the underlying <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation.  The nontrivial
+implementations described here are <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Permutations.html"><code>Permutations</code></a> and
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> streams, both of which provide a stream of
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List&lt;T&gt;</code></a> instances representing the combinations of the argument
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html"><code>Collection&lt;T&gt;</code></a>.</p>
+
+<p>For example, the first <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> of <code>5</code> of a 52-card
+<code>Deck</code> are:</p>
+
+<pre><code class="language-bash">[2-♧, 3-♧, 4-♧, 5-♧, 6-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, 7-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, 8-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, 9-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, 10-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, J-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, Q-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, K-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, A-♧]
+[2-♧, 3-♧, 4-♧, 5-♧, 2-♢]
+[2-♧, 3-♧, 4-♧, 5-♧, 3-♢]
+...
+</code></pre>
+
+<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/overview-summary.html">javadoc</a> is provided.</p>
+
+<h2 id="stream-implementation">Stream Implementation</h2>
+
+<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Permutations.html"><code>Permutations</code></a> stream is implemented in terms of
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a>:</p>
+
+<pre><code class="language-java">    public static &lt;T&gt; Stream&lt;List&lt;T&gt;&gt; of(Predicate&lt;List&lt;T&gt;&gt; predicate,
+                                         Collection&lt;T&gt; collection) {
+        int size = collection.size();
+
+        return Combinations.of(size, size, predicate, collection);
+    }
+</code></pre>
+
+<p>and the <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> stream relies on a
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation provided through a
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html"><code>Supplier</code></a>:</p>
+
+<pre><code class="language-java">    public static &lt;T&gt; Stream&lt;List&lt;T&gt;&gt; of(int size0, int sizeN,
+                                         Predicate&lt;List&lt;T&gt;&gt; predicate,
+                                         Collection&lt;T&gt; collection) {
+        SpliteratorSupplier&lt;T&gt; supplier =
+            new SpliteratorSupplier&lt;T&gt;()
+            .collection(collection)
+            .size0(size0).sizeN(sizeN)
+            .predicate(predicate);
+
+        return supplier.stream();
+    }
+</code></pre>
+
+<p>The <code>supplier.stream()</code> method relies on <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/StreamSupport.html"><code>StreamSupport</code></a>:</p>
+
+<pre><code class="language-java">        public Stream&lt;List&lt;T&gt;&gt; stream() {
+            return StreamSupport.&lt;List&lt;T&gt;&gt;stream(get(), false);
+        }
+</code></pre>
+
+<p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation is the subject of the next
+section.</p>
+
+<h2 id="spliterator-implementation">Spliterator Implementation</h2>
+
+<p>The abstract <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/DispatchSpliterator.html"><code>DispatchSpliterator</code></a> base class
+provides the implementation of
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-"><code>Spliterator.tryAdvance(Consumer)</code></a>.  The key logic
+is the current <code>Spliterator</code>’s <code>tryAdvance(Consumer)</code> method is tried and if
+it returns false, the next <code>Spliterator</code><sup id="ref1"><a href="#endnote1">1</a></sup>
+is tried until there are no more <code>Spliterator</code>s to be supplied.</p>
+
+<pre><code class="language-java">    private Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; spliterators = null;
+    private Spliterator&lt;T&gt; spliterator = Spliterators.emptySpliterator();
+    ...
+    protected abstract Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; spliterators();
+    ...
+    @Override
+    public Spliterator&lt;T&gt; trySplit() {
+        if (spliterators == null) {
+            spliterators = Spliterators.iterator(spliterators());
+        }
+
+        return spliterators.hasNext() ? spliterators.next().get() : null;
+    }
+
+    @Override
+    public boolean tryAdvance(Consumer&lt;? super T&gt; consumer) {
+        boolean accepted = false;
+
+        while (! accepted) {
+            if (spliterator == null) {
+                spliterator = trySplit();
+            }
+
+            if (spliterator != null) {
+                accepted = spliterator.tryAdvance(consumer);
+
+                if (! accepted) {
+                    spliterator = null;
+                }
+            } else {
+                break;
+            }
+        }
+
+        return accepted;
+    }
+</code></pre>
+
+<p>Subclass implementors must supply an implementation of
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/DispatchSpliterator.html#spliterators--"><code>Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; spliterators()</code></a>.
+In the <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> implementation, the key
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>, <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208"><code>ForPrefix</code></a>, iterates over every
+(sorted) prefix and either supplies more <code>ForPrefix</code> <code>Spliterator</code>s or a
+single <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265"><code>ForCombination</code></a> <code>Spliterator</code>:</p>
+
+<pre><code class="language-java">        private class ForPrefix extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
+            private final int size;
+            private final List&lt;T&gt; prefix;
+            private final List&lt;T&gt; remaining;
+
+            public ForPrefix(int size, List&lt;T&gt; prefix, List&lt;T&gt; remaining) {
+                super(binomial(remaining.size(), size),
+                      SpliteratorSupplier.this.characteristics());
+
+                this.size = size;
+                this.prefix = requireNonNull(prefix);
+                this.remaining = requireNonNull(remaining);
+            }
+
+            @Override
+            protected Iterator&lt;Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt;&gt; spliterators() {
+                List&lt;Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt;&gt; list = new LinkedList&lt;&gt;();
+
+                if (prefix.size() &lt; size) {
+                    for (int i = 0, n = remaining.size(); i &lt; n; i += 1) {
+                        List&lt;T&gt; prefix = new LinkedList&lt;&gt;(this.prefix);
+                        List&lt;T&gt; remaining = new LinkedList&lt;&gt;(this.remaining);
+
+                        prefix.add(remaining.remove(i));
+
+                        list.add(() -&gt; new ForPrefix(size, prefix, remaining));
+                    }
+                } else if (prefix.size() == size) {
+                    list.add(() -&gt; new ForCombination(prefix));
+                } else {
+                    throw new IllegalStateException();
+                }
+
+                return list.iterator();
+            }
+        }
+</code></pre>
+
+<p>Size, supplied as a superclass constructor parameter, is calculated with the
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/DispatchSpliterator.html#binomial-long-long-"><code>binomial()</code></a> method.  For an individual combination, the size is
+<code>1</code>.</p>
+
+<pre><code class="language-java">        private class ForCombination extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
+            private final List&lt;T&gt; combination;
+
+            public ForCombination(List&lt;T&gt; combination) {
+                super(1, SpliteratorSupplier.this.characteristics());
+
+                this.combination = requireNonNull(combination);
+            }
+
+            @Override
+            protected Iterator&lt;Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt;&gt; spliterators() {
+                Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt; supplier =
+                    () -&gt; Collections.singleton(combination).spliterator();
+
+                return Collections.singleton(supplier).iterator();
+            }
+        }
+</code></pre>
+
+<p>Implementations should delay as much computation as possible until required
+in <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-"><code>Spliterator.tryAdvance(Consumer)</code></a> allowing
+callers (including <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> thorough
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/StreamSupport.html"><code>StreamSupport</code></a>) to optimize and avoid computation.</p>
+
+<p>The complete implementation provides a <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144"><code>Start</code></a>
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> returned by the
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.html#line.106"><code>SpliteratorSupplier</code></a> and a <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177"><code>ForSize</code></a>
+spliterator to iterate over combination sizes.</p>
+
+<pre><code class="language-java">        private class Start extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
+            public Start() {
+                super(binomial(collection().size(), size0(), sizeN()),
+                      SpliteratorSupplier.this.characteristics());
+            }
+
+            @Override
+            protected Iterator&lt;Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt;&gt; spliterators() {
+                List&lt;Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt;&gt; list = new LinkedList&lt;&gt;();
+
+                IntStream.rangeClosed(Math.min(size0(), sizeN()),
+                                      Math.max(size0(), sizeN()))
+                    .filter(t -&gt; ! (collection.size() &lt; t))
+                    .forEach(t -&gt; list.add(() -&gt; new ForSize(t)));
+
+                if (size0() &gt; sizeN()) {
+                    Collections.reverse(list);
+                }
+
+                return list.iterator();
+            }
+            ...
+        }
+</code></pre>
+
+<pre><code class="language-java">        private class ForSize extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
+            private final int size;
+
+            public ForSize(int size) {
+                super(binomial(collection().size(), size),
+                      SpliteratorSupplier.this.characteristics());
+
+                this.size = size;
+            }
+
+            @Override
+            protected Iterator&lt;Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt;&gt; spliterators() {
+                Supplier&lt;Spliterator&lt;List&lt;T&gt;&gt;&gt; supplier =
+                    () -&gt; new ForPrefix(size,
+                                        Collections.emptyList(),
+                                        new LinkedList&lt;&gt;(collection()));
+
+                return Collections.singleton(supplier).iterator();
+            }
+            ...
+        }
+</code></pre>
+
+<h2 id="honoring-the-api-predicate-parameter">Honoring the API Predicate Parameter</h2>
+
+<p>The API defines a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> parameter which provides a way
+for callers to dynamically short-circuit all or part of the iteration.  The
+<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208"><code>ForPrefix</code></a> and <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265"><code>ForCombination</code></a>
+<code>tryAdvance(Consumer)</code> methods are overridden as follows:</p>
+
+<pre><code class="language-java">        private class ForPrefix extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
+            ...
+            @Override
+            public boolean tryAdvance(Consumer&lt;? super List&lt;T&gt;&gt; consumer) {
+                Predicate&lt;List&lt;T&gt;&gt; predicate =
+                    SpliteratorSupplier.this.predicate();
+
+                return ((prefix.isEmpty()
+                         || (predicate == null || predicate.test(prefix)))
+                        &amp;&amp; super.tryAdvance(consumer));
+            }
+            ...
+        }
+
+        private class ForCombination extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
+            ...
+            public boolean tryAdvance(Consumer&lt;? super List&lt;T&gt;&gt; consumer) {
+                Predicate&lt;List&lt;T&gt;&gt; predicate =
+                    SpliteratorSupplier.this.predicate();
+
+                return ((combination.isEmpty()
+                         || (predicate == null || predicate.test(combination)))
+                        &amp;&amp; super.tryAdvance(consumer));
+            }
+            ...
+        }
+</code></pre>
+
+<p>If a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> is supplied and the current combination does
+not satisfy the <code>Predicate</code>, that <em>path</em> is pruned immediately.
+A <a href="/article/2019-10-29-java-enums-as-predicates">future blog post</a> will
+discuss using this feature to quickly evaluate Poker hands.</p>
+
+<p><b id="endnote1">[1]</b>
+Obtained by calling the implementatioon of
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#trySplit--"><code>Spliterator.trySplit()</code></a>.
+<a href="#ref1">↩</a></p>
+

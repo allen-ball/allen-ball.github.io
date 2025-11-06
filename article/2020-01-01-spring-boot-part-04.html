@@ -1,0 +1,443 @@
+<p>This series of articles will examine <a href="https://spring.io/projects/spring-boot">Spring Boot</a> features.  This fourth
+installment discusses <a href="https://docs.spring.io/spring/docs/5.3.6/spring-framework-reference/web.html">Spring MVC</a>, templating in Spring, and creates a
+simple internationalized clock application as an example.  The clock
+application will allow the user to select <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html"><code>Locale</code></a> and
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/TimeZone.html"><code>TimeZone</code></a>.</p>
+
+<p>Complete source code for the
+<a href="https://github.com/allen-ball/spring-boot-web-server">series</a>
+and for this
+<a href="https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-04">part</a>
+are available on <a href="https://github.com/allen-ball">Github</a>.</p>
+
+<p>Note that this post’s details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The <em>Controller</em> will provide methods to service <code>GET</code> and <code>POST</code> requests
+at <code>/clock/time</code> and update the
+<a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a>
+with:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Attribute Name</th>
+      <th>Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>locale</td>
+      <td>User-selected <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html"><code>Locale</code></a></td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>User-selected <a href="https://docs.oracle.com/javase/8/docs/api/java/util/TimeZone.html"><code>TimeZone</code></a></td>
+    </tr>
+    <tr>
+      <td>timestamp</td>
+      <td>Current <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html"><code>Date</code></a></td>
+    </tr>
+    <tr>
+      <td>date</td>
+      <td><a href="https://docs.oracle.com/javase/8/docs/api/java/text/DateFormat.html"><code>DateFormat</code></a> to display date (based on <code>Locale</code> and <code>TimeZone</code>)</td>
+    </tr>
+    <tr>
+      <td>time</td>
+      <td><code>DateFormat</code> to display time (based on <code>Locale</code> and <code>TimeZone</code></td>
+    </tr>
+    <tr>
+      <td>locales</td>
+      <td>A sorted <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List</code></a> of <code>Locale</code>s the user may select</td>
+    </tr>
+    <tr>
+      <td>zones</td>
+      <td>A sorted <code>List</code> of <code>TimeZone</code>s the user may select</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <em>View</em> will use <a href="https://www.thymeleaf.org/">Thymeleaf</a> technology which may be included with a
+reasonable configuration simply by including the corresponding “starter” in
+the POM.  The developer’s primary responsibility is write the corresponding
+Thymeleaf template.</p>
+
+<p>For this project, <a href="https://getbootstrap.com/">Bootstrap</a> is used as the CSS
+Framework.<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+
+<p>The required dependencies are included in the
+<a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/pom.xml"><code>pom.xml</code></a>:</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd"&gt;
+  ...
+  &lt;dependencies verbose="true"&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-boot-starter-thymeleaf&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.webjars&lt;/groupId&gt;
+      &lt;artifactId&gt;webjars-locator-core&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.webjars&lt;/groupId&gt;
+      &lt;artifactId&gt;bootstrap&lt;/artifactId&gt;
+      &lt;version&gt;4.6.0-1&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.webjars&lt;/groupId&gt;
+      &lt;artifactId&gt;jquery&lt;/artifactId&gt;
+      &lt;version&gt;3.6.0&lt;/version&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>The following subsections describe the <em>View</em>, <em>Controller</em>, and <code>Model</code>.</p>
+
+<h3 id="view">View</h3>
+
+<p>The <em>Controller</em> will serve requests at <code>/clock/time</code> and the Thymeleaf
+<code>ViewResolver</code> (with the default configuration) will look for the
+corresponding template at
+<a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/src/main/resources/templates/clock/time.html"><code>classpath:/templates/clock/time.html</code></a>
+(note the <code>/templates/</code> superdirectory and the <code>.html</code> suffix).  The
+template with the <code>&lt;main/&gt;</code> element is shown below.  The XML Namespace “th”
+is defined for Thymeleaf and a number of “<code>th:*</code>” attributes are used.  For
+example, the Bootstrap artifact paths are wrapped in “<code>th:href</code>” and
+“<code>th:src</code>” attributes with values expressed in Thymeleaf standard expression
+syntax.</p>
+
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org" th:xmlns="@{http://www.w3.org/1999/xhtml}"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"/&gt;
+    &lt;meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/&gt;
+    &lt;link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.css}"/&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;!--[if lte IE 9]&gt;
+      &lt;p class="browserupgrade" th:utext="#{browserupgrade}"/&gt;
+    &lt;![endif]--&gt;
+    &lt;main class="container"&gt;
+      ...
+    &lt;/main&gt;
+    &lt;script th:src="@{/webjars/jquery/jquery.js}" th:text="''"/&gt;
+    &lt;script th:src="@{/webjars/bootstrap/js/bootstrap.js}" th:text="''"/&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>The following shows the template’s rendered <code>HTML</code>.  The Bootstrap
+artifacts’ paths have been rendered “<code>href</code>” and “<code>src</code>” attributes (with
+version handling in their paths as decribed in
+<a href="/article/2019-11-17-spring-boot-part-02">part 2</a>) and with
+the Thymeleaf expressions evaluated.</p>
+
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"/&gt;
+    &lt;meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/&gt;
+    &lt;link rel="stylesheet" href="/webjars/bootstrap/4.4.1/css/bootstrap.css"/&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;!--[if lte IE 9]&gt;
+      &lt;p class="browserupgrade"&gt;You are using an &lt;strong&gt;outdated&lt;/strong&gt; browser.  Please &lt;a href="https://browsehappy.com/"&gt;upgrade your browser&lt;/a&gt; to improve your experience and security.&lt;/p&gt;
+    &lt;![endif]--&gt;
+    &lt;main class="container"&gt;
+      ...
+    &lt;/main&gt;
+    &lt;script src="/webjars/jquery/3.6.0/jquery.js"&gt;&lt;/script&gt;
+    &lt;script src="/webjars/bootstrap/4.6.0-1/js/bootstrap.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Spring provides a message catalog facility which allows <code>&lt;p
+class="browserupgrade" th:utext="#{browserupgrade}"/&gt;</code> to be evaluated from
+the
+<a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/src/main/resources/messages.properties"><code>message.properties</code></a>.
+The <a href="https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html">Tutorial: Thymeleaf + Spring</a> provides a reference for these and other
+features.  <a href="https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html">Tutorial: Using Thymeleaf</a> provides the reference for standard
+expression syntax, the available “<code>th:*</code>” attributes and elements, and
+available expression objects.</p>
+
+<p>The initial implementation of the clock <em>View</em> is:</p>
+
+<pre><code class="language-html">    ...
+    &lt;main class="container"&gt;
+      &lt;div class="jumbotron"&gt;
+        &lt;h1 class="text-center" th:text="${time.format(timestamp)}"/&gt;
+        &lt;h1 class="text-center" th:text="${date.format(timestamp)}"/&gt;
+      &lt;/div&gt;
+    &lt;/main&gt;
+    ...
+</code></pre>
+
+<p>It output will be discussed in detail in the next section after discussing
+the <em>Controller</em> implementation and the population of the <code>Model</code> but note
+that the <em>View</em> requires the <code>Model</code> provide the <code>time</code>, <code>date</code>, and
+<code>timestamp</code> attributes as laid out above.</p>
+
+<h3 id="controller-and-model">Controller and Model</h3>
+
+<p>The <em>Controller</em> is implemented by a class annotated with
+<a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/stereotype/Controller.html"><code>@Controller</code></a>,
+<a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/src/main/java/application/ClockController.java"><code>ClockController</code></a>.
+The implementation of the <code>GET</code> <code>/clock/time</code> is outlined below:</p>
+
+<pre><code class="language-java">@Controller
+@RequestMapping(value = { "/clock/" })
+@NoArgsConstructor @ToString @Log4j2
+public class ClockController {
+    ...
+    @RequestMapping(method = { RequestMethod.GET }, value = { "time" })
+    public void get(Model model, Locale locale, TimeZone zone) {
+        model.addAttribute("locale", locale);
+        model.addAttribute("zone", zone);
+
+        DateFormat date = DateFormat.getDateInstance(DateFormat.LONG, locale);
+        DateFormat time = DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
+
+        model.addAttribute("date", date);
+        model.addAttribute("time", time);
+
+        for (Object object : model.asMap().values()) {
+            if (object instanceof DateFormat) {
+                ((DateFormat) object).setTimeZone(zone);
+            }
+        }
+
+        Date timestamp = new Date();
+
+        model.addAttribute("timestamp", timestamp);
+    }
+    ...
+}
+</code></pre>
+
+<p>The parameters are <code>Model</code>, <code>Locale</code>, and <code>TimeZone</code>, all injected by
+Spring.  A complete list of available method parameters and return types
+with their respective semantics, may be found at <a href="https://docs.spring.io/spring-framework/docs/5.3.x/reference/html/web.html#mvc-ann-methods">Handler Methods</a>.</p>
+
+<p>The method updates the <code>Model</code> with the user <code>Locale</code> and <code>TimeZone</code>, the
+current timestamp, and the time and date <code>DateFormat</code> to render the clock
+display.  Since the method returns <code>void</code>, the view resolves to the
+Thymeleaf template at <code>classpath:/templates/clock/time.html</code> (as described
+above).  Alternatively, the method may return a <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html"><code>String</code></a> with a
+name (path) of a template.  Spring then evaluates the template with the
+<code>Model</code> for the output which results in:</p>
+
+<pre><code class="language-html">    ...
+    &lt;main class="container"&gt;
+      &lt;div class="jumbotron"&gt;
+        &lt;h1 class="text-center"&gt;11:59:59 AM&lt;/h1&gt;
+        &lt;h1 class="text-center"&gt;December 24, 2019&lt;/h1&gt;
+      &lt;/div&gt;
+    &lt;/main&gt;
+    ...
+</code></pre>
+
+<p>which renders to:</p>
+
+<p><img src="/assets/article/2020-01-01-spring-boot-part-04/screen-shot-1.png" alt="" /></p>
+
+<p>Of course, this implementation does not yet allow the user to customize
+their <code>Locale</code> or <code>TimeZone</code>.  The next section adds this functionality.</p>
+
+<h3 id="adding-user-customization">Adding User Customization</h3>
+
+<p>To allow user customization, first a form allowing the user to select
+<code>Locale</code> and <code>TimeZone</code> must be added.</p>
+
+<pre><code class="language-html">    ...
+    &lt;main class="container"&gt;
+      ...
+      &lt;form class="row" method="post" th:action="${#request.servletPath}"&gt;
+        &lt;select class="col-lg" name="languageTag"&gt;
+          &lt;option th:each="option : ${locales}"
+                  th:with="selected = ${option.equals(locale)},
+                           value = ${option.toLanguageTag()},
+                           display = ${option.getDisplayName(locale)},
+                           text = ${value + ' - ' + display}"
+                  th:selected="${selected}" th:value="${value}" th:text="${text}"/&gt;
+        &lt;/select&gt;
+        &lt;select class="col-lg" name="zoneID"&gt;
+          &lt;option th:each="option : ${zones}"
+                  th:with="selected = ${option.equals(zone)},
+                           value = ${option.ID},
+                           display = ${option.getDisplayName(locale)},
+                           text = ${value + ' - ' + display}"
+                  th:selected="${selected}" th:value="${value}" th:text="${text}"/&gt;
+        &lt;/select&gt;
+        &lt;button class="col-sm-1" type="submit" th:text="'&amp;#8635;'"/&gt;
+      &lt;/form&gt;
+    &lt;/main&gt;
+    ...
+</code></pre>
+
+<p>Two attributes must be added to the <code>Model</code> by the <code>GET</code> <code>/clock/time</code>
+method, the <code>List</code>s of <code>Locale</code>s and <code>TimeZone</code>s from which the user may
+select.<sup id="ref2"><a href="#endnote2">2</a></sup></p>
+
+<pre><code class="language-java">    private static final List&lt;Locale&gt; LOCALES =
+        Stream.of(Locale.getAvailableLocales())
+        .filter(t -&gt; (! t.toString().equals("")))
+        .collect(Collectors.toList());
+    private static final List&lt;TimeZone&gt; ZONES =
+        Stream.of(TimeZone.getAvailableIDs())
+        .map(t -&gt; TimeZone.getTimeZone(t))
+        .collect(Collectors.toList());
+
+    @RequestMapping(method = { RequestMethod.GET }, value = { "time" })
+    public void get(Model model, Locale locale, TimeZone zone, ...) {
+        ...
+        Collator collator = Collator.getInstance(locale);
+        List&lt;Locale&gt; locales =
+            LOCALES.stream()
+            .sorted(Comparator.comparing(Locale::toLanguageTag, collator))
+            .collect(Collectors.toList());
+        List&lt;TimeZone&gt; zones =
+            ZONES.stream()
+            .sorted(Comparator
+                    .comparingInt(TimeZone::getRawOffset)
+                    .thenComparingInt(TimeZone::getDSTSavings)
+                    .thenComparing(TimeZone::getID, collator))
+            .collect(Collectors.toList());
+
+        model.addAttribute("locales", locales);
+        model.addAttribute("zones", zones);
+        ...
+    }
+</code></pre>
+
+<p>Key to the implementation is the use of the “<code>th:each</code>” attribute where the
+node is evaluated each member of the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List</code></a>.  The “<code>th:with</code>”
+attribute allows variables to be defined and referenced within the scope of
+the corresponding node.  Partial output is shown below.</p>
+
+<pre><code class="language-html">    ...
+    &lt;main class="container"&gt;
+      ...
+      &lt;form class="row" method="post" action="/clock/time"&gt;
+        &lt;select class="col-lg" name="languageTag"&gt;
+          &lt;option value="ar"&gt;ar - Arabic&lt;/option&gt;
+          &lt;option value="ar-AE"&gt;ar-AE - Arabic (United Arab Emirates)&lt;/option&gt;
+          ...
+          &lt;option value="en-US" selected="selected"&gt;en-US - English (United States)&lt;/option&gt;
+          ...
+          &lt;option value="zh-TW"&gt;zh-TW - Chinese (Taiwan)&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;select class="col-lg" name="zoneID"&gt;
+          &lt;option value="Etc/GMT+12"&gt;Etc/GMT+12 - GMT-12:00&lt;/option&gt;
+          &lt;option value="Etc/GMT+11"&gt;Etc/GMT+11 - GMT-11:00&lt;/option&gt;
+          ...
+          &lt;option value="PST8PDT" selected="selected"&gt;PST8PDT - Pacific Standard Time&lt;/option&gt;
+          ...
+          &lt;option value="Pacific/Kiritimati"&gt;Pacific/Kiritimati - Line Is. Time&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;button class="col-sm-1" type="submit"&gt;↻&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/main&gt;
+    ...
+</code></pre>
+
+<p>The updated <em>View</em> provides to selection lists and a form <code>POST</code> button:</p>
+
+<p><img src="/assets/article/2020-01-01-spring-boot-part-04/screen-shot-2.png" alt="" /></p>
+
+<p><img src="/assets/article/2020-01-01-spring-boot-part-04/screen-shot-3.png" alt="" /></p>
+
+<p><img src="/assets/article/2020-01-01-spring-boot-part-04/screen-shot-4.png" alt="" /></p>
+
+<p>A new method is added to the <em>Controller</em> to handle the <code>POST</code> <code>/clock/time</code>
+request.  Note the <a href="https://docs.oracle.com/javaee/7/api/javax/servlet/http/HttpServletRequest.html"><code>HttpServletRequest</code></a> and
+<a href="https://docs.oracle.com/javaee/7/api/javax/servlet/http/HttpSession.html"><code>HttpSession</code></a> parameters.</p>
+
+<pre><code class="language-java">    @RequestMapping(method = { RequestMethod.POST }, value = { "time" })
+    public String post(HttpServletRequest request, HttpSession session,
+                       @RequestParam Map&lt;String,String&gt; form) {
+        for (Map.Entry&lt;String,String&gt; entry : form.entrySet()) {
+            session.setAttribute(entry.getKey(), entry.getValue());
+        }
+
+        return "redirect:" + request.getServletPath();
+    }
+</code></pre>
+
+<p>The selected <code>Locale</code> <code>languageTag</code> and <code>TimeZone</code> <code>zoneID</code> are written to
+the <a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/web/bind/annotation/RequestParam.html"><code>@RequestParam</code></a>-annotated <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a> with keys
+<code>languageTag</code> and <code>zoneID</code>, respectively.  The <code>Map</code> key-value pairs are
+written into the <code>HttpSession</code> (automatically managed by Spring)
+attributes.<sup id="ref3"><a href="#endnote3">3</a></sup> Adding the prefix
+“<code>redirect:</code>” instructs Spring to respond with a <code>302</code> to cause the browser
+to make a request to the new URL: <code>GET</code> <code>/clock/time</code>.  That method must be
+modified to set <code>Locale</code> based on the session <code>languageTag</code> and/or
+<code>TimeZone</code> based on <code>zoneID</code> if specified (accessed via
+<a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/web/bind/annotation/SessionAttribute.html"><code>@SessionAttribute</code></a>).<sup id="ref4"><a href="#endnote4">4</a></sup></p>
+
+<pre><code class="language-java">    @RequestMapping(method = { RequestMethod.GET }, value = { "time" })
+    public void get(Model model, Locale locale, TimeZone zone,
+                    @SessionAttribute Optional&lt;String&gt; languageTag,
+                    @SessionAttribute Optional&lt;String&gt; zoneID) {
+        if (languageTag.isPresent()) {
+            locale = Locale.forLanguageTag(languageTag.get());
+        }
+
+        if (zoneID.isPresent()) {
+            zone = TimeZone.getTimeZone(zoneID.get());
+        }
+
+        model.addAttribute("locale", locale);
+        model.addAttribute("zone", zone);
+        ...
+    }
+</code></pre>
+
+<p>A couple of alternative <code>Locale</code>s and <code>TimeZone</code>s:</p>
+
+<p><img src="/assets/article/2020-01-01-spring-boot-part-04/screen-shot-5.png" alt="" /></p>
+
+<p><img src="/assets/article/2020-01-01-spring-boot-part-04/screen-shot-6.png" alt="" /></p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This article demonstrates Spring MVC with Thymeleaf templates by
+implementing a simple, but internationalized, clock web application.</p>
+
+<p><b id="endnote1">[1]</b>
+<a href="/article/2019-11-17-spring-boot-part-02">Part 2</a> of
+this series demonstrated the inclusion of Bulma artifacts and the use of
+Bootstrap here is to provide contrast.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+Arguably, the sorting of the lists should be part of the <em>View</em> and
+included in the template but that would overly complicate the
+implementation.
+<a href="#ref2">↩</a></p>
+
+<p><b id="endnote3">[3]</b>
+An alternative strategy would be to include the <code>POST</code> <code>@RequestParam</code>s as
+query parameters in the redirected <code>URL</code>.
+<a href="#ref3">↩</a></p>
+
+<p><b id="endnote4">[4]</b>
+To avoid specifying the <code>@SessionAttribute</code> <code>name</code> attribute, the Java code
+must be compiled with the <code>javac</code> <code>-parameters</code> option so the method
+parameter names are available through reflection.  Please see the
+configuration of the <code>maven-compiler-plugin</code> plug-in in the
+<a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-04/pom.xml"><code>pom.xml</code></a>.
+<a href="#ref4">↩</a></p>
+

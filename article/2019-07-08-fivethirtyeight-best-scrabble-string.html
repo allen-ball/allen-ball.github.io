@@ -1,0 +1,208 @@
+<p><a href="https://fivethirtyeight.com/">FiveThirtyEight</a> presented a <a href="https://fivethirtyeight.com/features/whats-your-best-scrabble-string/">challenge</a> to order Scrabble tiles to
+generate the largest score.</p>
+
+<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/overview-summary.html">javadoc</a> is provided with the solution implemented in
+<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html"><code>SolveRiddle20190628Task</code></a>.</p>
+
+<h2 id="solution">Solution</h2>
+
+<pre><code class="language-log">CARBOXYMETHYLCELLULOSEHAND_RAFTSMANS_IPWIREDRAWERDINITROBENZENEPETTIFOGGINGJUDOKAEQUATEVIVAAIOESOOIU 912
+                          C         H
+----------------------------------------------------------------------------------------------------
+CARBOXYMETHYLCELLULOSE                                                                               46
+CARBO                                                                                                9
+CARB                                                                                                 8
+CAR                                                                                                  5
+ ARB                                                                                                 5
+ AR                                                                                                  2
+   BOXY                                                                                              16
+   BOX                                                                                               12
+   BO                                                                                                4
+    OXY                                                                                              13
+    OX                                                                                               9
+       METHYLCELLULOSE                                                                               25
+       METHYL                                                                                        14
+       METH                                                                                          9
+       MET                                                                                           5
+       ME                                                                                            4
+        ETHYL                                                                                        11
+        ETH                                                                                          6
+        ET                                                                                           2
+         THY                                                                                         9
+             CELLULOSE                                                                               11
+             CELL                                                                                    6
+             CEL                                                                                     5
+              ELL                                                                                    3
+              EL                                                                                     2
+                  LOSE                                                                               4
+                  LO                                                                                 2
+                   OSE                                                                               3
+                   OS                                                                                2
+                     EH                                                                              5
+                      HANDCRAFTSMANSHIP                                                              26
+                      HANDCRAFTSMAN                                                                  21
+                      HANDCRAFTS                                                                     16
+                      HANDCRAFT                                                                      15
+                      HAND                                                                           8
+                      HA                                                                             5
+                       AND                                                                           4
+                       AN                                                                            2
+                          CRAFTSMANSHIP                                                              18
+                          CRAFTSMAN                                                                  13
+                          CRAFTS                                                                     8
+                          CRAFT                                                                      7
+                           RAFTSMAN                                                                  13
+                           RAFTS                                                                     8
+                           RAFT                                                                      7
+                            AFT                                                                      6
+                                MANS                                                                 6
+                                MAN                                                                  5
+                                MA                                                                   4
+                                   SHIP                                                              5
+                                   SH                                                                1
+                                    HIP                                                              4
+                                    HI                                                               1
+                                       WIREDRAWER                                                    17
+                                       WIREDRAW                                                      15
+                                       WIRED                                                         9
+                                       WIRE                                                          7
+                                        IRED                                                         5
+                                        IRE                                                          3
+                                         REDRAWER                                                    12
+                                         REDRAW                                                      10
+                                         RED                                                         4
+                                         RE                                                          2
+                                          ED                                                         3
+                                           DRAWER                                                    10
+                                           DRAW                                                      8
+                                            RAWER                                                    8
+                                            RAW                                                      6
+                                             AWE                                                     6
+                                             AW                                                      5
+                                              WE                                                     5
+                                               ER                                                    2
+                                                 DINITROBENZENE                                      26
+                                                 DINITRO                                             8
+                                                 DIN                                                 4
+                                                  IN                                                 2
+                                                   NITROBENZENE                                      23
+                                                   NITRO                                             5
+                                                   NIT                                               3
+                                                    IT                                               2
+                                                      ROBE                                           6
+                                                      ROB                                            5
+                                                       OBE                                           5
+                                                        BENZENE                                      18
+                                                        BEN                                          5
+                                                        BE                                           4
+                                                         EN                                          2
+                                                             NE                                      2
+                                                               PETTIFOGGING                          20
+                                                               PETTIFOG                              14
+                                                               PETTI                                 7
+                                                               PET                                   5
+                                                               PE                                    4
+                                                                  TI                                 2
+                                                                   IF                                5
+                                                                    FOGGING                          13
+                                                                    FOG                              7
+                                                                       GIN                           4
+                                                                           JUDOKA                    18
+                                                                           JUDO                      12
+                                                                            UDO                      4
+                                                                             DO                      3
+                                                                              OKA                    7
+                                                                               KA                    6
+                                                                                AE                   2
+                                                                                 EQUATE              15
+                                                                                  QUATE              14
+                                                                                  QUA                12
+                                                                                    ATE              3
+                                                                                    AT               2
+                                                                                       VIVA          10
+                                                                                           AI        2
+                                                                                             OE      2
+                                                                                               SO    2
+</code></pre>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>A number of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code>s</a> are generated from the
+<a href="https://norvig.com/ngrams/enable1.txt">word list</a>.</p>
+
+<pre><code class="language-java">    private final Wordlist wordlist = new Wordlist();
+    private final WordMap wordmap = new WordMap(wordlist.keySet());
+    private final StartsWithMap starts = new StartsWithMap(wordmap.keySet());
+</code></pre>
+
+<p><code>wordlist</code> is a
+<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.441"><code>Map&lt;CharSequence,Integer&gt;</code></a>
+mapping a valid “word” to its potential point value, <code>wordmap</code> is a
+<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.536"><code>Map&lt;CharSequence,SortedSet&lt;CharSequence&gt;&gt;</code></a>
+mapping a word to all its “included” words, and <code>starts</code> is also a
+<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.561"><code>Map&lt;CharSequence,SortedSet&lt;CharSequence&gt;&gt;</code></a>
+mapping all words to its respective prefix.  After each iteration of
+selecting a subsequence to
+<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.365">play</a>,
+the <code>wordmap</code> <code>keySet()</code> is updated by removing any sequences that can no
+longer be played for points:</p>
+
+<pre><code class="language-java">            wordmap.keySet().removeIf(t -&gt; (! isPlayable(t, bag)));
+
+            wordmap.values().forEach(t -&gt; t.retainAll(wordmap.keySet()));
+            wordmap.values().removeIf(Collection::isEmpty);
+
+            starts.values().forEach(t -&gt; t.retainAll(wordmap.keySet()));
+            starts.values().removeIf(Collection::isEmpty);
+</code></pre>
+
+<p>The
+<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.313"><code>next()</code></a>
+method chooses the next highest valued sequence of tiles to play:</p>
+
+<pre><code class="language-java">    private Optional&lt;CharSequence&gt; next() {
+        TreeMap&lt;CharSequence,CharSequence&gt; map = new TreeMap&lt;&gt;(COMPARATOR);
+
+        for (int i = 1, j = sequence.length(); i &lt;= j; i += 1) {
+            String prefix = sequence.subSequence(i, j).toString();
+
+            starts.subMap(prefix + Character.MIN_VALUE,
+                          prefix + Character.MAX_VALUE)
+                .keySet()
+                .stream()
+                .max(comparingInt(t -&gt; potential(t)))
+                .ifPresent(t -&gt; map.put(prefix, t));
+        }
+
+        starts.keySet()
+            .stream()
+            .max(comparingInt(t -&gt; potential(t)))
+            .ifPresent(t -&gt; map.put("", t));
+
+        Optional&lt;CharSequence&gt; next =
+            map.entrySet()
+            .stream()
+            .max(comparingInt(t -&gt; potential(t.getValue())))
+            .map(t -&gt; t.getValue().toString().substring(t.getKey().length()));
+
+        return next;
+    }
+</code></pre>
+
+<h2 id="previous-challenge">Previous Challenge</h2>
+
+<p>The <code>ball.game.scrabble</code> package was initially developed to solve a previous
+Scrabble
+<a href="http://fivethirtyeight.com/features/this-challenge-will-boggle-your-mind/">problem</a>.
+The implementation is <a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html"><code>SolveExpress20161021Task</code></a>
+giving the solution:</p>
+
+<pre><code class="language-log">CLASSISMS [AS, AS+S, L+ASS, LASS+I, LASSI+S, C+LASSIS, CLASSIS+M, CLASSISM+S]
+CLASSISTS [AS, AS+S, L+ASS, LASS+I, LASSI+S, C+LASSIS, CLASSIS+T, CLASSIST+S]
+RELAPSERS [LA, LA+P, LAP+S, LAPS+E, E+LAPSE, R+ELAPSE, RELAPSE+R, RELAPSER+S]
+GLASSIEST [AS, AS+S, L+ASS, LASS+I, LASSI+E, LASSIE+S, G+LASSIES, GLASSIES+T]
+SCRAPINGS [PI, PI+N, PIN+G, A+PING, R+APING, C+RAPING, S+CRAPING, SCRAPING+S]
+SHEATHERS [AT, E+AT, EAT+H, H+EATH, S+HEATH, SHEATH+E, SHEATHE+R, SHEATHER+S]
+UPRAISERS [IS, A+IS, R+AIS, RAIS+E, P+RAISE, PRAISE+R, PRAISER+S, U+PRAISERS]
+</code></pre>
+

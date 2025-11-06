@@ -1,0 +1,24 @@
+<p><a href="https://github.com/allen-ball/ganymede">Ganymede Kernel</a> 1.1.0.20210614 is released.</p>
+
+<p>The <a href="https://github.com/allen-ball/ganymede">Ganymede Kernel</a> is a <a href="https://jupyter-notebook.readthedocs.io/en/stable/index.html">Jupyter Notebook</a> Java <a href="https://jupyter-client.readthedocs.io/en/stable/kernels.html">kernel</a> based on <a href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.jshell/jdk/jshell/JShell.html?is-external=true">JShell</a> combined with an integrated <a href="https://maven.apache.org/">Apache Maven</a>-like POM, support for JVM languages such as <a href="https://groovy-lang.org/">Groovy</a>, <a href="https://www.oracle.com/technical-resources/articles/java/jf14-nashorn.html">Javascript</a>, and <a href="https://kotlinlang.org/">Kotlin</a>, and support for <a href="http://spark.apache.org/">Apache Spark</a> and <a href="https://www.scala-lang.org/">Scala</a> binary distributions.</p>
+
+<!--more-->
+
+<p>This release adds support for:</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Markdown">Markdown</a> (<a href="https://commonmark.org/">CommonMark</a>) with <a href="https://github.com/jknack/handlebars.java">Handlebars</a>, <a href="https://freemarker.apache.org/">FreeMarker</a>, and <a href="https://velocity.apache.org/">Velocity</a>) templating languages in addition to <a href="https://www.thymeleaf.org/index.html">Thymeleaf</a> templates</li>
+  <li><a href="http://spark.apache.org/">Apache Spark</a> 3.1.2</li>
+  <li><a href="https://allen-ball.github.io/ganymede/ganymede/server/Renderer.html">Rendering</a> <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.desktop/javax/swing/table/TableModel.html?is-external=true">TableModel</a>s</li>
+</ul>
+
+<p>Binary and source downloads are available from <a href="https://github.com/allen-ball/ganymede/releases/tag/v1.1.0.20210614">https://github.com/allen-ball/ganymede/releases/tag/v1.1.0.20210614</a>.</p>
+
+<p>Quickstart if Java 11 (or later) and <a href="https://jupyter-notebook.readthedocs.io/en/stable/index.html">Jupyter</a> are already installed:</p>
+
+<pre><code class="language-bash">$ curl -sL https://github.com/allen-ball/ganymede/releases/download/v1.1.0.20210614/ganymede-kernel-1.1.0.20210614.jar -o ganymede-kernel.jar
+$ java -jar ganymede-kernel.jar --install
+</code></pre>
+
+<p>Please see the project <a href="https://github.com/allen-ball/ganymede">page</a> for detailed <a href="https://github.com/allen-ball/ganymede#installation">installation</a> instructions and its <a href="https://github.com/allen-ball/ganymede#features-and-usage">features and usage</a>.</p>
+

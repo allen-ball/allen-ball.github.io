@@ -1,0 +1,187 @@
+<p>This article discusses walking a tree or graph of nodes with a
+<a href="https://www.java.com/en/download/help/java8.html">Java 8</a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> implementation.  The implementation is
+codified in a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> The strategy described herein can
+be a useful alternative to implementing a class-hierarchy specific visitor
+because only a single per-type method need be defined (often as a Java
+lambda).</p>
+
+<p>Please refer to this
+<a href="/article/2019-03-28-java-streams-and-spliterators">article</a> for an
+in-depth discussion of creating <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code>s</a>.</p>
+
+<h2 id="api-definition">API Definition</h2>
+
+<p>The implementaion provides the following API:</p>
+
+<pre><code class="language-java">public class Walker&lt;T&gt; ... {
+    ...
+    public static &lt;T&gt; Stream&lt;T&gt; walk(T root, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf)
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html"><code>Function</code></a> provides the subordinate (“children”) nodes of
+the argument node.  For example, for Java <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html"><code>Class</code>es</a> to obtain inner
+(declared) <code>Class</code>es:</p>
+
+<pre><code class="language-java">    t -&gt; Stream.of(t.getDeclaredClasses()
+</code></pre>
+
+<p>or for <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html"><code>File</code>s</a>:</p>
+
+<pre><code class="language-java">    t -&gt; t.isDirectory() ? Stream.of(t.listFiles()) : Stream.empty()
+</code></pre>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The API provides a static method to create a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> from the
+implemented <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>:</p>
+
+<pre><code class="language-java">    public static &lt;T&gt; Stream&lt;T&gt; walk(T root, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        return StreamSupport.stream(new Walker&lt;&gt;(root, childrenOf), false);
+    }
+</code></pre>
+
+<p>The complete <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation is:</p>
+
+<pre><code class="language-java">public class Walker&lt;T&gt; extends Spliterators.AbstractSpliterator&lt;T&gt; {
+    private final Stream&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; stream;
+    private Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; iterator = null;
+    private Spliterator&lt;? extends T&gt; spliterator = null;
+
+    private Walker(T node, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        super(Long.MAX_VALUE, IMMUTABLE | NONNULL);
+
+        stream =
+            Stream.of(node)
+            .filter(Objects::nonNull)
+            .flatMap(childrenOf)
+            .filter(Objects::nonNull)
+            .map(t -&gt; (() -&gt; new Walker&lt;T&gt;(t, childrenOf)));
+        spliterator = Stream.of(node).spliterator();
+    }
+
+    @Override
+    public Spliterator&lt;T&gt; trySplit() {
+        if (iterator == null) {
+            iterator = stream.iterator();
+        }
+
+        return iterator.hasNext() ? iterator.next().get() : null;
+    }
+
+    @Override
+    public boolean tryAdvance(Consumer&lt;? super T&gt; consumer) {
+        boolean accepted = false;
+
+        while (! accepted) {
+            if (spliterator == null) {
+                spliterator = trySplit();
+            }
+
+            if (spliterator != null) {
+                accepted = spliterator.tryAdvance(consumer);
+
+                if (! accepted) {
+                    spliterator = null;
+                }
+            } else {
+                break;
+            }
+        }
+
+        return accepted;
+    }
+    ...
+}
+</code></pre>
+
+<p>A <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html"><code>Supplier</code>s</a>
+is created at instantiation (and the <code>Supplier</code> will supply another
+<code>Walker</code>).  The first time <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#trySplit--"><code>trySplit()</code></a> is called
+the <code>Stream</code> is converted to an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html"><code>Iterator</code></a> and the next
+<code>Spliterator</code> is generated.  The
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-"><code>tryAdvance(Consumer)</code></a> will exhaust the last
+created <code>Spliterator</code> before calling <code>tryAdvance()</code> to obtain another.  The
+first <code>Spliterator</code> consists solely of the root node.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>To print the inner defined classes of
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html"><code>Collections</code></a>:</p>
+
+<pre><code class="language-java">        Walker.&lt;Class&lt;?&gt;&gt;walk(java.util.Collections.class,
+                              t -&gt; Stream.of(t.getDeclaredClasses()))
+            .limit(10)
+            .forEach(System.out::println);
+</code></pre>
+
+<p>Yields:</p>
+
+<pre><code class="language-bash">class java.util.Collections
+class java.util.Collections$UnmodifiableCollection
+class java.util.Collections$UnmodifiableSet
+class java.util.Collections$UnmodifiableSortedSet
+class java.util.Collections$UnmodifiableNavigableSet
+class java.util.Collections$UnmodifiableNavigableSet$EmptyNavigableSet
+class java.util.Collections$UnmodifiableRandomAccessList
+class java.util.Collections$UnmodifiableList
+class java.util.Collections$UnmodifiableMap
+class java.util.Collections$UnmodifiableMap$UnmodifiableEntrySet
+</code></pre>
+
+<p>And to print the directory structure (sorted):</p>
+
+<pre><code class="language-java">        Walker.walk(new File("."),
+                    t -&gt; t.isDirectory() ? Stream.of(t.listFiles()) : Stream.empty())
+            .filter(File::isDirectory)
+            .sorted()
+            .forEach(System.out::println);
+</code></pre>
+
+<p>Yields:</p>
+
+<pre><code class="language-bash">.
+./src
+./src/main
+./src/main/resources
+./target
+</code></pre>
+
+<p>This presents a flexible solution and can be extended with disparate
+objects.  For example, a method to walk XML <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html"><code>Node</code>s</a> might be:</p>
+
+<pre><code class="language-java">    public static Stream&lt;Node&gt; childrenOf(Node node) {
+        NodeList list = node.getChildNodes();
+
+        return IntStream.range(0, list.getLength()).mapToObj(list::item);
+    }
+</code></pre>
+
+<h2 id="alternate-entry-point">Alternate Entry Point</h2>
+
+<p>It is straightforward to offer an alternate entry point where multiple root
+nodes are supplied by defining a corresponding constructor:</p>
+
+<pre><code class="language-java">public class Walker&lt;T&gt; extends Spliterators.AbstractSpliterator&lt;T&gt; {
+    ...
+    private Walker(Stream&lt;T&gt; nodes, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        super(Long.MAX_VALUE, IMMUTABLE | NONNULL);
+
+        stream = nodes.map(t -&gt; (() -&gt; new Walker&lt;T&gt;(t, childrenOf)));
+    }
+    ...
+    public static &lt;T&gt; Stream&lt;T&gt; walk(Stream&lt;T&gt; roots, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        return StreamSupport.stream(new Walker&lt;&gt;(roots, childrenOf), false);
+    }
+    ...
+}
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code>s</a> created from the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>
+implementation described herein provide a versatile means for walking any
+tree with a minimum per-type implementation while offering all the filtering
+and processing power of the <code>Stream</code> API.</p>
+

@@ -1,0 +1,642 @@
+<p><a href="/article/2019-11-16-spring-boot-part-01">This</a>
+<a href="/article/2019-11-17-spring-boot-part-02">series</a>
+<a href="/article/2019-12-15-spring-boot-part-03">of</a>
+<a href="/article/2020-01-01-spring-boot-part-04">articles</a> examines <a href="https://spring.io/projects/spring-boot">Spring Boot</a>
+features.  This fifth article in the series presents a non-trivial
+application which probes local hosts (with the help of the <a href="https://nmap.org/"><code>nmap</code></a>
+command) to assist in developing <a href="https://openconnectivity.org/developer/specifications/upnp-resources/upnp-developer-resources">UPNP</a> and <a href="https://tools.ietf.org/id/draft-cai-ssdp-v1-03.txt">SSDP</a> applications.</p>
+
+<p><img src="/assets/article/2020-06-26-spring-boot-part-05/screen-shot-nmap.png" alt="" /></p>
+
+<p>Complete <a href="https://github.com/allen-ball/voyeur">source</a> and
+<a href="https://allen-ball.github.io/voyeur/">javadoc</a> are available on
+<a href="https://github.com/allen-ball">GitHub</a>.</p>
+
+<p>Specific topics covered herein:</p>
+
+<ul>
+  <li><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true"><code>@Service</code></a> implementations with <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true"><code>@Scheduled</code></a>
+updates
+    <ul>
+      <li><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html"><code>@Autowired</code></a></li>
+    </ul>
+  </li>
+  <li>UI <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Controller.html"><code>@Controller</code></a>
+    <ul>
+      <li>Populates <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a></li>
+      <li>Thymeleaf temlates and decoupled logic</li>
+    </ul>
+  </li>
+  <li><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RestController.html"><code>@RestController</code></a> implementation</li>
+</ul>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The following subsections describe the components.</p>
+
+<h3 id="service-implementations">@Service Implementations</h3>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/package-summary.html"><code>voyeur</code></a> package defines a number of (annotated)
+<a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true"><code>@Service</code>s</a>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true"><code>@Service</code></a></th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/ARPCache.html"><code>ArpCache</code></a></td>
+      <td><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a> of <a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> to hardware address periodically updated by reading <code>/proc/net/arp</code> or parsing the output of <code>arp -an</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/NetworkInterfaces.html"><code>NetworkInterfaces</code></a></td>
+      <td><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html"><code>Set</code></a> of <a href="https://docs.oracle.com/javase/8/docs/api/java/net/NetworkInterface.html?is-external=true"><code>NetworkInterface</code>s</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html"><code>Nmap</code></a></td>
+      <td><code>Map</code> of XML output of the <code>nmap</code> command for each <code>InetAddress</code> discovered via <code>ARPCache</code>, <code>NetworkInterfaces</code>, and/or <code>SSDP</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/SSDP.html"><code>SSDP</code></a></td>
+      <td>SSDP hosts discovered via <a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true"><code>SSDPDiscoveryCache</code></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Each of these services implement a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html"><code>Set</code></a> or <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a>, which may
+be <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html"><code>@Autowire</code>d</a> into other components, and periodically update
+themselves with a <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true"><code>@Scheduled</code></a> method.  The
+<a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html"><code>Nmap</code></a> service is examined in detail.</p>
+
+<p>First, the <a href="https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PostConstruct.html?is-external=true"><code>@PostConstruct</code></a> method (in addition to
+performing other initialization chores) tests to determine if the
+<a href="https://nmap.org/"><code>nmap</code></a> command is available:</p>
+
+<pre><code class="language-java">...
+@Service
+@NoArgsConstructor @Log4j2
+public class Nmap extends InetAddressMap&lt;Document&gt; ... {
+    ...
+    private static final String NMAP = "nmap";
+    ...
+    private boolean disabled = true;
+    ...
+    @PostConstruct
+    public void init() throws Exception {
+        ...
+        try {
+            List&lt;String&gt; argv = Stream.of(NMAP, "-version").collect(toList());
+
+            log.info(String.valueOf(argv));
+
+            Process process =
+                new ProcessBuilder(argv)
+                .inheritIO()
+                .redirectOutput(PIPE)
+                .start();
+
+            try (InputStream in = process.getInputStream()) {
+                new BufferedReader(new InputStreamReader(in, UTF_8))
+                    .lines()
+                    .forEach(t -&gt; log.info(t));
+            }
+
+            disabled = (process.waitFor() != 0);
+        } catch (Exception exception) {
+            disabled = true;
+        }
+
+        if (disabled) {
+            log.warn("nmap command is not available");
+        }
+    }
+    ...
+    public boolean isDisabled() { return disabled; }
+    ...
+}
+</code></pre>
+
+<p>If the <a href="https://nmap.org/"><code>nmap</code></a> command is successful, its version is logged.
+Otherwise, <code>disabled</code> is set to <code>true</code> and no further attempt is made to run
+the <code>nmap</code> command in other methods.</p>
+
+<p>The <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true"><code>@Scheduled</code></a> <a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#update--"><code>update()</code></a> method is
+invoked every 30 seconds and ensures a map entry exists for every
+<a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> previously discovered by the
+<a href="https://allen-ball.github.io/voyeur/voyeur/NetworkInterfaces.html"><code>NetworkInterfaces</code></a>,
+<a href="https://allen-ball.github.io/voyeur/voyeur/ARPCache.html"><code>ARPCache</code></a>, and <a href="https://allen-ball.github.io/voyeur/voyeur/SSDP.html"><code>SSDP</code></a> components and then
+queues a <code>Worker</code> <code>Runnable</code> for any value whose output is more than
+<code>INTERVAL</code> (60 minutes) old.  The <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/event/EventListener.html?is-external=true"><code>@EventListener</code></a> (with
+<a href="https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/context/event/ApplicationReadyEvent.html?is-external=true)"><code>ApplicationReadyEvent</code></a> guarantees the method won’t
+be called before the application is ready (to serve requests).</p>
+
+<pre><code class="language-java">public class Nmap extends InetAddressMap&lt;Document&gt; ... {
+    ...
+    private static final Duration INTERVAL = Duration.ofMinutes(60);
+    ...
+    @Autowired private NetworkInterfaces interfaces = null;
+    @Autowired private ARPCache arp = null;
+    @Autowired private SSDP ssdp = null;
+    @Autowired private ThreadPoolTaskExecutor executor = null;
+    ...
+    @EventListener(ApplicationReadyEvent.class)
+    @Scheduled(fixedDelay = 30 * 1000)
+    public void update() {
+        if (! isDisabled()) {
+            try {
+                Document empty = factory.newDocumentBuilder().newDocument();
+
+                empty.appendChild(empty.createElement("nmaprun"));
+
+                interfaces
+                    .stream()
+                    .map(NetworkInterface::getInterfaceAddresses)
+                    .flatMap(List::stream)
+                    .map(InterfaceAddress::getAddress)
+                    .filter(t -&gt; (! t.isMulticastAddress()))
+                    .forEach(t -&gt; putIfAbsent(t, empty));
+
+                arp.keySet()
+                    .stream()
+                    .filter(t -&gt; (! t.isMulticastAddress()))
+                    .forEach(t -&gt; putIfAbsent(t, empty));
+
+                ssdp.values()
+                    .stream()
+                    .map(SSDP.Value::getSSDPMessage)
+                    .filter(t -&gt; t instanceof SSDPResponse)
+                    .map(t -&gt; ((SSDPResponse) t).getInetAddress())
+                    .forEach(t -&gt; putIfAbsent(t, empty));
+
+                keySet()
+                    .stream()
+                    .filter(t -&gt; INTERVAL.compareTo(getOutputAge(t)) &lt; 0)
+                    .map(Worker::new)
+                    .forEach(t -&gt; executor.execute(t));
+            } catch (Exception exception) {
+                log.error(exception.getMessage(), exception);
+            }
+        }
+    }
+    ...
+    private Duration getOutputAge(InetAddress key) {
+        long start = 0;
+        Number number = (Number) get(key, "/nmaprun/runstats/finished/@time", NUMBER);
+
+        if (number != null) {
+            start = number.longValue();
+        }
+
+        return Duration.between(Instant.ofEpochSecond(start), Instant.now());
+    }
+
+    private Object get(InetAddress key, String expression, QName qname) {
+        Object object = null;
+        Document document = get(key);
+
+        if (document != null) {
+            try {
+                object = xpath.compile(expression).evaluate(document, qname);
+            } catch (Exception exception) {
+                log.error(exception.getMessage(), exception);
+            }
+        }
+
+        return object;
+    }
+    ...
+}
+</code></pre>
+
+<p><a href="https://spring.io/projects/spring-boot">Spring Boot</a>’s <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/concurrent/ThreadPoolTaskExecutor.html"><code>ThreadPoolTaskExecutor</code></a> is
+injected.  To guarantee more than one thread is allocated the
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/application.properties"><code>application.properties</code></a>
+contains the following property:</p>
+
+<pre><code class="language-properties">spring.task.scheduling.pool.size: 4
+</code></pre>
+
+<p>The <code>Worker</code> implementation is given below.</p>
+
+<pre><code class="language-java">    ...
+    private static final List&lt;String&gt; NMAP_ARGV =
+        Stream.of(NMAP, "--no-stylesheet", "-oX", "-", "-n", "-PS", "-A")
+        .collect(toList());
+    ...
+    @RequiredArgsConstructor @EqualsAndHashCode @ToString
+    private class Worker implements Runnable {
+        private final InetAddress key;
+
+        @Override
+        public void run() {
+            try {
+                List&lt;String&gt; argv = NMAP_ARGV.stream().collect(toList());
+
+                if (key instanceof Inet4Address) {
+                    argv.add("-4");
+                } else if (key instanceof Inet6Address) {
+                    argv.add("-6");
+                }
+
+                argv.add(key.getHostAddress());
+
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Process process =
+                    new ProcessBuilder(argv)
+                    .inheritIO()
+                    .redirectOutput(PIPE)
+                    .start();
+
+                try (InputStream in = process.getInputStream()) {
+                    put(key, builder.parse(in));
+
+                    int status = process.waitFor();
+
+                    if (status != 0) {
+                        throw new IOException(argv + " returned exit status " + status);
+                    }
+                }
+            } catch (Exception exception) {
+                remove(key);
+                log.error(exception.getMessage(), exception);
+            }
+        }
+    }
+    ...
+</code></pre>
+
+<p>Note that the <a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> will be removed from the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a> if the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html"><code>Process</code></a> fails.</p>
+
+<h3 id="ui-controller-model-and-thymeleaf-template">UI @Controller, Model, and Thymeleaf Template</h3>
+
+<p>The complete <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html"><code>UIController</code></a> implementation is given
+below.</p>
+
+<pre><code class="language-java">@Controller
+@NoArgsConstructor @ToString @Log4j2
+public class UIController extends AbstractController {
+    @Autowired private SSDP ssdp = null;
+    @Autowired private NetworkInterfaces interfaces = null;
+    @Autowired private ARPCache arp = null;
+    @Autowired private Nmap nmap = null;
+
+    @ModelAttribute("upnp")
+    public Map&lt;URI,List&lt;URI&gt;&gt; upnp() {
+        Map&lt;URI,List&lt;URI&gt;&gt; map =
+            ssdp().values()
+            .stream()
+            .map(SSDP.Value::getSSDPMessage)
+            .collect(groupingBy(SSDPMessage::getLocation,
+                                ConcurrentSkipListMap::new,
+                                mapping(SSDPMessage::getUSN, toList())));
+
+        return map;
+    }
+
+    @ModelAttribute("ssdp")
+    public SSDP ssdp() { return ssdp; }
+
+    @ModelAttribute("interfaces")
+    public NetworkInterfaces interfaces() { return interfaces; }
+
+    @ModelAttribute("arp")
+    public ARPCache arp() { return arp; }
+
+    @ModelAttribute("nmap")
+    public Nmap nmap() { return nmap; }
+
+    @RequestMapping(value = {
+                        "/",
+                        "/upnp/devices", "/upnp/ssdp",
+                        "/network/interfaces", "/network/arp", "/network/nmap"
+                    })
+    public String root(Model model) { return getViewName(); }
+
+    @RequestMapping(value = { "/index", "/index.htm", "/index.html" })
+    public String index() { return "redirect:/"; }
+}
+</code></pre>
+
+<p>The <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Controller.html"><code>@Controller</code></a> populates the <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a> with five
+attributes and implements the
+<a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html#root-org.springframework.ui.Model-"><code>root</code></a>
+method<sup id="ref1"><a href="#endnote1">1</a></sup> to serve the UI request paths.
+The
+<a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html?is-external=true">superclass</a>
+implements
+<a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html#getViewName--"><code>getViewName()</code></a>
+which creates a view name based on the implementing class’s package which
+translates to
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.html">classpath:/templates/voyeur.html</a>,
+a <a href="https://www.thymeleaf.org">Thymeleaf</a> template to generate a pure HTML5 document.  Its outline is
+shown below.</p>
+
+<pre><code class="language-xml">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org" th:xmlns="@{http://www.w3.org/1999/xhtml}"&gt;
+  &lt;head&gt;
+    ...
+  &lt;/head&gt;
+  &lt;body&gt;
+    ...
+    &lt;header&gt;
+      &lt;nav th:ref="navbar"&gt;
+        ...
+      &lt;/nav&gt;
+    &lt;/header&gt;
+    &lt;main th:unless="${#ctx.containsVariable('exception')}"
+          th:switch="${#request.servletPath}"&gt;
+      &lt;section th:case="'/error'"&gt;
+        ...
+      &lt;/section&gt;
+      &lt;section th:case="'/upnp/devices'"&gt;
+        ...
+      &lt;/section&gt;
+      &lt;section th:case="'/upnp/ssdp'"&gt;
+        ...
+      &lt;/section&gt;
+      ...
+    &lt;/main&gt;
+    &lt;main th:if="${#ctx.containsVariable('exception')}"&gt;
+      ...
+    &lt;/main&gt;
+    &lt;footer&gt;
+      &lt;nav th:ref="navbar"&gt;
+        ...
+      &lt;/nav&gt;
+    &lt;/footer&gt;
+    &lt;script/&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>The template’s <code>&lt;header/&gt;</code> <code>&lt;nav/&gt;</code> implements the menu and references the
+paths specified in the <code>UIController.root()</code>.</p>
+
+<pre><code class="language-xml">      &lt;nav th:ref="navbar"&gt;
+        &lt;th:block th:ref="container"&gt;
+          &lt;div th:ref="navbar-brand"&gt;
+            &lt;a th:text="${#strings.defaultString(brand, 'Home')}" th:href="@{/}"/&gt;
+          &lt;/div&gt;
+          &lt;div th:ref="navbar-menu"&gt;
+            &lt;ul th:ref="navbar-start"&gt;&lt;/ul&gt;
+            &lt;ul th:ref="navbar-end"&gt;
+              &lt;li th:ref="navbar-item"&gt;
+                &lt;button th:text="'UPNP'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Devices'" th:href="@{/upnp/devices}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'SSDP'" th:href="@{/upnp/ssdp}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item"&gt;
+                &lt;button th:text="'Network'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Interfaces'" th:href="@{/network/interfaces}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'ARP'" th:href="@{/network/arp}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'Nmap'" th:href="@{/network/nmap}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/div&gt;
+        &lt;/th:block&gt;
+      &lt;/nav&gt;
+</code></pre>
+
+<p>The template is also structured to produce a <code>&lt;main/&gt;</code> node with a
+<code>&lt;section/&gt;</code> node corresponding to the request path if there is no
+<code>exception</code> variable in the context (normal operation).  The <code>th:switch</code> and
+<code>th:case</code> attributes are used to create a <code>&lt;section/&gt;</code> corresponding to each
+<code>${#request.servletPath}</code>.  The <code>&lt;section/&gt;</code> specific to the <code>/network/nmap</code>
+path is shown below:</p>
+
+<pre><code class="language-xml">    &lt;main th:unless="${#ctx.containsVariable('exception')}"
+          th:switch="${#request.servletPath}"&gt;
+      ...
+      &lt;section th:case="'/network/nmap'"&gt;
+        &lt;table&gt;
+          &lt;tbody&gt;
+            &lt;tr th:each="key : ${nmap.keySet()}"&gt;
+              &lt;td&gt;
+                &lt;a th:href="@{/network/nmap/{ip}.xml(ip=${key.hostAddress})}" th:target="_newtab"&gt;
+                  &lt;code th:text="${key.hostAddress}"/&gt;
+                &lt;/a&gt;
+                &lt;p&gt;&lt;code th:text="${nmap.getPorts(key)}"/&gt;&lt;/p&gt;
+              &lt;/td&gt;
+              &lt;td&gt;
+                &lt;p th:each="product : ${nmap.getProducts(key)}" th:text="${product}"/&gt;
+              &lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/section&gt;
+      ...
+    &lt;/main&gt;
+</code></pre>
+
+<p>The template generates a <code>&lt;table/&gt;</code> with a row (<code>&lt;tr/&gt;</code>) for each key in the
+<code>Nmap</code>.  Each row consists of two columns (<code>&lt;td/&gt;</code>):</p>
+
+<ol>
+  <li>
+    <p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> of the host with a link to the <code>nmap</code>
+command output<sup id="ref2"><a href="#endnote2">2</a></sup> and a list of open TCP
+ports</p>
+  </li>
+  <li>
+    <p>The services/products detected</p>
+  </li>
+</ol>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getPorts-java.net.InetAddress-"><code>getPorts(InetAddress)</code></a> and
+<a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getProducts-java.net.InetAddress-"><code>getProducts(InetAddress)</code></a> methods are provided
+to avoid <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/XPath.html"><code>XPath</code></a> calculations within the <a href="https://www.thymeleaf.org">Thymeleaf</a> template.</p>
+
+<pre><code class="language-java">...
+@Service
+@NoArgsConstructor @Log4j2
+public class Nmap extends InetAddressMap&lt;Document&gt; ... {
+    ...
+    public Set&lt;Integer&gt; getPorts(InetAddress key) {
+        Set&lt;Integer&gt; ports = new TreeSet&lt;&gt;();
+        NodeList list = (NodeList) get(key, "/nmaprun/host/ports/port/@portid", NODESET);
+
+        if (list != null) {
+            for (int i = 0; i &lt; list.getLength(); i += 1) {
+                ports.add(Integer.parseInt(list.item(i).getNodeValue()));
+            }
+        }
+
+        return ports;
+    }
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getProducts-java.net.InetAddress-"><code>getProducts(InetAddress)</code></a> implementation is
+similar with an <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/XPathExpression.html"><code>XPathExression</code></a> of
+<code>/nmaprun/host/ports/port/service/@product</code>.</p>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html"><code>UIController</code></a> instance combined with the
+<a href="https://www.thymeleaf.org">Thymeleaf</a> template described so far will only generate pure HTML5 with no
+style markup.  This implementation uses Thymeleaf’s <a href="https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic">Decoupled Template
+Logic</a> feature and can be found at
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.th.xml">classpath:/templates/voyeur.th.xml</a>.<sup id="ref3"><a href="#endnote3">3</a></sup>
+The decoupled logic for the table described
+in this section is shown below.</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;thlogic&gt;
+  ...
+  &lt;attr sel="body"&gt;
+    ...
+    &lt;attr sel="main" th:class="'container'"&gt;
+      &lt;attr sel="table" th:class="'table table-striped'"&gt;
+        &lt;attr sel="tbody"&gt;
+          &lt;attr sel="tr" th:class="'row'"/&gt;
+          &lt;attr sel="tr/td" th:class="'col'"/&gt;
+        &lt;/attr&gt;
+      &lt;/attr&gt;
+    &lt;/attr&gt;
+    ...
+  &lt;/attr&gt;
+&lt;/thlogic&gt;
+</code></pre>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html"><code>UIController</code></a> superclass provides one more
+feature: To inject the proprties defined in
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.model.properties">classpath:/templates/voyeur.model.properties</a>
+into the <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a>.</p>
+
+<pre><code class="language-properties">brand = ${application.brand:}
+
+stylesheets: /webjars/bootstrap/css/bootstrap.css
+style:\
+body { padding-top: 60px; margin-bottom: 60px; }\n\
+@media (max-width: 979px) { body { padding-top: 0px; } }
+scripts: /webjars/jquery/jquery.js, /webjars/bootstrap/js/bootstrap.js
+</code></pre>
+
+<p>The design goal of this implementation was to commit all markup logic to the
+<code>*.th.xml</code> resource allowing only the necessity to modify the decoupled
+logic and the model properties to use an alternate framework.  This goal was
+defeated in this implementation because different frameworks support to
+different degrees HTML5 elements.  A partial Bulma implementation is
+available in
+https://github.com/allen-ball/voyeur/tree/trunk/src/main/resources/templates-bulma
+which demonstrates the HTML5 differences.</p>
+
+<p>The <code>/network/nmap</code> request is shown rendered in the image in the
+<a href="#introduction">Introduction</a> of this article.</p>
+
+<h3 id="nmap-output-restcontroller">nmap Output @RestController</h3>
+
+<p><code>nmap</code> XML output can be served by implementing a
+<a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RestController.html"><code>@RestController</code></a>.  The <code>Nmap</code> class is annotated with
+<code>@RestController</code> and <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html"><code>@RequestMapping</code></a> to requests for
+<code>/network/nmap/</code> and the
+<a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#nmap-java.lang.String-"><code>nmap(String)</code></a>
+method provides the XML serialized to a String.</p>
+
+<pre><code class="language-java">@RestController
+@RequestMapping(value = { "/network/nmap/" }, produces = MediaType.APPLICATION_XML_VALUE)
+...
+public class Nmap ... {
+    ...
+    @RequestMapping(value = { "{ip}.xml" })
+    public String nmap(@PathVariable String ip) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        transformer.transform(new DOMSource(get(InetAddress.getByName(ip))),
+                              new StreamResult(out));
+
+        return out.toString("UTF-8");
+    }
+    ...
+}
+</code></pre>
+
+<h3 id="packaging">Packaging</h3>
+
+<p>The <a href="https://docs.spring.io/spring-boot/docs/2.4.5/maven-plugin/reference/html/"><code>spring-boot-maven-plugin</code></a> has a <code>repackage</code>
+goal which may be used to create a self-contained JAR with an embedded
+launch script.  That goal is used in the project
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/pom.xml"><code>pom</code></a> to create
+and attach a self-contained JAR atifact.</p>
+
+<pre><code class="language-xml">&lt;project ...&gt;
+  ...
+  &lt;build&gt;
+    &lt;pluginManagement&gt;
+      &lt;plugins&gt;
+        ...
+        &lt;plugin&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+          &lt;executions&gt;
+            &lt;execution&gt;
+              &lt;goals&gt;
+                &lt;goal&gt;build-info&lt;/goal&gt;
+                &lt;goal&gt;repackage&lt;/goal&gt;
+              &lt;/goals&gt;
+            &lt;/execution&gt;
+          &lt;/executions&gt;
+          &lt;configuration&gt;
+            &lt;attach&gt;true&lt;/attach&gt;
+            &lt;classifier&gt;bin&lt;/classifier&gt;
+            &lt;executable&gt;true&lt;/executable&gt;
+            &lt;mainClass&gt;${start-class}&lt;/mainClass&gt;
+            &lt;embeddedLaunchScriptProperties&gt;
+              &lt;inlinedConfScript&gt;${basedir}/src/bin/inline.conf&lt;/inlinedConfScript&gt;
+            &lt;/embeddedLaunchScriptProperties&gt;
+          &lt;/configuration&gt;
+        &lt;/plugin&gt;
+        ...
+      &lt;/plugins&gt;
+    &lt;/pluginManagement&gt;
+    ...
+  &lt;/build&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>Please see the project GitHub
+<a href="https://github.com/allen-ball/voyeur">page</a> for instructions
+on how to run the JAR.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This article discusses aspects of the
+<a href="https://github.com/allen-ball/voyeur"><code>voyeur</code></a> application
+and provides specific examples of:</p>
+
+<ul>
+  <li>
+    <p><code>@Service</code> implementation and <code>@Autowired</code> components with <code>@Scheduled</code>
+methods</p>
+  </li>
+  <li>
+    <p><code>@Controller</code> implementation, <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a> population, and <a href="https://www.thymeleaf.org">Thymeleaf</a>
+templates and decoupled logic</p>
+  </li>
+  <li>
+    <p><code>@RestController</code> implementation</p>
+  </li>
+</ul>
+
+<p><b id="endnote1">[1]</b>
+A misleading method name at best.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+The <code>@RestController</code> is described in the next subsection.
+<a href="#ref2">↩</a></p>
+
+<p><b id="endnote3">[3]</b>
+The <a href="https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/appendix-application-properties.html">common application properties</a> do not provide an option to enable this
+functionality.  It is enabled in the <code>UIController</code> suprclass by configuring
+the injected <code>SpringResourceTemplateResolver</code>.
+<a href="#ref3">↩</a></p>
+

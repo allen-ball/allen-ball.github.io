@@ -1,0 +1,243 @@
+<p><a href="https://spring.io/projects/spring-boot">Spring Boot</a> allows for the creation of “starters:” Convenient dependency
+descriptors that often provide some specific but complex functionality.
+Examples from Spring Boot discussed in this series of articles include
+<a href="https://spring.io/guides/gs/spring-boot/"><code>spring-boot-starter-web</code></a>,
+<code>spring-boot-starter-thymeleaf</code>, and <code>spring-boot-starter-actuator</code>.</p>
+
+<p>This article describes some reusable code targeted for development and
+testing (a REST controller @ <code>/jig/bean/{name}.json</code> and
+<code>/jig/bean/{name}.xml</code>) and the steps necessary to create a Spring Boot
+starter.  It also describes a starter for the embedded MySQL server process
+described in
+<a href="/article/2019-10-19-spring-embedded-mysqld">“Spring Embedded MySQL Server”</a>.</p>
+
+<!--more-->
+
+<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/allclasses-noframe.html">javadoc</a> is provided.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>As discussed in
+<a href="/article/2019-11-16-spring-boot-part-01">part 1</a>, the
+<code>spring-boot-starter-actuator</code> may be configured.  One of its sevices may be
+used to get the list (with attributes) of the configured beans.  Sample
+partial output below:</p>
+
+<pre><code class="language-bash">$ curl -is -X GET http://localhost:5001/actuator/beans/
+HTTP/1.1 200
+Content-Type: application/vnd.spring-boot.actuator.v3+json
+Transfer-Encoding: chunked
+Date: Sun, 19 Jul 2020 20:22:10 GMT
+
+{
+  "contexts" : {
+    "application" : {
+      "beans" : {
+        ...
+        "discoveryService" : {
+          "scope" : "singleton",
+          "type" : "upnp.DiscoveryService",
+          "resource" : "file [/Users/ball/upnp-media-server/target/classes/upnp/DiscoveryService.class]",
+          "dependencies" : [ "mediaServer" ]
+        },
+        ...
+      },
+      "parentId" : null
+    }
+  }
+}
+</code></pre>
+
+<p>The <code>ball-spring-jig-starter</code> will provide the following two REST APIs to
+retrieve a specific bean’s value and demonstrate serialization to JSON or
+XML as appropriate.  JSON partial output:</p>
+
+<pre><code class="language-bash">$ curl -is -X GET http://localhost:5000/jig/bean/discoveryService.json
+HTTP/1.1 200
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sun, 19 Jul 2020 20:23:38 GMT
+
+{
+  "uuid:00000000-0000-1010-8000-0024BEF18BCC" : {
+    "expiration" : 1595191949391,
+    "ssdpmessage" : {
+      "params" : { },
+      "entity" : null,
+      "locale" : null,
+      "inetAddress" : "10.0.1.9",
+      "st" : "uuid:00000000-0000-1010-8000-0024BEF18BCC",
+      "location" : "http://10.0.1.9:52323/dmr.xml",
+      "usn" : "uuid:00000000-0000-1010-8000-0024BEF18BCC",
+      "protocolVersion" : {
+        "protocol" : "HTTP",
+        "major" : 1,
+        "minor" : 1
+      },
+      ...
+    },
+    ...
+  },
+  ...
+}
+</code></pre>
+
+<p>And corresponding XML output:</p>
+
+<pre><code class="language-bash">$ curl -is -X GET http://localhost:5000/jig/bean/discoveryService.xml
+HTTP/1.1 200
+Content-Type: application/xml
+Transfer-Encoding: chunked
+Date: Sun, 19 Jul 2020 20:29:47 GMT
+
+&lt;DiscoveryService&gt;
+  &lt;uuid:00000000-0000-1010-8000-0024BEF18BCC&gt;
+    &lt;expiration&gt;1595192286661&lt;/expiration&gt;
+    &lt;ssdpmessage&gt;
+      &lt;params/&gt;
+      &lt;entity/&gt;
+      &lt;locale/&gt;
+      &lt;inetAddress&gt;10.0.1.9&lt;/inetAddress&gt;
+      &lt;st&gt;uuid:00000000-0000-1010-8000-0024BEF18BCC&lt;/st&gt;
+      &lt;location&gt;http://10.0.1.9:52323/dmr.xml&lt;/location&gt;
+      &lt;usn&gt;uuid:00000000-0000-1010-8000-0024BEF18BCC&lt;/usn&gt;
+      &lt;protocolVersion&gt;
+        &lt;protocol&gt;HTTP&lt;/protocol&gt;
+        &lt;major&gt;1&lt;/major&gt;
+        &lt;minor&gt;1&lt;/minor&gt;
+      &lt;/protocolVersion&gt;
+      ...
+    &lt;/ssdpmessage&gt;
+  &lt;/uuid:00000000-0000-1010-8000-0024BEF18BCC&gt;
+  ...
+&lt;/DiscoveryService&gt;
+</code></pre>
+
+<p>The implementation is described in the next section.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The steps to create the “jig” starter:</p>
+
+<ol>
+  <li>
+    <p>Implement the REST controller</p>
+  </li>
+  <li>
+    <p>Create a project and POM for the starter artifact</p>
+  </li>
+  <li>
+    <p>Create the auto-configuration class(es)</p>
+  </li>
+  <li>
+    <p>Link the auto-configuration class(es) into the starter’s
+<code>META-INF/spring.factories</code> resource<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+  </li>
+</ol>
+
+<p>The <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/BeanRestController.html"><code>BeanRestController</code></a> implementation is shown
+below.</p>
+
+<figcaption style="text-align: center">
+    ball.spring.jig.BeanRestController
+</figcaption>
+<pre><code class="language-java">@RestController
+@RequestMapping(value = { "/jig/bean/" })
+@ResponseBody
+@NoArgsConstructor @ToString @Log4j2
+public class BeanRestController implements ApplicationContextAware {
+    private ApplicationContext context = null;
+
+    @Override
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
+    }
+
+    @RequestMapping(method = { GET }, value = { "{name}.json" }, produces = APPLICATION_JSON_VALUE)
+    public Object json(@PathVariable String name) throws Exception {
+        return context.getBean(name);
+    }
+
+    @RequestMapping(method = { GET }, value = { "{name}.xml" }, produces = APPLICATION_XML_VALUE)
+    public Object xml(@PathVariable String name) throws Exception {
+        return context.getBean(name);
+    }
+
+    @ExceptionHandler({ NoSuchBeanDefinitionException.class, NoSuchElementException.class })
+    @ResponseStatus(value = NOT_FOUND, reason = "Resource not found")
+    public void handleNOT_FOUND() { }
+}
+</code></pre>
+
+<p>Its implementation is straightforward: A method each to look-up the
+requested bean and then serialize to JSON and XML.</p>
+
+<p>In the project for the starter, add the
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class.</p>
+
+<figcaption style="text-align: center">
+    ball.spring.jig.autoconfigure.AutoConfiguration
+</figcaption>
+<pre><code class="language-java">@Configuration
+@ConditionalOnClass({ BeanRestController.class })
+@Import({ BeanRestController.class })
+@NoArgsConstructor @ToString @Log4j2
+public class AutoConfiguration {
+}
+</code></pre>
+
+<p>It is critical that <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Configuration.html"><code>@Configuration</code></a> classes are added
+through <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Import.html?is-external=true"><code>@Import</code></a> annotations and <em>not</em>
+<a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/index.html?org/springframework/context/annotation/ComponentScan.html"><code>@ComponentScan</code></a> Neither the starter author nor the
+integrator will be able to predict what components will or will not be
+included in a scan.</p>
+
+<p>It is a good practice to include a “conditional-on” annotation (e.g.,
+<a href="https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnClass.html"><code>@ConditionalOnClass</code></a> to test any required dependency
+software has been configured and/or is on the class path.</p>
+
+<p>Finally, <code>META-INF/spring.factories</code> must be configured in the starter JAR
+to notify Spring Boot to add the
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a>.</p>
+
+<figcaption style="text-align: center">META-INF/spring.factories</figcaption>
+<pre><code class="language-properties">org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.jig.autoconfigure.AutoConfiguration
+</code></pre>
+
+<p>Creating a starter for the embedded MySQL process described in
+<a href="/article/2019-10-19-spring-embedded-mysqld">“Spring Embedded MySQL Server”</a>
+is equally straightforward.  Its
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/mysqld/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class is shown below:</p>
+
+<figcaption style="text-align: center">
+    ball.spring.mysqld.autoconfigure.AutoConfiguration
+</figcaption>
+<pre><code class="language-java">@Configuration
+@ConditionalOnClass({ MysqldConfiguration.class })
+@Import({ EntityManagerFactoryComponent.class, MysqldConfiguration.class })
+@NoArgsConstructor @ToString @Log4j2
+public class AutoConfiguration {
+}
+</code></pre>
+
+<p>With it corresponding <code>META-INF/spring.factories</code>:</p>
+
+<figcaption style="text-align: center">META-INF/spring.factories</figcaption>
+<pre><code class="language-properties">org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.mysqld.autoconfigure.AutoConfiguration
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p>Creating a <a href="https://spring.io/projects/spring-boot">Spring Boot</a> starter is straightfoward: Create a project/POM to
+host the starter’s dependencies and auto-configuration class(es), add the
+annotated auto-configuration class(es), and configure the starter JAR’s
+<code>META-INF/spring.factories</code> with the auto-configuration class(es).  That
+starter’s functionality can then be added to a Spring Boot application
+simply by including a single dependency in the application POM.</p>
+
+<p><b id="endnote1">[1]</b>
+Many <a href="https://spring.io/projects/spring-boot">Spring Boot</a> components provide separate auto-configuration and
+starter artifacts to support all use cases.  The author feels these example
+implementations do not benefit from separate auto-configuration artifacts.
+<a href="#ref1">↩</a></p>
+

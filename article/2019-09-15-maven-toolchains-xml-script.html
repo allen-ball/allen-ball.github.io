@@ -1,0 +1,277 @@
+<p>Apache Maven has introduced Maven Toolchains to ease configuring plug-ins
+and to avoid specifying any JDK location in the project POMs.  Available
+JDKs are configured in <code>${HOME}/.m2/toolchains.xml</code>.  This article
+introduces a script to automate the generation of the <code>toolchains.xml</code>
+file, <code>toolchains.xml.bash</code>.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The <code>toolchains.xml</code> file contains a <code>&lt;toolchain/&gt;</code> element for each
+configured JDK.</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchains&gt;
+  ...
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;VERSION&lt;/version&gt;
+      &lt;vendor&gt;VENDOR&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;JDKHOMEDIR&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  ...
+&lt;/toolchains&gt;
+</code></pre>
+
+<p>For each <code>JDKHOMEDIR</code> candidate, the <code>VERSION</code> is specified by the JVM
+system property <code>java.specification.version</code> and a consistent vendor name is
+specified by <code>java.vendor</code>.  This simple Java program (compatible with Java
+1.5 and later) will provide the template.  (The JDK directory must be
+supplied as a command line argument.)</p>
+
+<pre><code class="language-java">public class ToolchainEntry {
+    public static void main(String[] argv) {
+        System.out
+            .format("  &lt;toolchain&gt;\n")
+            .format("    &lt;type&gt;jdk&lt;/type&gt;\n")
+            .format("    &lt;provides&gt;\n")
+            .format("      &lt;version&gt;%s&lt;/version&gt;\n",
+                    System.getProperty("java.specification.version"))
+            .format("      &lt;vendor&gt;%s&lt;/vendor&gt;\n",
+                    System.getProperty("java.vendor"))
+            .format("    &lt;/provides&gt;\n")
+            .format("    &lt;configuration&gt;\n")
+            .format("      &lt;jdkHome&gt;%s&lt;/jdkHome&gt;\n", argv[0])
+            .format("    &lt;/configuration&gt;\n")
+            .format("  &lt;/toolchain&gt;\n");
+    }
+}
+</code></pre>
+
+<p>This program is combined with a <code>bash</code> script in the next section.</p>
+
+<h2 id="script">Script</h2>
+
+<p>A <code>bash</code> script is used to drive the execution of the Java program described
+in the previous section with responsibilities to:</p>
+
+<ol>
+  <li>Identify the candidate JVM directories:
+    <ul>
+      <li>Mac OS X (Darwin): <code>/Library/Java/JavaVirtualMachines/*.jdk/Contents/Home</code></li>
+      <li>Linux: <code>/usr/lib/jvm/*jdk*</code></li>
+    </ul>
+  </li>
+  <li>Create <code>Toolchain.java</code> and compile to
+<code>Toolchain.class</code><sup id="ref1"><a href="#endnote1">1</a></sup></li>
+  <li>Create a new <code>&lt;toolchains/&gt;</code> document and iterate therough each candidate
+JDK directory executing <code>Toolchain.class</code> with the candidate JVM</li>
+</ol>
+
+<pre><code class="language-bash">#!/bin/bash
+
+shopt -s nullglob
+JDKS+=({/Library/Java/JavaVirtualMachines/*.jdk/Contents/Home,/usr/lib/jvm/*jdk*})
+
+cat &gt; ToolchainEntry.java &lt;&lt;EOF
+public class ToolchainEntry {
+    public static void main(String[] argv) {
+        System.out
+            .format("  &lt;toolchain&gt;\n")
+            .format("    &lt;type&gt;jdk&lt;/type&gt;\n")
+            .format("    &lt;provides&gt;\n")
+            .format("      &lt;version&gt;%s&lt;/version&gt;\n",
+                    System.getProperty("java.specification.version"))
+            .format("      &lt;vendor&gt;%s&lt;/vendor&gt;\n",
+                    System.getProperty("java.vendor"))
+            .format("    &lt;/provides&gt;\n")
+            .format("    &lt;configuration&gt;\n")
+            .format("      &lt;jdkHome&gt;%s&lt;/jdkHome&gt;\n", argv[0])
+            .format("    &lt;/configuration&gt;\n")
+            .format("  &lt;/toolchain&gt;\n");
+    }
+}
+EOF
+
+javac -Xlint:none -source 1.7 -target 1.7 ToolchainEntry.java
+
+echo '&lt;?xml version="1.0" encoding="UTF-8"?&gt;' &gt; toolchains.xml
+echo '&lt;toolchains&gt;' &gt;&gt; toolchains.xml
+
+for jdk in ${JDKS[@]}; do
+    if [ -d ${jdk} ]; then
+        java=${jdk}/bin/java
+
+        if [ -x ${java} ]; then
+            ${java} ToolchainEntry ${jdk} &gt;&gt; toolchains.xml
+        fi
+    fi
+done
+
+echo '&lt;/toolchains&gt;' &gt;&gt; toolchains.xml
+
+rm -rf ToolchainEntry.*
+</code></pre>
+
+<h2 id="output">Output</h2>
+
+<p>Example generated <code>toolchains.xml</code> files for <code>Mac OS X</code> and <code>Linux</code> (Google
+Cloud Shell) are provided below.</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchains&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;10&lt;/version&gt;
+      &lt;vendor&gt;AdoptOpenJDK&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/adoptopenjdk-10.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;11&lt;/version&gt;
+      &lt;vendor&gt;AdoptOpenJDK&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;12&lt;/version&gt;
+      &lt;vendor&gt;AdoptOpenJDK&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/adoptopenjdk-12.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;1.8&lt;/version&gt;
+      &lt;vendor&gt;AdoptOpenJDK&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;9&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/adoptopenjdk-9.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;11&lt;/version&gt;
+      &lt;vendor&gt;Amazon.com Inc.&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;12&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/jdk-12.0.2.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;1.7&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/jdk1.7.0_80.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;1.8&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/jdk1.8.0_201.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;1.8&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+&lt;/toolchains&gt;
+</code></pre>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;toolchains&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;11&lt;/version&gt;
+      &lt;vendor&gt;Debian&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/usr/lib/jvm/java-1.11.0-openjdk-amd64&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;11&lt;/version&gt;
+      &lt;vendor&gt;Debian&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/usr/lib/jvm/java-11-openjdk-amd64&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;1.8&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/usr/lib/jvm/java-1.8.0-openjdk-amd64&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+  &lt;toolchain&gt;
+    &lt;type&gt;jdk&lt;/type&gt;
+    &lt;provides&gt;
+      &lt;version&gt;1.8&lt;/version&gt;
+      &lt;vendor&gt;Oracle Corporation&lt;/vendor&gt;
+    &lt;/provides&gt;
+    &lt;configuration&gt;
+      &lt;jdkHome&gt;/usr/lib/jvm/java-8-openjdk-amd64&lt;/jdkHome&gt;
+    &lt;/configuration&gt;
+  &lt;/toolchain&gt;
+&lt;/toolchains&gt;
+</code></pre>
+
+<p><b id="endnote1">[1]</b>
+Even though the earliest Java version supported by the java source is 1.5,
+the earliest code Oracle’s JDK 12 can produce is for 1.7.
+<a href="#ref1">↩</a></p>

@@ -1,0 +1,510 @@
+<p><a href="https://aws.amazon.com/">Amazon Web Services (AWS)</a> provides their
+<a href="https://aws.amazon.com/ebs/">Elastic Block Store (EBS)</a> service for persistent block storage for
+<a href="https://aws.amazon.com/ec2/">Amazon Elastic Compute Cloud (EC2)</a> instances in the AWS cloud.
+Linux/UNIX file systems may be created on these volumes and then attached to
+an instance and subsequently mounted as a file system.  However, the EC2
+instance must be started before the volume can be attached which may lead to
+significant challenges in architecture design as both the numbers of
+instances and volumes increase.</p>
+
+<p>This article presents an implementation of an executable automount map which
+may be leveraged to attach and mount <a href="https://aws.amazon.com/ebs/">EBS</a> volumes on demand.  The
+implementation includes a mechanism for detaching unmounted EBS volumes so
+they me be attached to different instances in the future.</p>
+
+<!--more-->
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p><a href="https://aws.amazon.com/ebs/">EBS</a> volumes must be prepared with file systems and must be
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html">tagged</a>
+with <code>fstype</code> and <code>uuid</code>.  The <code>fstype</code> value must accurately reflect the
+the volume’s file system type and must be supported by the <a href="https://aws.amazon.com/ec2/">EC2</a> instance.
+The <code>uuid</code> tag must contain the file system partition
+UUID.<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+
+<p>The volumes are attached and mounted on demand through an <em>Executable Autofs
+Map</em>.  <a href="https://en.wikipedia.org/wiki/Systemd">systemd</a> is configured to monitor the corresponding <code>autofs</code> mount
+point to detect when the <code>automount</code> daemon unmounts a file system and then
+detach the volume from the EC2 instance.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>EBS volumes are attached with the <a href="#auto.ebs">auto.ebs Executable Map</a> and
+are detached with <a href="#systemd">systemd auto.ebs-detach.service</a> (each
+described in the following subsections.</p>
+
+<p>The scripts herein rely on shell functions defined in <code>/etc/aws.rc</code>
+described <a href="#aws.rc">later</a> in this article.  Most functions are
+straightforward wrappers to the corresponding <a href="https://aws.amazon.com/cli/">AWS Command Line Interface</a>.</p>
+
+<h3 id="-autoebs-executable-map"><a name="auto.ebs"></a> <code>auto.ebs</code> Executable Map</h3>
+
+<p>The <code>auto.ebs</code> Executable Map consists of two configuration files:</p>
+
+<pre><code class="language-bash">/
+└── etc
+    ├── auto.ebs
+    └── auto.master.d
+        └── ebs.autofs
+</code></pre>
+
+<p>The work is done by the <code>/etc/auto.ebs</code> script.  The volume must be properly
+formatted as a file system and it must have accurate <code>fstype</code> and <code>uuid</code>
+tags.  If the volume is “available,” it is simply attached to a block device
+and its map entry is constructed based on the <code>fstype</code> and <code>uuid</code> tags.</p>
+
+<p>If the volume is “in-use,” but if the volume is attached to <em>this</em> instance,
+then a map entry is returned as follows:</p>
+
+<ol>
+  <li>If the volume is the special case of matching the AMI block device, a map
+entry with <code>fstype=bind,symlink</code> with a target of <code>/</code> is returned, else,</li>
+  <li>If the volume is already mounted to <em>this</em> instance (outside the <code>autofs</code>
+map), a map entry with <code>fstype=bind,symlink</code> with a target of the
+volume’s mount point is returned, else,</li>
+  <li>The behavior is the same as if the volume was “available” (described
+above)</li>
+</ol>
+
+<pre><code class="language-bash">#!/bin/bash
+# ----------------------------------------------------------------------------
+# /etc/auto.ebs
+# ----------------------------------------------------------------------------
+. /etc/aws.rc
+
+# auto-ebs-entry key(volume)
+auto-ebs-entry() {
+    local key="$1"
+    local value=""
+
+    local fstype=$(ec2-get-tag-value ${key} fstype)
+    local uuid=$(ec2-get-tag-value ${key} uuid)
+
+    case $(ec2-get-volume-state ${key}) in
+        available)
+            if [ "${fstype}" != "" -a "${uuid}" != "" ]; then
+                ec2-attach-volume ${key} $(next-unattached-block-device) 1&gt;&amp;2
+
+                value="-fstype=${fstype} :UUID=${uuid}"
+            fi
+            ;;
+
+        in-use)
+            local instance="$(ec2-get-volume-attachment-instance ${key})"
+            local state="$(ec2-get-volume-attachment-state ${key})"
+
+            if [ "${instance}" == "${INSTANCE}" -a "${state}" == "attached" ]; then
+                local device="$(ec2-get-volume-attachment-device ${key})"
+
+                if [ "$(metadata block-device-mapping/ami)" == "${device}" ]; then
+                    value="-fstype=bind,symlink :/"
+                else
+                    local mntpt=$(lsblk -no MOUNTPOINT ${device})
+
+                    if [ "${mntpt}" != "" ]; then
+                        value="-fstype=bind,symlink :${mntpt}"
+                    elif [ "${fstype}" != "" -a "${uuid}" != "" ]; then
+                        value="-fstype=${fstype} :UUID=${uuid}"
+                    fi
+                fi
+            else
+                echo "${key} already in-use" 1&gt;&amp;2
+            fi
+            ;;
+
+        *)
+            echo "Cannot mount ${key}" 1&gt;&amp;2
+            ;;
+    esac
+
+    echo "$0: key=\"${key}\" value=\"${value}\"" 1&gt;&amp;2
+
+    if [ "${value}" != "" ]; then
+        echo "${value}"
+    fi
+}
+
+auto-ebs-entry $1
+</code></pre>
+
+<p>The <code>/ebs</code> mount point and associated executable map script must be
+configured in <code>/etc/auto.master.d/ebs.autofs</code>.</p>
+
+<pre><code class="language-bash"># /etc/auto.master.d/ebs.autofs
+/ebs    /etc/auto.ebs
+</code></pre>
+
+<h3 id="-systemd-autoebs-detachservice"><a name="systemd"></a> <code>systemd</code> <code>auto.ebs-detach.service</code></h3>
+
+<p><a href="https://en.wikipedia.org/wiki/Systemd">systemd</a> is configured to monitor the <code>/ebs</code> map mount directory and invoke
+<code>/etc/auto.ebs-detach.sh</code> whenever the directory changes.  This script is
+responsible for detaching any volumes that are no longer mounted.
+<code>/usr/lib/systemd/system/auto.ebs-detach.service</code> configures
+<code>/etc/auto.ebs-detach.sh</code> as a service and
+<code>/usr/lib/systemd/system/auto.ebs-detach.path</code> configures systemd to
+monitor <code>/ebs</code>.</p>
+
+<pre><code class="language-bash">/
+├── etc
+│   └── auto.ebs-detach.sh
+└── usr
+    └── lib
+        └── systemd
+            └── system
+                ├── auto.ebs-detach.path
+                └── auto.ebs-detach.service
+</code></pre>
+
+<p>Since the only reliable event<sup id="ref2"><a href="#endnote2">2</a></sup> that is
+available to monitor is a change to <code>/ebs</code> directory, each attached volume
+must be checked in each invocation.</p>
+
+<pre><code class="language-bash">#!/bin/bash
+# ----------------------------------------------------------------------------
+# /etc/auto.ebs-detach.sh
+# ----------------------------------------------------------------------------
+. /etc/aws.rc
+
+# detach-volume-if-not-mounted key(volume)
+detach-volume-if-not-mounted() {
+    local key="$1"
+    local instance="$(ec2-get-volume-attachment-instance ${key})"
+    local state="$(ec2-get-volume-attachment-state ${key})"
+
+    if [ "${instance}" == "${INSTANCE}" -a "${state}" == "attached" ]; then
+        local device="$(ec2-get-volume-attachment-device ${key})"
+
+        if [ "$(metadata block-device-mapping/ami)" != "${device}" ]; then
+            local mntpt=$(lsblk -no MOUNTPOINT ${device})
+
+            if [ "${mntpt}" == "" ]; then
+                ec2-detach-volume ${key}
+            fi
+        fi
+    fi
+}
+
+for volume in $(list-attached-volumes); do
+    detach-volume-if-not-mounted ${volume}
+done
+
+exit 0
+</code></pre>
+
+<p><code>/usr/lib/systemd/system/auto.ebs-detach.service</code> defines the script as a
+service.</p>
+
+<pre><code class="language-ini"># /usr/lib/systemd/system/auto.ebs-detach.service
+[Unit]
+Description=/etc/auto.ebs-detach.sh
+After=autofs.service
+
+[Service]
+Type=oneshot
+ExecStart=/etc/auto.ebs-detach.sh
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+<p><code>/usr/lib/systemd/system/auto.ebs-detach.path</code> configures <code>systemd</code> to monitor <code>/ebs</code>.</p>
+
+<pre><code class="language-ini"># /usr/lib/systemd/system/auto.ebs-detach.path
+[Unit]
+Description=PathModified=/ebs/ /etc/auto.ebs-detach.sh
+
+[Path]
+PathModified=/ebs/
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+<h3 id="ansible-role">Ansible Role</h3>
+
+<p>The <a href="https://www.ansible.com/">Ansible</a> tasks and handlers configure the <code>autofs</code> <code>/ebs</code> map.</p>
+
+<pre><code class="language-yaml"># tasks/main.yml
+---
+- name: auto.ebs config files
+  template:
+    src: "{{ item.path }}"
+    dest: "/{{ item.path }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { path: etc/auto.master.d/ebs.autofs, mode: "0644" }
+    - { path: etc/auto.ebs, mode: "0755" }
+    - { path: etc/auto.ebs-detach.sh, mode: "0755" }
+    - { path: usr/lib/systemd/system/auto.ebs-detach.service, mode: "0644" }
+    - { path: usr/lib/systemd/system/auto.ebs-detach.path, mode: "0644" }
+  notify: [ 'reload systemd', 'restart autofs' ]
+
+- name: enable auto.ebs-detach.service
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - auto.ebs-detach.service
+    - auto.ebs-detach.path
+  notify: [ 'reload systemd' ]
+</code></pre>
+
+<pre><code class="language-yaml"># handlers/main.yml
+---
+- name: reload systemd
+  systemd: daemon_reload=yes
+
+- name: restart autofs
+  service: name=autofs enabled=yes state=restarted
+</code></pre>
+
+<h3 id="selinux-policies">SELinux Policies</h3>
+
+<p>If Security-Enhanced Linux (SELinux) is installed and enabled, the security
+policies need to be adjusted to allow the scripts access to some resources.</p>
+
+<pre><code class="language-clike">module local-automount 1.0;
+
+require {
+	type ldconfig_exec_t;
+	type automount_t;
+	type fixed_disk_device_t;
+	class blk_file getattr;
+	class file { execute execute_no_trans open read };
+}
+
+#============= automount_t ==============
+allow automount_t fixed_disk_device_t:blk_file getattr;
+allow automount_t ldconfig_exec_t:file { execute execute_no_trans open read };
+</code></pre>
+
+<p>These policies may be installed with the combination of the
+<code>checkmodule</code>/<code>semodule_package</code>/<code>semodule</code> commands.  The following is
+added to the <a href="https://www.ansible.com/">Ansible</a> <code>tasks/main.yml</code>.</p>
+
+<pre><code class="language-yaml">- name: SELinux Policies
+  set_fact:
+    policies:
+      - local-automount
+
+- name: SELinux (*.te)
+  template:
+    src: "selinux/.te"
+    dest: "/etc/selinux/tmp/.te"
+  with_items:
+    - ""
+  register: te
+  when: &gt;
+    ansible_selinux is defined
+    and ansible_selinux != False
+    and ansible_selinux.status == 'enabled'
+
+- name: SELinux - checkmodule
+  command: &gt;
+    chdir=/etc/selinux/tmp creates=.mod
+    checkmodule -M -m -o .mod .te
+  with_items:
+    - ""
+  register: mod
+  when: te.changed
+
+- name: SELinux - semodule_package
+  command: &gt;
+    chdir=/etc/selinux/tmp creates=.pp
+    semodule_package -o .pp -m .mod
+  with_items:
+    - ""
+  register: pp
+  when: mod.changed
+
+- name: SELinux - semodule
+  command: &gt;
+    chdir=/etc/selinux/tmp
+    semodule -i .pp
+  with_items:
+    - ""
+  when: pp.changed
+</code></pre>
+
+<p>Developing the SELinux polices will be the subject of a future entry.</p>
+
+<h3 id="-etcawsrc"><a name="aws.rc"></a> /etc/aws.rc</h3>
+
+<p><code>/etc/aws.rc</code> provides the common shell functions used by the scripts
+described above.  In addition, the <code>volume-mkfs</code> and <code>new-volume-mkfs</code> shell
+functions demonstrate the necessary tags for file system volumes to be
+managed by the <code>/ebs</code> map.</p>
+
+<pre><code class="language-bash">#!/bin/bash
+# ----------------------------------------------------------------------------
+# /etc/aws.rc
+# ----------------------------------------------------------------------------
+# Functions
+# ----------------------------------------------------------------------------
+# metadata data
+metadata() {
+    curl -s http://169.254.169.254/latest/meta-data/$1
+}
+
+export ZONE=$(metadata placement/availability-zone)
+export REGION=$(echo ${ZONE} | sed 's/\(.*\)[a-z]/\1/')
+export INSTANCE=$(metadata instance-id)
+
+# ec2 command [argument ...]
+ec2() {
+    aws ec2 --region ${REGION} "$@"
+}
+
+# ec2-get-tag-value resource-id key
+ec2-get-tag-value() {
+    ec2 describe-tags \
+        --filters Name=resource-id,Values="$1" Name=key,Values="$2" \
+        --output text --query 'Tags[*].Value'
+}
+
+# ec2-set-tag-value resource-id key value
+ec2-set-tag-value() {
+    ec2 delete-tags --resources "$1" --tags Key="$2"
+    ec2 create-tags --resources "$1" --tags Key="$2",Value="$3"
+}
+
+# ec2-get-volume-state volume-id
+ec2-get-volume-state() {
+    ec2 describe-volumes \
+        --volume-ids "$1" \
+        --output text --query 'Volumes[].State'
+}
+
+# ec2-get-volume-attachment-instance volume-id
+ec2-get-volume-attachment-instance() {
+    local value=$(ec2 describe-volumes \
+                      --volume-ids "$1" \
+                      --query 'Volumes[].Attachments[].InstanceId' \
+                      --output text)
+
+    echo ${value}
+}
+
+# ec2-get-volume-attachment-state volume-id
+ec2-get-volume-attachment-state() {
+    local value=$(ec2 describe-volumes \
+                      --volume-ids "$1" \
+                      --query 'Volumes[].Attachments[].State' \
+                      --output text)
+
+    echo ${value}
+}
+
+# ec2-get-volume-attachment-device volume-id
+ec2-get-volume-attachment-device() {
+    local value=$(ec2 describe-volumes \
+                      --volume-ids "$1" \
+                      --query 'Volumes[].Attachments[].Device' \
+                      --output text)
+
+    echo ${value}
+}
+
+# ec2-attach-volume volume-id device
+ec2-attach-volume() {
+    echo $(ec2 attach-volume \
+               --instance-id ${INSTANCE} --volume-id "$1" --device "$2" \
+               --output text) 1&gt;&amp;2
+    ec2 wait volume-in-use --volume-ids "$1"
+
+    while [ "$(ec2-get-volume-attachment-state $1)" != "attached" ]; do
+        sleep 15
+    done
+}
+
+# ec2-detach-volume volume-id
+ec2-detach-volume() {
+    echo $(ec2 detach-volume \
+               --instance-id ${INSTANCE} --volume-id "$1" \
+               --output text) 1&gt;&amp;2
+    ec2 wait volume-available --volume-ids "$1"
+}
+
+# list-attached-volumes
+list-attached-volumes() {
+    local value=$(ec2 describe-instances \
+                      --instance-ids ${INSTANCE} \
+                      --output text \
+                      --query 'Reservations[].Instances[].BlockDeviceMappings[].Ebs.VolumeId')
+
+    echo ${value}
+}
+
+# next-unattached-block-device
+next-unattached-block-device() {
+    local attached=($(lsblk -ndo NAME))
+    local available=($(echo -e ${attached[0]:0:-1}{a..z}\\n))
+
+    for name in "${attached[@]}"; do
+        available=(${available[@]//*${name}*})
+    done
+
+    echo /dev/${available[0]}
+}
+
+# volume-mkfs volume-id device fstype
+volume-mkfs() {
+    mkfs -t "$3" "$2"
+
+    local uuid=""
+    while [ -z "${uuid}" ]; do
+        uuid=$(lsblk -no UUID ${device})
+        sleep 10
+    done
+
+    ec2-set-tag-value "$1" fstype "$3"
+    ec2-set-tag-value "$1" uuid ${uuid}
+}
+
+# new-volume-mkfs volume-type size fstype
+new-volume-mkfs() {
+    local volume=$(ec2 create-volume \
+                       --availability-zone ${ZONE} \
+                       --volume-type "$1" --size "$2" \
+                       --output text --query 'VolumeId')
+
+    ec2 wait volume-available --volume-ids ${volume}
+
+    local device=$(next-unattached-block-device)
+
+    ec2-attach-volume ${volume} ${device} 1&gt;&amp;2
+
+    volume-mkfs ${volume} ${device} "$3" 1&gt;&amp;2
+
+    ec2-detach-volume ${volume} 1&gt;&amp;2
+
+    echo ${volume}
+}
+</code></pre>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/allen-ball/ball-aws-collection/tree/trunk/roles/auto-ebs">Source</a></li>
+  <li><a href="https://aws.amazon.com/">Amazon Web Services (AWS)</a></li>
+  <li><a href="https://aws.amazon.com/ebs/">AWS Elastic Block Store (EBS)</a></li>
+  <li><a href="https://aws.amazon.com/ec2/">AWS Elastic Compute Cloud (EC2)</a></li>
+  <li><a href="https://www.ansible.com/">Ansible</a></li>
+</ul>
+
+<p><b id="endnote1">[1]</b>
+The <a href="#aws.rc"><code>aws.rc</code> script</a> included at the end of this article
+includes shell functions for allocating, formatting, and tagging EBS volumes
+as file systems.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+The author investigated implementations based on
+<a href="https://linux.die.net/man/8/incrond">incrond(8)</a> and
+<a href="https://linux.die.net/man/1/inotifywait">inotifywait(1)</a> but settled on
+<code>systemd</code> as it appears to be the greatest common denominator for Linux
+distributions.
+<a href="#ref2">↩</a></p>
+

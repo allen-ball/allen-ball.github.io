@@ -1,0 +1,3672 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://blog.hcf.dev//feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.hcf.dev//" rel="alternate" type="text/html" /><updated>2025-11-06T05:08:37+00:00</updated><id>https://blog.hcf.dev//feed.xml</id><title type="html">Allen D. Ball</title><subtitle>A blog about Java and other stuff.</subtitle><entry><title type="html">Configuring and Using GitHub Readme Instant Preview</title><link href="https://blog.hcf.dev//article/2021-07-27-grip" rel="alternate" type="text/html" title="Configuring and Using GitHub Readme Instant Preview" /><published>2021-07-27T00:00:00+00:00</published><updated>2021-07-27T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/grip</id><content type="html" xml:base="https://blog.hcf.dev//article/2021-07-27-grip"><![CDATA[<p><a href="https://github.com/">GitHub</a> will render project <code>README</code> and other markdown files to <code>HTML</code>
+when displaying projects on its website.  Those files must be commited and
+pushed before the developer can see the results which can result in
+extraneous and unwanted commits.  This post discusses installing and using
+the <a href="https://github.com/joeyespo/grip">GitHub Readme Instant Preview</a> (GRIP) tool for previewing
+<a href="https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown">GitHub-flavored Markdown</a> locally.
+<!--more-->
+It provides a GRIP-specific configuration file to enable authentication to
+GitHub to prevent the developer from bumping up against GitHub’s
+<a href="https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting">throttles</a>
+for unauthenticated users.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>The <a href="https://github.com/joeyespo/grip">GRIP</a> tool is available for installation from many popular package
+managers.  To install on MacOS with Home Brew:</p>
+
+<pre><code class="language-sh">$ brew install grip
+</code></pre>
+
+<p>Or on Debian:</p>
+
+<pre><code class="language-sh">$ apt install grip
+</code></pre>
+
+<p>To name a few.</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>Usage is straightforward:  Change the working directory to the project
+directory containing the <code>README.md</code> or other markdown and invoke <code>grip</code>.</p>
+
+<pre><code class="language-sh">$ grip
+ * Serving Flask app "grip.app" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://localhost:6419/ (Press CTRL+C to quit)
+</code></pre>
+
+<p>And browse to <a href="http://localhost:6419/">http://localhost:6419/</a> (or the URL specified in the output).
+The output of <a href="https://github.com/joeyespo/grip">GRIP</a> run in the local project is shown below for comparison
+to <a href="https://github.com/allen-ball/spring-boot-web-server">https://github.com/allen-ball/spring-boot-web-server</a>.</p>
+
+<p><img src="/assets/article/2021-07-27-grip/screenshot-1.png" alt="" /></p>
+
+<p>As configured (albeit, without configuration), <a href="https://github.com/joeyespo/grip">GRIP</a> will invoke the
+<a href="https://github.com/">GitHub</a> API without authentication.  GitHub will limit unauthenticated
+requests to as little as 60 per hour which could impact intensive
+read/review cycles (especially if the developer is sumltaneously using other
+GitHub resources in an unauthenticated manner).  The next section discusses
+configuring authentication.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p><a href="https://github.com/joeyespo/grip">GRIP</a> invokes the <code>${HOME}/.grip/settings.py</code> script (if it exists) to
+determine the <code>USERNAME</code> and <code>PASSWORD</code> to use for authentication.  The
+script below offers a more secure option than simply assigning those raw
+values in the script.</p>
+
+<p><a href="https://github.com/">GitHub</a> currently recommends (and sometimes requires) the developer
+<a href="https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">create a personal access token</a>
+and also provides a process for
+<a href="https://docs.github.com/en/get-started/getting-started-with-git/caching-your-github-credentials-in-git">caching GitHub credentials in Git</a>
+(for Mac, Windows, and Linux).  After completing these two procedures, the
+developer’s credentials are available for GitHub <code>https</code> operations through
+the <code>git credential fill</code> command.  The <code>${HOME}/.grip/settings.py</code> script
+below (and available as this
+<a href="https://gist.github.com/allen-ball/fdc974e6e24e391ddcfad3d61b9a5230">Gist</a>)
+retrieves the cached credentials for <a href="https://github.com/joeyespo/grip">GRIP</a>.</p>
+
+<pre><code class="language-python"># settings.py
+# https://github.com/joeyespo/grip
+
+# Uses "git credential fill" to populate USERNAME and PASSWORD
+
+def git_credential_fill():
+    import subprocess
+    argv = ["git", "credential", "fill"]
+    process = subprocess.Popen(argv, text = True, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    output = process.communicate(input = "protocol=https\nhost=github.com\n")[0].strip()
+    map = dict(item.split("=") for item in output.splitlines())
+
+    return (map["username"], map["password"])
+
+(USERNAME, PASSWORD) = git_credential_fill()
+</code></pre>
+
+<p>Notice <a href="https://github.com/joeyespo/grip">GRIP</a> prints <code>Using credentials</code> message when configured.</p>
+
+<pre><code class="language-sh">$ grip
+ * Using credentials: allen-ball
+ * Serving Flask app "grip.app" (lazy loading)
+ * Environment: production
+...
+</code></pre>]]></content><author><name></name></author><summary type="html"><![CDATA[GitHub will render project README and other markdown files to HTML when displaying projects on its website. Those files must be commited and pushed before the developer can see the results which can result in extraneous and unwanted commits. This post discusses installing and using the GitHub Readme Instant Preview (GRIP) tool for previewing GitHub-flavored Markdown locally.]]></summary></entry><entry><title type="html">Ganymede Kernel 1.1.0.20210614 Released</title><link href="https://blog.hcf.dev//2021/06/14/ganymede-kernel-release-announcement.html" rel="alternate" type="text/html" title="Ganymede Kernel 1.1.0.20210614 Released" /><published>2021-06-14T00:00:00+00:00</published><updated>2021-06-14T00:00:00+00:00</updated><id>https://blog.hcf.dev//2021/06/14/ganymede-kernel-release-announcement</id><content type="html" xml:base="https://blog.hcf.dev//2021/06/14/ganymede-kernel-release-announcement.html"><![CDATA[<p><a href="https://github.com/allen-ball/ganymede">Ganymede Kernel</a> 1.1.0.20210614 is released.</p>
+
+<p>The <a href="https://github.com/allen-ball/ganymede">Ganymede Kernel</a> is a <a href="https://jupyter-notebook.readthedocs.io/en/stable/index.html">Jupyter Notebook</a> Java <a href="https://jupyter-client.readthedocs.io/en/stable/kernels.html">kernel</a> based on <a href="https://docs.oracle.com/en/java/javase/11/docs/api/jdk.jshell/jdk/jshell/JShell.html?is-external=true">JShell</a> combined with an integrated <a href="https://maven.apache.org/">Apache Maven</a>-like POM, support for JVM languages such as <a href="https://groovy-lang.org/">Groovy</a>, <a href="https://www.oracle.com/technical-resources/articles/java/jf14-nashorn.html">Javascript</a>, and <a href="https://kotlinlang.org/">Kotlin</a>, and support for <a href="http://spark.apache.org/">Apache Spark</a> and <a href="https://www.scala-lang.org/">Scala</a> binary distributions.</p>
+
+<!--more-->
+
+<p>This release adds support for:</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Markdown">Markdown</a> (<a href="https://commonmark.org/">CommonMark</a>) with <a href="https://github.com/jknack/handlebars.java">Handlebars</a>, <a href="https://freemarker.apache.org/">FreeMarker</a>, and <a href="https://velocity.apache.org/">Velocity</a>) templating languages in addition to <a href="https://www.thymeleaf.org/index.html">Thymeleaf</a> templates</li>
+  <li><a href="http://spark.apache.org/">Apache Spark</a> 3.1.2</li>
+  <li><a href="https://allen-ball.github.io/ganymede/ganymede/server/Renderer.html">Rendering</a> <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.desktop/javax/swing/table/TableModel.html?is-external=true">TableModel</a>s</li>
+</ul>
+
+<p>Binary and source downloads are available from <a href="https://github.com/allen-ball/ganymede/releases/tag/v1.1.0.20210614">https://github.com/allen-ball/ganymede/releases/tag/v1.1.0.20210614</a>.</p>
+
+<p>Quickstart if Java 11 (or later) and <a href="https://jupyter-notebook.readthedocs.io/en/stable/index.html">Jupyter</a> are already installed:</p>
+
+<pre><code class="language-bash">$ curl -sL https://github.com/allen-ball/ganymede/releases/download/v1.1.0.20210614/ganymede-kernel-1.1.0.20210614.jar -o ganymede-kernel.jar
+$ java -jar ganymede-kernel.jar --install
+</code></pre>
+
+<p>Please see the project <a href="https://github.com/allen-ball/ganymede">page</a> for detailed <a href="https://github.com/allen-ball/ganymede#installation">installation</a> instructions and its <a href="https://github.com/allen-ball/ganymede#features-and-usage">features and usage</a>.</p>]]></content><author><name></name></author><category term="Java" /><category term="Jupyter" /><summary type="html"><![CDATA[Ganymede Kernel 1.1.0.20210614 is released. The Ganymede Kernel is a Jupyter Notebook Java kernel based on JShell combined with an integrated Apache Maven-like POM, support for JVM languages such as Groovy, Javascript, and Kotlin, and support for Apache Spark and Scala binary distributions.]]></summary></entry><entry><title type="html">Spring Boot Part 7: Spring Security, Basic Authentication and Form Login, and Oauth2</title><link href="https://blog.hcf.dev//article/2020-10-31-spring-boot-part-07" rel="alternate" type="text/html" title="Spring Boot Part 7: Spring Security, Basic Authentication and Form Login, and Oauth2" /><published>2020-10-31T00:00:00+00:00</published><updated>2020-10-31T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/spring-boot-part-07</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-10-31-spring-boot-part-07"><![CDATA[<p>This article explores integrating <a href="https://docs.spring.io/spring-security/site/docs/5.5.0/reference/html5/">Spring Security</a> into a <a href="https://docs.spring.io/spring-boot/docs/2.4.x/reference/html/index.html">Spring Boot</a>
+application.  Specifically, it will examine:</p>
+
+<ol>
+  <li>
+    <p>Managing users’ credentials (IDs and passwords) and granted authorities</p>
+  </li>
+  <li>
+    <p>Creating a Spring MVC Controller with Spring Method Security and
+<a href="https://github.com/thymeleaf/thymeleaf-extras-springsecurity">Thymeleaf</a> (to provide features such
+as customized menus corresponding to a user’s grants)</p>
+  </li>
+  <li>
+    <p>Creating a REST controller with Basic Authentication and Spring Method
+Security</p>
+  </li>
+</ol>
+
+<!--more-->
+
+<p>The MVC application and REST controller will each have functions requiring
+various granted authorities.  E.g., a “who-am-i” function may be executed by
+a “USER” but the “who” function will require ‘ADMINISTRATOR” authority while
+“logout” and “change password” will simply require the user is
+authenticated.  The MVC application will also use the Spring Security
+<a href="https://www.thymeleaf.org/">Thymeleaf</a> Dialect to provide menus in the context of the authorities
+granted to the user.</p>
+
+<p>After creating the baseline application, this article will then explore
+integrating OAuth authentication.</p>
+
+<p>Source code for the
+<a href="https://github.com/allen-ball/spring-boot-web-server">series</a>
+and for this
+<a href="https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-07">part</a>
+are available on <a href="https://github.com/allen-ball">Github</a>.</p>
+
+<p>Note that this post’s details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.</p>
+
+<h2 id="application">Application</h2>
+
+<p>The following subsections outline creating and running the baseline
+application.</p>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<p>A <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true"><code>PasswordEncoder</code></a> must be configured.  This is
+straightforward:<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+
+<figcaption style="text-align: center">
+  PasswordEncoderConfiguration
+</figcaption>
+<pre><code class="language-java">@Configuration
+@NoArgsConstructor @ToString @Log4j2
+public class PasswordEncoderConfiguration {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+}
+</code></pre>
+
+<p>The returned <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/crypto/password/DelegatingPasswordEncoder.html?is-external=true"><code>DelegatingPasswordEncoder</code></a> will
+decrypt most formats known to Spring and will encrypt using a
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html"><code>BCryptPasswordEncoder</code></a> for storage.</p>
+
+<p>Users’ credentials and granted authorities are stored in a database
+(configured at runtime) and accessed through <a href="https://docs.oracle.com/javaee/7/api/javax/persistence/package-summary.html">JPA</a>.  The <code>Credential</code>
+<a href="https://docs.oracle.com/javaee/7/api/javax/persistence/Entity.html"><code>@Entity</code></a> and <a href="https://docs.spring.io/spring-data/jpa/docs/2.5.3/api/org/springframework/data/jpa/repository/JpaRepository.html?is-external=true"><code>JpaRepository</code></a> are shown below.</p>
+
+<figcaption style="text-align: center">Credential</figcaption>
+<pre><code class="language-java">@Entity
+@Table(catalog = "application", name = "credentials")
+@Data @NoArgsConstructor
+public class Credential {
+    @Id @Column(length = 64, nullable = false, unique = true)
+    @NotBlank @Email
+    private String email = null;
+
+    @Lob @Column(nullable = false)
+    @NotBlank
+    private String password = null;
+}
+</code></pre>
+
+<figcaption style="text-align: center">CredentialRepository</figcaption>
+<pre><code class="language-java">@Repository
+@Transactional(readOnly = true)
+public interface CredentialRepository extends JpaRepository&lt;Credential,String&gt; {
+}
+</code></pre>
+
+<p>The implementations of <code>Authority</code> and <code>AuthorityRepository</code> are nearly
+identical with the <code>password</code> property/column replaced with <code>grants</code>, a
+<code>AuthoritiesSet</code> (<code>Set&lt;Authorities&gt;</code>) with a
+<a href="https://docs.oracle.com/javaee/7/api/javax/persistence/Converter.html"><code>@Converter</code></a>-annotated
+<a href="https://docs.oracle.com/javaee/7/api/javax/persistence/AttributeConverter.html"><code>AttributeConverter</code></a> to convert to and from a
+comma-separated string of <code>Authorities</code> (<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a>) names for storing
+in the database.</p>
+
+<figcaption style="text-align: center">Authorities</figcaption>
+<pre><code class="language-java">public enum Authorities { USER, ADMINISTRATOR };
+</code></pre>
+
+<p>The generated tables are:</p>
+
+<pre><code class="language-sql">mysql&gt; DESCRIBE credentials;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| email    | varchar(64) | NO   | PRI | NULL    |       |
+| password | longtext    | NO   |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql&gt; DESCRIBE authorities;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| email  | varchar(64)  | NO   | PRI | NULL    |       |
+| grants | varchar(255) | NO   |     | NULL    |       |
++--------+--------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+</code></pre>
+
+<p>The <code>CredentialRepository</code> and <code>AuthorityRepository</code> are injected into a
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/core/userdetails/UserDetailsService.html"><code>UserDetailsService</code></a> implementation to provide
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/core/userdetails/UserDetails.html"><code>UserDetails</code></a>.</p>
+
+<figcaption style="text-align: center">
+  UserServicesConfiguration - UserDetailsService @Bean
+</figcaption>
+<pre><code class="language-java">@Configuration
+@NoArgsConstructor @ToString @Log4j2
+public class UserServicesConfiguration {
+    @Autowired private CredentialRepository credentialRepository = null;
+    @Autowired private AuthorityRepository authorityRepository = null;
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsServiceImpl();
+    }
+    ...
+    @NoArgsConstructor @ToString
+    private class UserDetailsServiceImpl implements UserDetailsService {
+        @Override
+        @Transactional(readOnly = true)
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+            User user = null;
+
+            try {
+                Optional&lt;Credential&gt; credential = credentialRepository.findById(username);
+                Optional&lt;Authority&gt; authority = authorityRepository.findById(username);
+
+                user =
+                    new User(username,
+                             credential.get().getPassword(),
+                             authority.map(t -&gt; t.getGrants().asGrantedAuthorityList())
+                             .orElse(AuthorityUtils.createAuthorityList()));
+            } catch (UsernameNotFoundException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                throw new UsernameNotFoundException(username);
+            }
+
+            return user;
+        }
+    }
+    ...
+}
+</code></pre>
+
+<p>Separate <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html"><code>WebSecurityConfigurer</code></a> instances will be
+configured for the <code>RestControllerImpl</code> (<code>/api/**</code>) and <code>ControllerImpl</code>
+(<code>/**</code>) but each will share the same super-class where the
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true"><code>PasswordEncoder</code></a> and
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/core/userdetails/UserDetailsService.html"><code>UserDetailsService</code></a> configured above will be injected
+and configured.</p>
+
+<figcaption style="text-align: center">WebSecurityConfigurerImpl</figcaption>
+<pre><code class="language-java">@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@NoArgsConstructor(access = PRIVATE) @Log4j2
+public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    @Autowired private UserDetailsService userDetailsService = null;
+    @Autowired private PasswordEncoder passwordEncoder = null;
+
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder);
+    }
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html"><code>WebSecurityConfigurer</code></a> for the REST controller
+(<code>WebSecurityConfigurerImpl.API</code>) must be ordered before the configurer for
+the MVC controller (<code>@Order(1)</code>) because otherwise its path-space,
+<code>/api/**</code>, would be included in that of the MVC controller, <code>/**</code>.</p>
+
+<p>The configuration:</p>
+
+<ul>
+  <li>Requires requests are authenticated</li>
+  <li>Disables Cross-Site Request Forgery checks</li>
+  <li>Configures Basic Authentication</li>
+</ul>
+
+<p><a name="authenticationEntryPoint"></a></p>
+<figcaption style="text-align: center">
+  WebSecurityConfigurerImpl.API
+</figcaption>
+<pre><code class="language-java">public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    ...
+    @Configuration
+    @Order(1)
+    @NoArgsConstructor @ToString
+    public static class API extends WebSecurityConfigurerImpl {
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher("/api/**")
+                .authorizeRequests(t -&gt; t.anyRequest().authenticated())
+                .csrf(t -&gt; t.disable())
+                .httpBasic(t -&gt; t.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.FORBIDDEN)));
+        }
+    }
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/web/authentication/HttpStatusEntryPoint.html"><code>HttpStatusEntryPoint</code></a> is configured to prevent
+authentication failures from redirecting to the <code>/error</code> page configured for
+the MVC controller.</p>
+
+<p>The <code>WebSecurityConfigurerImpl.UI</code> configuration:</p>
+
+<ul>
+  <li>Ignores security checks on static assets</li>
+  <li>Requires requests are authenticated</li>
+  <li>Configures Form Login</li>
+  <li>Configures a Logout Handler (alleviating the need to implement a
+corresponding MVC controller method)</li>
+</ul>
+
+<p><a name="logoutRequestMatcher"></a></p>
+<figcaption style="text-align: center">
+  WebSecurityConfigurerImpl.UI
+</figcaption>
+<pre><code class="language-java">public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    ...
+    @Configuration
+    @Order(2)
+    @NoArgsConstructor @ToString
+    public static class UI extends WebSecurityConfigurerImpl {
+        private static final String[] IGNORE = {
+            "/css/**", "/js/**", "/images/**", "/webjars/**", "/webjarsjs"
+        };
+
+        @Override
+        public void configure(WebSecurity web) {
+            web.ignoring().antMatchers(IGNORE);
+        }
+        ...
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher("/**")
+                .authorizeRequests(t -&gt; t.anyRequest().authenticated())
+                .formLogin(t -&gt; t.loginPage("/login").permitAll())
+                .logout(t -&gt; t.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                              .logoutSuccessUrl("/").permitAll());
+            ...
+        }
+    }
+    ...
+}
+</code></pre>
+
+<p>The outline of the MVC is shown below.  (The individual methods will be
+described in detail in a subsequent chapter.)  There are two things to note:</p>
+
+<ol>
+  <li>
+    <p>The template resolver is configured to use
+<a href="https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic">“decoupled template logic”</a></p>
+  </li>
+  <li>
+    <p>All methods (including a custom <code>/error</code> mapping) return the same view
+(<a href="https://www.thymeleaf.org/">Thymeleaf</a> template)</p>
+  </li>
+</ol>
+
+<figcaption style="text-align: center">ControllerImpl</figcaption>
+<pre><code class="language-java">@Controller
+@RequestMapping(value = { "/" })
+@NoArgsConstructor @ToString @Log4j2
+public class ControllerImpl implements ErrorController {
+    private static final String VIEW = ControllerImpl.class.getPackage().getName();
+    ...
+    @Autowired private SpringResourceTemplateResolver resolver = null;
+    ...
+    @PostConstruct
+    public void init() { resolver.setUseDecoupledLogic(true); }
+
+    @PreDestroy
+    public void destroy() { }
+    ...
+    @RequestMapping(value = { "/" })
+    public String root() {
+        return VIEW;
+    }
+    ...
+    @RequestMapping(value = "${server.error.path:${error.path:/error}}")
+    public String error() { return VIEW; }
+
+    @ExceptionHandler
+    @ResponseStatus(value = INTERNAL_SERVER_ERROR)
+    public String handle(Model model, Exception exception) {
+        model.addAttribute("exception", exception);
+
+        return VIEW;
+    }
+    ...
+}
+</code></pre>
+
+<p>The common <a href="https://www.thymeleaf.org/">Thymeleaf</a> template is outlined below.  <code>&lt;li/&gt;</code> elements provide
+drop-down menus which are activated by security dialect <code>sec:authorize</code>
+attributes.  A <code>th:switch</code> attribute provides a <code>&lt;section/&gt;</code> “case” element
+for each supported path.  A form is displayed if the “form” attribute is set
+in the <a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a>.  And, if the user is authenticated, their granted
+authorities are displayed in the right of the footer with the
+<code>sec:authentication</code> attribute.</p>
+
+<figcaption style="text-align: center">application.html</figcaption>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org" th:xmlns="@{http://www.w3.org/1999/xhtml}"&gt;
+  &lt;head&gt;...&lt;/head&gt;
+  &lt;body&gt;
+    &lt;header&gt;
+      &lt;nav th:ref="navbar"&gt;
+        &lt;th:block th:ref="container"&gt;
+          ...
+          &lt;div th:ref="navbar-menu"&gt;
+            ...
+            &lt;ul th:ref="navbar-end"&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="hasAuthority('ADMINISTRATOR')"&gt;
+                &lt;button th:text="'Administrator'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;...&lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="hasAuthority('USER')"&gt;
+                &lt;button th:text="'User'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;...&lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="isAuthenticated()"&gt;
+                &lt;button sec:authentication="name"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;...&lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="!isAuthenticated()"&gt;
+                &lt;a th:text="'Login'" th:href="@{/login}"/&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/div&gt;
+        &lt;/th:block&gt;
+      &lt;/nav&gt;
+    &lt;/header&gt;
+    &lt;main th:unless="${#ctx.containsVariable('exception')}"
+          th:switch="${#request.servletPath}"&gt;
+      &lt;section th:case="'/who'"&gt;...&lt;/section&gt;
+      &lt;section th:case="'/who-am-i'"&gt;...&lt;/section&gt;
+      &lt;section th:case="'/error'"&gt;...&lt;/section&gt;
+      &lt;section th:case="*"&gt;
+        &lt;th:block th:if="${#ctx.containsVariable('form')}"&gt;
+          &lt;th:block th:insert="~{${#execInfo.templateName + '/' + form.class.simpleName}}"/&gt;
+        &lt;/th:block&gt;
+        &lt;p th:if="${#ctx.containsVariable('exception')}" th:text="${exception}"/&gt;
+      &lt;/section&gt;
+    &lt;/main&gt;
+    &lt;main th:if="${#ctx.containsVariable('exception')}"&gt;
+      &lt;section&gt;...&lt;/section&gt;
+    &lt;/main&gt;
+    &lt;footer&gt;
+      &lt;nav th:ref="navbar"&gt;
+        &lt;div th:ref="container"&gt;
+          ...
+          &lt;span th:ref="right"&gt;
+            &lt;th:block sec:authorize="isAuthenticated()"&gt;
+              &lt;span sec:authentication="authorities"/&gt;
+            &lt;/th:block&gt;
+          &lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/nav&gt;
+    &lt;/footer&gt;
+    ...
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p><a href="https://getbootstrap.com/">Bootstrap</a> attributes are added through the “decoupled template logic”
+expressed in <code>src/main/resources/templates/application.th.xml</code>.  (The
+mechanics of decoupled template logic are not discussed further in this
+article.)</p>
+
+<p><a name="ExceptionHandler"></a>
+The outline of the REST controller is shown below.  The common exception
+handler returns an HTTP 403 code for security-related exceptions.  This
+combined with the Basic Authentication entry point setting in the
+<code>WebSecurityConfigurer</code> prevents the REST controller from redirecting in the
+event of an Exception.</p>
+
+<figcaption style="text-align: center">RestControllerImpl</figcaption>
+<pre><code class="language-java">@RestController
+@RequestMapping(value = { "/api/" }, produces = APPLICATION_JSON_VALUE)
+@NoArgsConstructor @ToString @Log4j2
+public class RestControllerImpl {
+    ...
+    @ExceptionHandler({ AccessDeniedException.class, SecurityException.class })
+    public ResponseEntity&lt;Object&gt; handleFORBIDDEN() {
+        return new ResponseEntity&lt;&gt;(HttpStatus.FORBIDDEN);
+    }
+}
+</code></pre>
+
+<h3 id="runtime-environment">Runtime Environment</h3>
+
+<p>The POM (<code>pom.xml</code>) has a similar <code>spring-boot:run</code> profile to that
+described in <a href="/article/2019-11-16-spring-boot-part-01">part 1</a> of this
+series.  The relevant parts of the
+<a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-07/application.properties"><code>application.properties</code></a>
+file are shown below.<sup id="ref2"><a href="#endnote2">2</a></sup></p>
+
+<figcaption style="text-align: center">application.properties</figcaption>
+<pre><code class="language-properties">spring.jpa.defer-datasource-initialization: true
+spring.jpa.format-sql: true
+spring.jpa.hibernate.ddl-auto: create
+spring.jpa.open-in-view: true
+spring.jpa.show-sql: false
+
+spring.sql.init.mode: ALWAYS
+spring.sql.init.data-locations: file:data.sql
+...
+</code></pre>
+
+<p>While the above specifies the contents of <code>data.sql</code> is to be loaded to the
+Spring data source, it does not configure the data source.  Two additional
+profiles are provide to configure an <code>hsqldb</code> or <code>mysql</code> data source.  The
+<code>hsqldb</code> profile and application properties are shown below.</p>
+
+<pre><code class="language-xml">    &lt;profile&gt;
+      &lt;id&gt;hsqldb&lt;/id&gt;
+      &lt;dependencies&gt;
+        &lt;dependency&gt;
+          &lt;groupId&gt;org.hsqldb&lt;/groupId&gt;
+          &lt;artifactId&gt;hsqldb&lt;/artifactId&gt;
+          &lt;scope&gt;runtime&lt;/scope&gt;
+        &lt;/dependency&gt;
+      &lt;/dependencies&gt;
+      &lt;build&gt;
+        &lt;plugins&gt;
+          &lt;plugin&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+            &lt;configuration&gt;
+              &lt;profiles combine.children="append"&gt;
+                &lt;profile&gt;hsqldb&lt;/profile&gt;
+              &lt;/profiles&gt;
+            &lt;/configuration&gt;
+          &lt;/plugin&gt;
+        &lt;/plugins&gt;
+      &lt;/build&gt;
+    &lt;/profile&gt;
+</code></pre>
+
+<figcaption style="text-align: center">
+  application-hsqldb.properties
+</figcaption>
+<pre><code class="language-properties">spring.datasource.driver-class-name: org.hsqldb.jdbc.JDBCDriver
+spring.datasource.url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
+spring.datasource.username: sa
+spring.datasource.password:
+</code></pre>
+
+<p>The <code>mysql</code> profile requires the embedded MySQL server described in
+<a href="/article/2019-10-19-spring-embedded-mysqld">Spring Embedded MySQL Server</a>
+and packaged in the starter described in
+<a href="/article/2020-07-19-spring-boot-part-06">part 6</a>
+of this series.</p>
+
+<pre><code class="language-xml">    &lt;profile&gt;
+      &lt;id&gt;mysql&lt;/id&gt;
+      &lt;repositories&gt;...&lt;/repositories&gt;
+      &lt;dependencies&gt;
+        &lt;dependency&gt;
+          &lt;groupId&gt;ball&lt;/groupId&gt;
+          &lt;artifactId&gt;ball-spring-mysqld-starter&lt;/artifactId&gt;
+          &lt;version&gt;2.1.2.20210415&lt;/version&gt;
+        &lt;/dependency&gt;
+      &lt;/dependencies&gt;
+      &lt;build&gt;
+        ...
+      &lt;/build&gt;
+    &lt;/profile&gt;
+</code></pre>
+
+<figcaption style="text-align: center">
+  application-mysql.properties
+</figcaption>
+<pre><code class="language-properties">spring.jpa.hibernate.naming.implicit-strategy: default
+spring.jpa.hibernate.naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+spring.datasource.driver-class-name: com.mysql.cj.jdbc.Driver
+spring.datasource.url: jdbc:mysql://localhost:${mysqld.port}/application?serverTimezone=UTC&amp;createDatabaseIfNotExist=true
+spring.datasource.username: root
+
+mysqld.home: target/mysql
+mysqld.port: 3306
+</code></pre>
+
+<p>Depending on the desired database selection, run either
+<code>mvn -Pspring-boot:run,hsqldb</code> or <code>mvn -Pspring-boot:run,mysql</code> to start the
+application server.</p>
+
+<p><a href="https://github.com/allen-ball/spring-boot-web-server/blob/trunk/part-07/data.sql"><code>data.sql</code></a>
+defines two users: <code>user@example.com</code> who is granted “USER” authority and
+<code>admin@example.com</code> who is granted “USER” and “ADMINISTRATOR” authorities.</p>
+
+<figcaption style="text-align: center">data.sql</figcaption>
+<pre><code class="language-sql">INSERT INTO credentials (email, password)
+       VALUES ('admin@example.com', '{noop}abcdef'),
+              ('user@example.com', '{noop}123456');
+INSERT INTO authorities (email, grants)
+       VALUES ('admin@example.com', 'ADMINISTRATOR,USER'),
+              ('user@example.com', 'USER');
+</code></pre>
+
+<p>The result of executing the above SQL is shown below.</p>
+
+<pre><code class="language-command-line">mysql&gt; SELECT * FROM credentials;
++-------------------+--------------+
+| email             | password     |
++-------------------+--------------+
+| admin@example.com | {noop}abcdef |
+| user@example.com  | {noop}123456 |
++-------------------+--------------+
+2 rows in set (0.00 sec)
+
+mysql&gt; SELECT * FROM authorities;
++-------------------+--------------------+
+| email             | grants             |
++-------------------+--------------------+
+| admin@example.com | ADMINISTRATOR,USER |
+| user@example.com  | USER               |
++-------------------+--------------------+
+2 rows in set (0.00 sec)
+</code></pre>
+
+<p>For purposes of demonstration, the above passwords are exceedingly weak and
+unencrypted.  Passwords may be encrypted outside the application with the
+<code>htpasswd</code> command:</p>
+
+<pre><code class="language-command-line">$ htpasswd -bnBC 10 "" 123456 | tr -d ':\n' | sed 's/$2y/$2a/'
+$2a$10$PJO7Bxx9u9JHnZ0lhHJ2dO5WwWwGrDvBdy82mV/KHUw/b1Us1yZS6
+</code></pre>
+
+<p>Whose output may be used to set (UPDATE) <code>user@example.com</code>’s password to
+<code>{BCRYPT}$2a$10$PJO7Bxx9u9JHnZ0lhHJ2dO5WwWwGrDvBdy82mV/KHUw/b1Us1yZS6</code>.</p>
+
+<p>The next section discusses the MVC controller.</p>
+
+<h3 id="mvc-controller">MVC Controller</h3>
+
+<p>Navigating to <a href="http://localhost:8080/login/">http://localhost:8080/login/</a> will present:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-01-form-login.png" alt="" /></p>
+
+<p>The portion of the <a href="https://www.thymeleaf.org/">Thymeleaf</a> template that generates the navbar buttons and
+drop-down menus is shown below.  The <code>sec:authorize</code> expressions are
+evaluated to determine if Thymeleaf renders the corresponding HTML.</p>
+
+<pre><code class="language-xml">            &lt;ul th:ref="navbar-end"&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="hasAuthority('ADMINISTRATOR')"&gt;
+                &lt;button th:text="'Administrator'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Who'" th:href="@{/who}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="hasAuthority('USER')"&gt;
+                &lt;button th:text="'User'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Who Am I?'" th:href="@{/who-am-i}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="isAuthenticated()"&gt;
+                &lt;button sec:authentication="name"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Change Password'" th:href="@{/password}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'Logout'" th:href="@{/logout}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item" sec:authorize="!isAuthenticated()"&gt;
+                &lt;a th:text="'Login'" th:href="@{/login}"/&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+</code></pre>
+
+<p>In the case of an unauthenticated client, only the “Login” button is
+rendered (as shown in the image above).  The resulting HTML (with the
+decoupled template logic applied) is shown below.</p>
+
+<pre><code class="language-xml">            &lt;ul class="navbar-nav text-white bg-dark"&gt;
+
+
+
+              &lt;li class="navbar-item dropdown"&gt;
+                &lt;a href="/login" class="btn navbar-link text-white bg-dark"&gt;Login&lt;/a&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+</code></pre>
+
+<p>The controller methods to present the Login form, present the Change
+Password form, and handle the change password POST method are shown below.
+The default Spring Security login POST method is used and does not have to
+be implemented here.  The <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/access/prepost/PreAuthorize.html"><code>@PreAuthorize</code></a> annotations on the
+change password methods enforce that the client must be authenticated to use
+those functions.  No logout method needs to be implemented because a logout
+handler was configured in the
+<a href="#logoutRequestMatcher"><code>WebSecurityConfigurer</code></a>.</p>
+
+<figcaption style="text-align: center">
+    ControllerImpl - Login and Change Password Methods
+</figcaption>
+<pre><code class="language-java">public class ControllerImpl implements ErrorController {
+    ...
+    @Autowired private CredentialRepository credentialRepository = null;
+    @Autowired private PasswordEncoder encoder = null;
+    ...
+    @RequestMapping(method = { GET }, value = { "login" })
+    public String login(Model model, HttpSession session) {
+        model.addAttribute("form", new LoginForm());
+
+        return VIEW;
+    }
+
+    @RequestMapping(method = { GET }, value = { "password" })
+    @PreAuthorize("isAuthenticated()")
+    public String password(Model model, Principal principal) {
+        Credential credential =
+            credentialRepository.findById(principal.getName())
+            .orElseThrow(() -&gt; new AuthorizationServiceException("Unauthorized"));
+
+        model.addAttribute("form", new ChangePasswordForm());
+
+        return VIEW;
+    }
+
+    @RequestMapping(method = { POST }, value = { "password" })
+    @PreAuthorize("isAuthenticated()")
+    public String passwordPOST(Model model, Principal principal, @Valid ChangePasswordForm form, BindingResult result) {
+        Credential credential =
+            credentialRepository.findById(principal.getName())
+            .orElseThrow(() -&gt; new AuthorizationServiceException("Unauthorized"));
+
+        try {
+            if (result.hasErrors()) {
+                throw new RuntimeException(String.valueOf(result.getAllErrors()));
+            }
+
+            if (! (Objects.equals(form.getUsername(), principal.getName())
+                   &amp;&amp; encoder.matches(form.getPassword(), credential.getPassword()))) {
+                throw new AccessDeniedException("Invalid user name and password");
+            }
+
+            if (! (form.getNewPassword() != null
+                   &amp;&amp; Objects.equals(form.getNewPassword(), form.getRepeatPassword()))) {
+                throw new RuntimeException("Repeated password does not match new password");
+            }
+
+            if (encoder.matches(form.getNewPassword(), credential.getPassword())) {
+                throw new RuntimeException("New password must be different than old");
+            }
+
+            credential.setPassword(encoder.encode(form.getNewPassword()));
+            credentialRepository.save(credential);
+        } catch (Exception exception) {
+            model.addAttribute("form", form);
+            model.addAttribute("errors", exception.getMessage());
+        }
+
+        return VIEW;
+    }
+    ...
+}
+</code></pre>
+
+<p>Once authenticated, the user management drop-down is rendered and the Login
+button is not.  In addition, because <code>user@example.com</code> has been granted
+“USER” authority, the User drop-down is rendered to HTML, also.</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-02-authenticated.png" alt="" /></p>
+
+<p>The change password form is straightforward.</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-03-change-password.png" alt="" /></p>
+
+<p>And, as an aside, changed passwords are stored encrypted (as expected).</p>
+
+<pre><code class="language-command-line">mysql&gt; SELECT * FROM credentials;
++-------------------+----------------------------------------------------------------------+
+| email             | password                                                             |
++-------------------+----------------------------------------------------------------------+
+| admin@example.com | {noop}abcdef                                                         |
+| user@example.com  | {bcrypt}$2a$10$UXRB6BbmcbHfXkWDTk755ewgWsENMgFZoJ.JcIoiIjuRyGhOpEaNS |
++-------------------+----------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+</code></pre>
+
+<p>The user dropdown expanded below:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-04-user-dropdown.png" alt="" /></p>
+
+<p>The <code>/who-am-i</code> method adds the client’s <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> (injected
+as a parameter by Spring) to the <code>Model</code> so it may be presented in the
+<a href="https://www.thymeleaf.org/">Thymeleaf</a> template (as long as the client has the “USER” authority).</p>
+
+<figcaption style="text-align: center">ControllerImpl - /who-am-i</figcaption>
+<pre><code class="language-java">public class ControllerImpl implements ErrorController {
+    ...
+    @RequestMapping(value = { "who-am-i" })
+    @PreAuthorize("hasAuthority('USER')")
+    public String whoAmI(Model model, Principal principal) {
+        model.addAttribute("principal", principal);
+
+        return VIEW;
+    }
+    ...
+}
+</code></pre>
+
+<p>When selecting “User-&gt;Who Am I?” the application shows something similar to:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-05-who-am-i.png" alt="" /></p>
+
+<p>The application <a href="https://www.thymeleaf.org/">Thymeleaf</a> template contains to display the method
+parameter <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a>:<sup id="ref3"><a href="#endnote3">3</a></sup></p>
+
+<pre><code class="language-xml">      &lt;section th:case="'/who-am-i'"&gt;
+        &lt;p th:text="${principal}"/&gt;
+      &lt;/section&gt;
+</code></pre>
+
+<p>Clients that have been granted “ADMINISTRATOR” authority will be presented
+the Administrator drop-down menu.</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-06-administrator-dropdown.png" alt="" /></p>
+
+<p>The <code>/who</code> method will list the <code>Principal</code>s of currently registered
+sessions and is only available to clients granted “ADMINISTRATOR” authority.</p>
+
+<figcaption style="text-align: center">ControllerImpl - /who</figcaption>
+<pre><code class="language-java">public class ControllerImpl implements ErrorController {
+    ...
+    @Autowired private SessionRegistry registry = null;
+    ...
+    @RequestMapping(value = { "who" })
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    public String who(Model model) {
+        model.addAttribute("principals", registry.getAllPrincipals());
+
+        return VIEW;
+    }
+    ...
+}
+</code></pre>
+
+<p>The method implementation is straightforward with the injected
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/core/session/SessionRegistry.html"><code>SessionRegistry</code></a>.  The <code>SessionRegistry</code>
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/core/session/SessionRegistryImpl.html">implementation</a> bean must be configured as part of the
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html"><code>WebSecurityConfigurer</code></a>.</p>
+
+<figcaption style="text-align: center">
+  WebSecurityConfigurerImpl.UI - SessionRegistry
+</figcaption>
+<pre><code class="language-java">public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    ...
+    public static class UI extends WebSecurityConfigurerImpl {
+        ...
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            ...
+            http.sessionManagement(t -&gt; t.maximumSessions(-1).sessionRegistry(sessionRegistry()));
+        }
+        ...
+        @Bean
+        public SessionRegistry sessionRegistry() {
+            return new SessionRegistryImpl();
+        }
+        ...
+    }
+    ...
+}
+</code></pre>
+
+<p>A client with ADMINISTRATION authority may navigate to <code>/who</code>:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-07-who.png" alt="" /></p>
+
+<p>While a client without (even if authenticated) will be denied:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-08-who-denied.png" alt="" /></p>
+
+<p>The next section discusses the REST controller.</p>
+
+<h3 id="rest-controller">REST Controller</h3>
+
+<p>Similar to the corresponding <a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/stereotype/Controller.html"><code>@Controller</code></a> method described in
+the previous section, the <code>/api/who-am-i</code> method returns the client’s
+<a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> (injected as a parameter by Spring) if the client
+has the “USER” authority.</p>
+
+<figcaption style="text-align: center">
+  RestControllerImpl - /who-am-i
+</figcaption>
+<pre><code class="language-java">public class RestControllerImpl {
+    ...
+    @RequestMapping(method = { GET }, value = { "who-am-i" })
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity&lt;Principal&gt; whoAmI(Principal principal) throws Exception {
+        return new ResponseEntity&lt;&gt;(principal, HttpStatus.OK);
+    }
+    ...
+}
+</code></pre>
+
+<p>Invoking without authentication returns
+<code>HTTP/1.1 403</code>.<sup id="ref4"><a href="#endnote4">4</a></sup></p>
+
+<pre><code class="language-command-line">$ curl -is http://localhost:8080/api/who-am-i
+HTTP/1.1 403
+Set-Cookie: JSESSIONID=6EBD3FEED11F2499F6915E98E02D1C26; Path=/; HttpOnly
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Length: 0
+Date: Sat, 17 Oct 2020 05:25:04 GMT
+</code></pre>
+
+<p>While supplying credentials for a user that is granted “USER” is successful.</p>
+
+<pre><code class="language-command-line">$ curl -is --basic -u user@example.com:123456 http://localhost:8080/api/who-am-i
+HTTP/1.1 200
+Set-Cookie: JSESSIONID=C0F5D3A67AA59521A223B5F87B2915FC; Path=/; HttpOnly
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 17 Oct 2020 05:25:44 GMT
+
+{
+  "authorities" : [ {
+    "authority" : "USER"
+  } ],
+  "details" : {
+    "remoteAddress" : "0:0:0:0:0:0:0:1",
+    "sessionId" : null
+  },
+  "authenticated" : true,
+  "principal" : {
+    "password" : null,
+    "username" : "user@example.com",
+    "authorities" : [ {
+      "authority" : "USER"
+    } ],
+    "accountNonExpired" : true,
+    "accountNonLocked" : true,
+    "credentialsNonExpired" : true,
+    "enabled" : true
+  },
+  "credentials" : null,
+  "name" : "user@example.com"
+}
+</code></pre>
+
+<p>The <code>/api/who</code> method returns the list of all <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code>s</a>
+logged in (defined as having active sessions in the UI) if the client has
+“ADMINISTRATOR” authority.</p>
+
+<figcaption style="text-align: center">RestControllerImpl - /who</figcaption>
+<pre><code class="language-java">public class RestControllerImpl {
+    @Autowired private SessionRegistry registry = null;
+    ...
+    @RequestMapping(method = { GET }, value = { "who" })
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
+    public ResponseEntity&lt;List&lt;Object&gt;&gt; who() throws Exception {
+        return new ResponseEntity&lt;&gt;(registry.getAllPrincipals(), HttpStatus.OK);
+    }
+    ...
+}
+</code></pre>
+
+<p>Invoking with an authenticated client <em>without</em> “ADMINISTRATOR” authority
+granted returns <code>HTTP/1.1 403</code>
+(as expected).<sup id="ref5"><a href="#endnote5">5</a></sup></p>
+
+<pre><code class="language-command-line">$ curl -is --basic -u user@example.com:123456 http://localhost:8080/api/who
+HTTP/1.1 403
+...
+</code></pre>
+
+<p>While supplying credentials for a user that is granted “ADMINISTRATOR” is
+successful.</p>
+
+<pre><code class="language-command-line">$ curl -is --basic -u admin@example.com:abcdef http://localhost:8080/api/who
+HTTP/1.1 200
+Set-Cookie: JSESSIONID=8E283763FD321382417C89B609DE9EDC; Path=/; HttpOnly
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 17 Oct 2020 05:27:39 GMT
+
+[ {
+  "password" : null,
+  "username" : "user@example.com",
+  "authorities" : [ {
+    "authority" : "USER"
+  } ],
+  "accountNonExpired" : true,
+  "accountNonLocked" : true,
+  "credentialsNonExpired" : true,
+  "enabled" : true
+}, {
+  "password" : null,
+  "username" : "admin@example.com",
+  "authorities" : [ {
+    "authority" : "ADMINISTRATOR"
+  }, {
+    "authority" : "USER"
+  } ],
+  "accountNonExpired" : true,
+  "accountNonLocked" : true,
+  "credentialsNonExpired" : true,
+  "enabled" : true
+} ]
+</code></pre>
+
+<p>The next chapter will examine OAuth integration.</p>
+
+<h2 id="oauth">OAuth</h2>
+
+<p>The following subsections will:</p>
+
+<ol>
+  <li>
+    <p>Run an experiment by configuring the application as described in the
+first chapter for OAuth authentication</p>
+  </li>
+  <li>
+    <p>Change the application implementation to allow Form Login and OAuth
+authenitcation</p>
+  </li>
+</ol>
+
+<h3 id="experiment">Experiment</h3>
+
+<p>This section will examine the behavior Spring Security’s default settings
+for authentication.  An OAuth provider must be configured.  This can easily
+be done on <a href="https://github.com/">GitHub</a>:</p>
+
+<ol>
+  <li>
+    <p>Navigate to <a href="https://github.com/">GitHub</a> and login</p>
+  </li>
+  <li>
+    <p>Select <a href="https://github.com/settings/profile">“Settings” from the right-most profile drop-down menu</a></p>
+  </li>
+  <li>
+    <p>Click <a href="https://github.com/settings/apps">“Developer Settings” from the left column</a></p>
+  </li>
+  <li>
+    <p>Click <a href="https://github.com/settings/developers">“OAuth Apps” from the left column</a></p>
+
+    <p><img src="/assets/article/2020-10-31-spring-boot-part-07/github-01.png" alt="" /></p>
+  </li>
+  <li>Click “Register a new application.”  Fill in the form with the following values:
+    <ul>
+      <li>Homepage URL: <a href="http://localhost:8080/">http://localhost:8080/</a></li>
+      <li>Authorization callback URL: <a href="http://localhost:8080/login/oauth2/code/github">http://localhost:8080/login/oauth2/code/github</a></li>
+    </ul>
+
+    <p><img src="/assets/article/2020-10-31-spring-boot-part-07/github-02.png" alt="" /></p>
+  </li>
+  <li>
+    <p>Note the Client ID and Secret as it will be required in the application <a href="#application-oauth.yml">configuration</a></p>
+
+    <p><img src="/assets/article/2020-10-31-spring-boot-part-07/github-03.png" alt="" /></p>
+  </li>
+</ol>
+
+<p>The POM <code>oauth</code> profile enables the Spring Boot <code>oauth</code> profile.  In
+addition, the required Spring Security dependencies for OAuth are added: An
+OAuth 2.0 client and support for Javascript Object Signing and Encryption
+(JOSE).</p>
+
+<pre><code class="language-xml">  &lt;profiles&gt;
+    ...
+    &lt;profile&gt;
+      &lt;id&gt;oauth&lt;/id&gt;
+      &lt;build&gt;
+        ...
+      &lt;/build&gt;
+    &lt;/profile&gt;
+    ...
+  &lt;/profiles&gt;
+  &lt;dependencies verbose="true"&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;com.okta.spring&lt;/groupId&gt;
+      &lt;artifactId&gt;okta-spring-boot-starter&lt;/artifactId&gt;
+      &lt;version&gt;2.0.1&lt;/version&gt;
+    &lt;/dependency&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.springframework.security&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-security-oauth2-client&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.springframework.security&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-security-oauth2-jose&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    ...
+  &lt;/dependencies&gt;
+</code></pre>
+
+<p>Allowing the application to be run from Maven with either
+<code>mvn -Pspring-boot:run,hsqldb,oauth</code> or
+<code>mvn -Pspring-boot:run,mysql,oauth</code>.</p>
+
+<p>The <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html"><code>WebSecurityConfigurer</code></a> is changed to use OAuth
+Login instead of Form Login (with default configuration):</p>
+
+<figcaption style="text-align: center">
+  WebSecurityConfigurerImpl.UI (Default OAuth2 Customizer)
+</figcaption>
+<pre><code class="language-java">public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    ...
+    public static class UI extends WebSecurityConfigurerImpl {
+        ...
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher("/**")
+                .authorizeRequests(t -&gt; t.anyRequest().authenticated())
+                /* .formLogin(t -&gt; t.loginPage("/login").permitAll()) */
+                .oauth2Login(Customizer.withDefaults())
+                .logout(t -&gt; t.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                              .logoutSuccessUrl("/").permitAll());
+            ...
+        }
+        ...
+    }
+    ...
+}
+</code></pre>
+
+<p>Finally, the OAuth client prperties must be configured in the
+profile-specific application properties YAML 
+file:<sup id="ref6"><a href="#endnote6">6</a></sup></p>
+
+<p><a name="application-oauth.yml"></a></p>
+<figcaption style="text-align: center">application-oauth.yml</figcaption>
+<pre><code class="language-yaml">spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: dad3306da38eb7be68a1
+            client-secret: 8a5394b2e29037b9bdf17e51af472020f85bfca6
+</code></pre>
+
+<p>Running the application now offers OAuth
+<a href="http://localhost:8080/password">login</a>:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-09-oauth-login.png" alt="" /></p>
+
+<p>Clicking <a href="">GitHub</a> will redirect for authorization:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-10-redirect.png" alt="" /></p>
+
+<p>If granted, the application will successfully login.  However, the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> name will be unrecognizable as well as the granted
+authorities:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-11-oauth-authenticated.png" alt="" /></p>
+
+<p>If invoked, the Change Password function fails with:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-12-change-password.png" alt="" /></p>
+
+<p>Because the authenticated <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> has no corresponding
+<code>Credential</code> database record.</p>
+
+<p>A naive implementation to integrate Form Login and OAuth2 Login is
+configured by simply enabling both:</p>
+
+<pre><code class="language-java">        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher("/**")
+                .authorizeRequests(t -&gt; t.anyRequest().authenticated())
+                .formLogin(t -&gt; t.loginPage("/login").permitAll())
+                .oauth2Login(Customizer.withDefaults())
+                .logout(t -&gt; t.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                              .logoutSuccessUrl("/").permitAll());
+            ...
+        }
+</code></pre>
+
+<p>However, only the OAuth2 Login page is available (illustrated previously).
+A successful integration will need to create a custom OAuth2 Login page
+compatible with (and the same as) the Form Login Page.</p>
+
+<p>The next subsection will adjust the implementation to:</p>
+
+<ol>
+  <li>
+    <p>Use user e’mail as <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> name</p>
+  </li>
+  <li>
+    <p>Integrate Form Login and OAuth2 Login into a single custom login page</p>
+  </li>
+  <li>
+    <p>Manage granted authorities for OAuth2-authenticated users</p>
+  </li>
+  <li>
+    <p>Not offer the Change Password function to users logged in through OAuth2</p>
+  </li>
+</ol>
+
+<h3 id="implementation">Implementation</h3>
+
+<p>This section will adjust the implementation as outlined at the end of the
+previous section.  The first step is to provide the OAuth 2.0 security client
+registrations and configured providers.  The processes to configure Google
+and Okta Client IDs is very similar to the one for GitHub and must be
+configured on their respective sites.  The authorization callback URI must
+be <a href="http://localhost:8080/login/oauth2/code/google">http://localhost:8080/login/oauth2/code/google</a> and
+<a href="http://localhost:8080/login/oauth2/code/okta">http://localhost:8080/login/oauth2/code/okta</a>, respectively.  A redacted
+example is shown below.</p>
+
+<pre><code class="language-yaml">---
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: XXXXXXXXXXXXXXXXXXXX
+            client-secret: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            scope: user:email
+          google:
+            client-id: XXXXXXXXXXXXXXXXXXXX
+            client-secret: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+          okta:
+            client-id: XXXXXXXXXXXXXXXXXXXX
+            client-secret: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            client-name: Okta
+        provider:
+          github:
+            user-name-attribute: email
+          google:
+            user-name-attribute: email
+          okta:
+            issuer-uri: https://DOMAIN.okta.com/oauth2/default
+            user-name-attribute: email
+</code></pre>
+
+<p>Note that the providers are configured to use the user’s e’mail address as
+the <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> name (<code>user-name-attribute: email</code>).</p>
+
+<p>The next step is to integrate the OAuth Login page with the custom Form
+Login page.  Simply calling
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/builders/HttpSecurity.html#oauth2Login-org.springframework.security.config.Customizer-"><code>HttpSecurity.oauth2Login(Customizer.withDefaults())</code></a>
+will attempt to configure a
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/oauth2/client/registration/ClientRegistrationRepository.html"><code>ClientRegistrationRepository</code></a>
+bean but that will fail if no <code>spring.security.oauth2.client.registration.*</code>
+properties are configured.  The implementation tests if the bean is
+configured before attempting the <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/builders/HttpSecurity.html"><code>HttpSecurity</code></a> method call.</p>
+
+<figcaption style="text-align: center">
+  WebSecurityConfigurerImpl.UI (Custom Login Page)
+</figcaption>
+<pre><code class="language-java">public abstract class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    ...
+    public static class UI extends WebSecurityConfigurerImpl {
+        ...
+        @Autowired private OidcUserService oidcUserService = null;
+        ...
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            ...
+            try {
+                ClientRegistrationRepository repository =
+                    getApplicationContext().getBean(ClientRegistrationRepository.class);
+
+                if (repository != null) {
+                    http.oauth2Login(t -&gt; t.clientRegistrationRepository(repository)
+                                           .userInfoEndpoint(u -&gt; u.oidcUserService(oidcUserService))
+                                           .loginPage("/login").permitAll());
+                }
+            } catch (Exception exception) {
+            }
+            ...
+        }
+        ...
+    }
+    ...
+}
+</code></pre>
+
+<p>Both the <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/oauth2/client/userinfo/OAuth2UserService.html"><code>OAuth2UserService</code></a> and
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/oauth2/client/oidc/userinfo/OidcUserService.html"><code>OidcUserService</code></a> beans are configured by configuring the
+Open ID Connect (OIDC) <code>OidcUserService</code> – OIDC is built on top of OAuth
+2.0 to provide identity services.  The <code>OidcUserService</code> delegates to the
+<code>OAuth2UserService</code> for retrieving Oauth 2.0-specific information.</p>
+
+<figcaption style="text-align: center">
+  UserServicesConfiguration - OAuth2UserService and OidcUserService Beans
+</figcaption>
+<pre><code class="language-java">@Configuration
+@NoArgsConstructor @ToString @Log4j2
+public class UserServicesConfiguration {
+    ...
+    @Bean
+    public OAuth2UserService&lt;OAuth2UserRequest,OAuth2User&gt; oAuth2UserService() {
+        return new OAuth2UserServiceImpl();
+    }
+
+    @Bean
+    public OidcUserService oidcUserService() {
+        return new OidcUserServiceImpl();
+    }
+    ...
+    private static final List&lt;GrantedAuthority&gt; DEFAULT_AUTHORITIES =
+        AuthorityUtils.createAuthorityList(Authorities.USER.name());
+
+    @NoArgsConstructor @ToString
+    private class OAuth2UserServiceImpl extends DefaultOAuth2UserService {
+        private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+
+        @Override
+        public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
+            String attribute =
+                request.getClientRegistration().getProviderDetails()
+                .getUserInfoEndpoint().getUserNameAttributeName();
+            OAuth2User user = delegate.loadUser(request);
+
+            try {
+                Optional&lt;Authority&gt; authority = authorityRepository.findById(user.getName());
+
+                user =
+                    new DefaultOAuth2User(authority.map(t -&gt; t.getGrants().asGrantedAuthorityList())
+                                          .orElse(DEFAULT_AUTHORITIES),
+                                          user.getAttributes(), attribute);
+            } catch (OAuth2AuthenticationException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                log.warn("{}", request, exception);
+            }
+
+            return user;
+        }
+    }
+
+    @NoArgsConstructor @ToString
+    private class OidcUserServiceImpl extends OidcUserService {
+        { setOauth2UserService(oAuth2UserService()); }
+
+        @Override
+        public OidcUser loadUser(OidcUserRequest request) throws OAuth2AuthenticationException {
+            String attribute =
+                request.getClientRegistration().getProviderDetails()
+                .getUserInfoEndpoint().getUserNameAttributeName();
+            OidcUser user = super.loadUser(request);
+
+            try {
+                Optional&lt;Authority&gt; authority = authorityRepository.findById(user.getName());
+
+                user =
+                    new DefaultOidcUser(authority.map(t -&gt; t.getGrants().asGrantedAuthorityList())
+                                        .orElse(DEFAULT_AUTHORITIES),
+                                        user.getIdToken(), user.getUserInfo(), attribute);
+            } catch (OAuth2AuthenticationException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                log.warn("{}", request, exception);
+            }
+
+            return user;
+        }
+    }
+}
+</code></pre>
+
+<p>Both the <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/oauth2/client/userinfo/OAuth2UserService.html"><code>OAuth2UserService</code></a> and
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/oauth2/client/oidc/userinfo/OidcUserService.html"><code>OidcUserService</code></a> map granted authorities for <em>this</em>
+application.</p>
+
+<p>A <code>@ControllerAdvice</code> is implemented to add two attributes to the
+<a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a>:</p>
+
+<ol>
+  <li>
+    <p><code>oauth2</code>, a <code>List</code> of configured <code>ClientRegistration</code>s</p>
+  </li>
+  <li>
+    <p><code>isPasswordAuthenticated</code>, indicating if the <a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> was
+authenticated with a password</p>
+  </li>
+</ol>
+
+<figcaption style="text-align: center">ControllerAdviceImpl</figcaption>
+<pre><code class="language-java">@ControllerAdvice
+@NoArgsConstructor @ToString @Log4j2
+public class ControllerAdviceImpl {
+    @Autowired private ApplicationContext context = null;
+    private List&lt;ClientRegistration&gt; oauth2 = null;
+    ...
+    @ModelAttribute("oauth2")
+    public List&lt;ClientRegistration&gt; oauth2() {
+        if (oauth2 == null) {
+            oauth2 = new ArrayList&lt;&gt;();
+
+            try {
+                ClientRegistrationRepository repository =
+                    context.getBean(ClientRegistrationRepository.class);
+
+                if (repository != null) {
+                    ResolvableType type =
+                        ResolvableType.forInstance(repository)
+                        .as(Iterable.class);
+
+                    if (type != ResolvableType.NONE
+                        &amp;&amp; ClientRegistration.class.isAssignableFrom(type.resolveGenerics()[0])) {
+                        ((Iterable&lt;?&gt;) repository)
+                            .forEach(t -&gt; oauth2.add((ClientRegistration) t));
+                    }
+                }
+            } catch (Exception exception) {
+            }
+        }
+
+        return oauth2;
+    }
+
+    @ModelAttribute("isPasswordAuthenticated")
+    public boolean isPasswordAuthenticated(Principal principal) {
+        return principal instanceof UsernamePasswordAuthenticationToken;
+    }
+}
+</code></pre>
+
+<p>The <code>LoginForm</code> is modified to include configured OAuth 2.0 authentication
+options (if configured):</p>
+
+<figcaption style="text-align: center">LoginForm.html</figcaption>
+<pre><code class="language-html">&lt;div&gt;
+  &lt;div&gt;
+    &lt;div&gt;
+      &lt;form th:object="${form}"&gt;
+        &lt;input type="email" th:name="username" th:placeholder="'E\'mail Address'"/&gt;
+        &lt;label th:text="'E\'mail Address'"/&gt;
+        &lt;input type="password" th:name="password" th:placeholder="'Password'"/&gt;
+        &lt;label th:text="'Password'"/&gt;
+        &lt;button type="submit" th:text="'Login'"/&gt;
+        &lt;th:block th:if="${! oauth2.isEmpty()}"&gt;
+          &lt;hr/&gt;
+          &lt;a th:each="client : ${oauth2}" th:href="@{/oauth2/authorization/{id}(id=${client.registrationId})}" th:text="${client.clientName}"/&gt;
+        &lt;/th:block&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+    &lt;div&gt;
+      &lt;p th:if="${param.error}"&gt;Invalid username and password.&lt;/p&gt;
+      &lt;p th:if="${param.logout}"&gt;You have been logged out.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>And the Change Password menu option is only offered if the client was
+authenticated with a password (by testing the <code>isPasswordAuthenticated</code>
+<a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a> attribute:</p>
+
+<figcaption style="text-align: center">
+  application.html - Change Password
+</figcaption>
+<pre><code class="language-html">              ...
+              &lt;li th:ref="navbar-item" sec:authorize="isAuthenticated()"&gt;
+                &lt;button sec:authentication="name"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li th:if="${isPasswordAuthenticated}"&gt;
+                    &lt;a th:text="'Change Password'" th:href="@{/password}"/&gt;
+                  &lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'Logout'" th:href="@{/logout}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              ...
+</code></pre>
+
+<p>The end result for the login page is shown below:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-13-integrated-login.png" alt="" /></p>
+
+<p>With a successful (Google) login:</p>
+
+<p><img src="/assets/article/2020-10-31-spring-boot-part-07/application-14-authenticated.png" alt="" /></p>
+
+<p><b id="endnote1">[1]</b>
+Implementing a <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/crypto/password/PasswordEncoder.html?is-external=true"><code>PasswordEncoder</code></a> is discussed in detail
+in
+<a href="/article/2019-06-03-spring-passwordencoder-implementation">Spring PasswordEncoder Implementation</a>.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+This article has been updated for Spring Boot 2.5.x.
+<code>spring.jpa.defer-datasource-initialization</code> has been added and
+<code>spring.datasource.initialization-mode</code> and <code>spring.datasource.data</code> were
+used instead of the <code>spring.sql.init.*</code> properties.
+<a href="#ref2">↩</a></p>
+
+<p><b id="endnote3">[3]</b>
+It’s important to note that the equivalent value for
+<a href="https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html"><code>Principal</code></a> is available in the security dialect as
+<code>${#authentication}</code> which references an implementation of
+<a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/index.html?org/springframework/security/core/Authentication.html"><code>Authentication</code></a>.  The use of <code>${#authentication}</code> will be
+explored further in the OAuth discussion in the next chapter.
+<a href="#ref3">↩</a></p>
+
+<p><b id="endnote4">[4]</b>
+Recall the discussion of setting <a href="https://docs.spring.io/spring-security/site/docs/5.5.1/api/org/springframework/security/config/annotation/web/builders/HttpSecurity.html"><code>HttpSecurity</code></a> <a href="#authenticationEntryPoint">basic
+authentication entry point</a>.
+<a href="#ref4">↩</a></p>
+
+<p><b id="endnote5">[5]</b>
+Recall the discussion <code>RestControllerImpl</code>’s
+<a href="#ExceptionHandler"><code>@ExceptionHandler</code> method</a>.
+<a href="#ref5">↩</a></p>
+
+<p><b id="endnote6">[6]</b>
+YAML is not required but YAML lends itself to expressing the
+configuration compactly.
+<a href="#ref6">↩</a></p>]]></content><author><name></name></author><category term="Java" /><category term="Spring Boot" /><category term="Spring Security" /><category term="oauth" /><category term="oidc" /><summary type="html"><![CDATA[This article explores integrating Spring Security into a Spring Boot application. Specifically, it will examine: Managing users’ credentials (IDs and passwords) and granted authorities Creating a Spring MVC Controller with Spring Method Security and Thymeleaf (to provide features such as customized menus corresponding to a user’s grants) Creating a REST controller with Basic Authentication and Spring Method Security]]></summary></entry><entry><title type="html">java.util.concurrent.ForkJoinPool Example</title><link href="https://blog.hcf.dev//article/2020-08-11-java-util-concurrent-forkjoinpool" rel="alternate" type="text/html" title="java.util.concurrent.ForkJoinPool Example" /><published>2020-08-11T00:00:00+00:00</published><updated>2020-08-11T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/java-util-concurrent-forkjoinpool</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-08-11-java-util-concurrent-forkjoinpool"><![CDATA[<p>The combination of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTask</code></a> implementations running
+in a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a> allows tasks to be defined that may
+spawn subtasks that in turn may run asynchronously.  The <code>ForkJoinPool</code>
+manages efficient processing of those tasks.</p>
+
+<p>This article presents a simple calculator application to evaluate a formula
+defined as a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List</code></a> presents a single-threaded recursive solution,
+and then converts that solution to use <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTasks</code></a>
+executed in a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a>.</p>
+
+<!--more-->
+
+<h2 id="recursive-solution">Recursive Solution</h2>
+
+<p>A formula to be computed is defined as follows:</p>
+
+<pre><code class="language-java">    public enum Operator { ADD, MULTIPLY; }
+
+    public static List&lt;?&gt; FORMULA =
+        List.of(Operator.ADD,
+                List.of(Operator.MULTIPLY, 1, 2, 3), 4, 5,
+                List.of(Operator.ADD, 6, 7, 8,
+                        List.of(Operator.MULTIPLY, 9, 10, 11)));
+</code></pre>
+
+<p>A formula is either a <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Number.html"><code>Number</code></a> or a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List</code></a> consisting of
+an <code>Operator</code> followed by other formulae.  For illustration, the Lisp
+equivalent of <code>FORMULA</code> would be:</p>
+
+<pre><code class="language-scheme">(+ (* 1 2 3) 4 5
+   (+ 6 7 8
+      (* 9 10 11)))
+</code></pre>
+
+<p>A <code>Task</code> class is defined to solve formulae:</p>
+
+<pre><code class="language-java">    public static class Task {
+        private final Object formula;
+
+        public Task(Object formula) { this.formula = formula; }
+
+        public Integer compute() {
+            Integer result = null;
+
+            if (formula instanceof Number) {
+                result = ((Number) formula).intValue();
+            } else {
+                List&lt;?&gt; list = (List&lt;?&gt;) formula;
+                Operator operator = (Operator) list.get(0);
+                List&lt;Task&gt; subtasks =
+                    list.subList(1, list.size())
+                    .stream()
+                    .map(Task::new)
+                    .collect(toList());
+                IntStream operands =
+                    subtasks.stream()
+                    .map(Task::compute)
+                    .mapToInt(Integer::intValue);
+
+                switch (operator) {
+                case ADD:
+                    result = operands.sum();
+                    break;
+
+                case MULTIPLY:
+                    result = operands.reduce(1, (x, y) -&gt; x * y);
+                    break;
+                }
+            }
+
+            System.out.println(formula + " -&gt; " + result);
+
+            return result;
+        }
+    }
+</code></pre>
+
+<p>The <code>compute()</code> method evaluates the formula by creating another <code>Task</code>
+instance to evaluate each operand recursively by calling <code>compute()</code>.  The
+actual mechanics are to create a <code>List</code> of <code>Task</code>s and then map the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> of <code>Task</code>s to an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/IntStream.html"><code>IntStream</code></a> by calling
+<code>Task.compute()</code> which is evaluated based on the operator.</p>
+
+<p>The static <code>main(String[])</code> function simply instantiates a <code>Task</code> and calls
+<code>compute()</code>.</p>
+
+<pre><code class="language-java">    public static void main(String[] argv) {
+        Task task = new Task(FORMULA);
+
+        System.out.println("Result: " + task.compute());
+    }
+</code></pre>
+
+<p>Which generates the following output:</p>
+
+<pre><code class="language-javastacktrace">1 -&gt; 1
+2 -&gt; 2
+3 -&gt; 3
+[MULTIPLY, 1, 2, 3] -&gt; 6
+4 -&gt; 4
+5 -&gt; 5
+6 -&gt; 6
+7 -&gt; 7
+8 -&gt; 8
+9 -&gt; 9
+10 -&gt; 10
+11 -&gt; 11
+[MULTIPLY, 9, 10, 11] -&gt; 990
+[ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]] -&gt; 1011
+[ADD, [MULTIPLY, 1, 2, 3], 4, 5, [ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]]] -&gt; 1026
+Result: 1026
+</code></pre>
+
+<p>The next chapter details how to convert this solution to use
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a> to enable some level of parallel processing.</p>
+
+<h2 id="forkjoinpool-solution">ForkJoinPool Solution</h2>
+
+<p>The <code>Task</code> class is modified to extend
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTask&lt;Integer&gt;</code></a>.  When a subtask is instantiated,
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html#fork--"><code>RecursiveTask.fork()</code></a> is called to asynchronously
+execute this task in the pool the current task is running in.  In the
+<code>IntStream</code>, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html#join--"><code>RecursiveTask.join()</code></a> is called to wait
+for the subtask to complete (if it hasn’t already) and return the result of
+the <code>compute()</code> method.</p>
+
+<pre><code class="language-java">    public static class Task extends RecursiveTask&lt;Integer&gt; {
+        ...
+        @Override
+        public Integer compute() {
+            Integer result = null;
+
+            if (formula instanceof Number) {
+                ...
+            } else {
+                ...
+                List&lt;Task&gt; subtasks =
+                    list.subList(1, list.size())
+                    .stream()
+                    .map(Task::new)
+                    .peek(RecursiveTask::fork)
+                    .collect(toList());
+                IntStream operands =
+                    subtasks.stream()
+                    .map(RecursiveTask::join)
+                    .mapToInt(Integer::intValue);
+                ...
+            }
+
+            System.out.println(Thread.currentThread() + "\t"
+                               + formula + " -&gt; " + result);
+
+            return result;
+        }
+    }
+</code></pre>
+
+<p>The executing <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html"><code>Thread</code></a> is included in the output to demonstrate
+the behavior.  The <code>main(String[])</code> function creates a
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a>, the <code>Task</code> to compute <code>FORMULA</code>, and uses
+the pool to invoke the <code>Task</code>.  The result is obtained through <code>Task.join()</code>
+to wait for the computation to complete.</p>
+
+<pre><code class="language-java">    public static int N = 10;
+
+    public static void main(String[] argv) {
+        ForkJoinPool pool = new ForkJoinPool(N);
+        RecursiveTask&lt;Integer&gt; task = new Task(FORMULA);
+
+        pool.invoke(task);
+
+        System.out.println("Result: " + task.join());
+    }
+</code></pre>
+
+<p>Output using 10 threads (<code>N = 10</code>):</p>
+
+<pre><code class="language-javastacktrace">Thread[ForkJoinPool-1-worker-31,5,main]	2 -&gt; 2
+Thread[ForkJoinPool-1-worker-19,5,main]	8 -&gt; 8
+Thread[ForkJoinPool-1-worker-23,5,main]	4 -&gt; 4
+Thread[ForkJoinPool-1-worker-17,5,main]	3 -&gt; 3
+Thread[ForkJoinPool-1-worker-9,5,main]	1 -&gt; 1
+Thread[ForkJoinPool-1-worker-27,5,main]	5 -&gt; 5
+Thread[ForkJoinPool-1-worker-3,5,main]	7 -&gt; 7
+Thread[ForkJoinPool-1-worker-21,5,main]	6 -&gt; 6
+Thread[ForkJoinPool-1-worker-17,5,main]	11 -&gt; 11
+Thread[ForkJoinPool-1-worker-23,5,main]	10 -&gt; 10
+Thread[ForkJoinPool-1-worker-31,5,main]	9 -&gt; 9
+Thread[ForkJoinPool-1-worker-5,5,main]	[MULTIPLY, 1, 2, 3] -&gt; 6
+Thread[ForkJoinPool-1-worker-31,5,main]	[MULTIPLY, 9, 10, 11] -&gt; 990
+Thread[ForkJoinPool-1-worker-13,5,main]	[ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]] -&gt; 1011
+Thread[ForkJoinPool-1-worker-19,5,main]	[ADD, [MULTIPLY, 1, 2, 3], 4, 5, [ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]]] -&gt; 1026
+Result: 1026
+</code></pre>
+
+<p>And with 1 pool thread (<code>N = 1</code>):</p>
+
+<pre><code class="language-javastacktrace">Thread[ForkJoinPool-1-worker-3,5,main]	1 -&gt; 1
+Thread[ForkJoinPool-1-worker-3,5,main]	2 -&gt; 2
+Thread[ForkJoinPool-1-worker-3,5,main]	3 -&gt; 3
+Thread[ForkJoinPool-1-worker-3,5,main]	[MULTIPLY, 1, 2, 3] -&gt; 6
+Thread[ForkJoinPool-1-worker-3,5,main]	4 -&gt; 4
+Thread[ForkJoinPool-1-worker-3,5,main]	5 -&gt; 5
+Thread[ForkJoinPool-1-worker-3,5,main]	6 -&gt; 6
+Thread[ForkJoinPool-1-worker-3,5,main]	7 -&gt; 7
+Thread[ForkJoinPool-1-worker-3,5,main]	8 -&gt; 8
+Thread[ForkJoinPool-1-worker-3,5,main]	9 -&gt; 9
+Thread[ForkJoinPool-1-worker-3,5,main]	10 -&gt; 10
+Thread[ForkJoinPool-1-worker-3,5,main]	11 -&gt; 11
+Thread[ForkJoinPool-1-worker-3,5,main]	[MULTIPLY, 9, 10, 11] -&gt; 990
+Thread[ForkJoinPool-1-worker-3,5,main]	[ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]] -&gt; 1011
+Thread[ForkJoinPool-1-worker-3,5,main]	[ADD, [MULTIPLY, 1, 2, 3], 4, 5, [ADD, 6, 7, 8, [MULTIPLY, 9, 10, 11]]] -&gt; 1026
+Result: 1026
+</code></pre>
+
+<p>Which (unsurprisingly) calculates the formulae in the same order as the
+recursive solution.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>Single threaded recursive solutions may be converted to
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/RecursiveTask.html"><code>RecursiveTask</code></a><sup id="ref1"><a href="#endnote1">1</a></sup>
+implementations and invoked through a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinPool.html"><code>ForkJoinPool</code></a> to
+enable efficient processing of subtasks.</p>
+
+<p><b id="endnote1">[1]</b>
+Implementation class of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ForkJoinTask.html"><code>ForkJoinTask</code></a>.
+<a href="#ref1">↩</a></p>]]></content><author><name></name></author><category term="Java" /><category term="Concurrency" /><summary type="html"><![CDATA[The combination of RecursiveTask implementations running in a ForkJoinPool allows tasks to be defined that may spawn subtasks that in turn may run asynchronously. The ForkJoinPool manages efficient processing of those tasks. This article presents a simple calculator application to evaluate a formula defined as a List presents a single-threaded recursive solution, and then converts that solution to use RecursiveTasks executed in a ForkJoinPool.]]></summary></entry><entry><title type="html">Java Multi-Release JARs</title><link href="https://blog.hcf.dev//article/2020-07-19-java-multi-release-jars" rel="alternate" type="text/html" title="Java Multi-Release JARs" /><published>2020-07-19T00:00:00+00:00</published><updated>2020-07-19T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/java-multi-release-jars</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-07-19-java-multi-release-jars"><![CDATA[<p><a href="/article/2019-01-31-java-invocationhandler-interface-default-methods">“Adding Support to Java InvocationHandler Implementations for Interface Default Methods”</a>
+describes how to implement an <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code></a> to
+invoke <code>default</code> interface methods.  This mechanism is critical to the
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-java-multi-release-jars/ball/xml/FluentNode.html"><code>FluentNode</code></a> implementation described in
+<a href="/article/2019-03-30-java-interface-facades">“Java Interface Facades”</a>.
+The first article also notes that the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/invoke/MethodHandles.Lookup.html"><code>MethodHandles.Lookup</code></a> method used with <a href="https://www.java.com/en/download/help/java8.html">Java 8</a>
+would not work with <a href="https://www.oracle.com/java/java9.html">Java 9</a> <em>which means the whole API will not work on
+Java 9 and subsequent JVMs</em>.</p>
+
+<p>This article describes the <a href="https://www.oracle.com/java/java9.html">Java 9</a>-specific solution, refactoring the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code></a> implementation to separate and
+compartmentalize the Java 8 and Java 9-specific solution logic, and
+introduces <a href="https://openjdk.java.net/jeps/238">“JEP 238: Multi-Release JAR Files”</a> to deliver a
+<a href="https://www.java.com/en/download/help/java8.html">Java 8</a> and Java 9 (and later) solutions simultaneously in the same JAR.</p>
+
+<!--more-->
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>As described in <a href="https://openjdk.java.net/jeps/238">JEP 238</a>, multi-release JARs provide a means to provide
+alternate versions of classes that can take advantage of specific platform
+features.  Alternate classes are stored in the JAR within the hierarchy
+described by <code>/META-INF/versions/${java.specification.version}/</code>.  (The
+implementation hierarchy is shown in detail at the end of this article.)
+For archivers and class-loaders that are not multi-release aware (e.g.,
+<a href="https://www.java.com/en/download/help/java8.html">Java 8</a>), these additional classes are ignore.  However, for <a href="https://www.oracle.com/java/java9.html">Java 9</a> and
+subsequent environments, these additional classes are loaded if the
+<code>version</code> is less than or equal to the JVM’s <code>${java.specification.version}</code>
+(with the latest taking precedence).</p>
+
+<p>The class with the <a href="https://www.java.com/en/download/help/java8.html">Java 8</a>-specific code will be refactored to implement a
+super-interface with a single method embodying that code.  That existing
+code base will be compiled as-is to create a JAR suitable for Java 8 JVMs.
+In addition, a <a href="https://www.oracle.com/java/java9.html">Java 9</a> version of the super-interface will be compiled for
+a Java 9 environment and saved to the JAR beneath the
+<code>/META-INF/versions/9/</code> hierarchy.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p><a href="https://blog.hcf.dev/javadoc/article/2020-07-19-java-multi-release-jars/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-"><code>DefaultInvocationHandler.invoke(Object,Method,Object[])</code></a>
+is re-factored to implement
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-java-multi-release-jars/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.html"><code>DefaultInterfaceMethodInvocationHandler</code></a>:</p>
+
+<figcaption style="text-align: center">DefaultInvocationHandler</figcaption>
+<pre><code class="language-java">@NoArgsConstructor @ToString
+public class DefaultInvocationHandler implements DefaultInterfaceMethodInvocationHandler {
+    ...
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] argv) throws Throwable {
+        Object result = null;
+        Class&lt;?&gt; declarer = method.getDeclaringClass();
+
+        if (method.isDefault()) {
+            result = DefaultInterfaceMethodInvocationHandler.super.invoke(proxy, method, argv);
+        } else if (declarer.equals(Object.class)) {
+            result = method.invoke(this, argv);
+        } else {
+            result = invokeMethod(this, true, method.getName(), argv, method.getParameterTypes());
+        }
+
+        return result;
+    }
+    ...
+}
+</code></pre>
+
+<p>With the <a href="https://www.java.com/en/download/help/java8.html">Java 8</a> implementation:</p>
+
+<figcaption style="text-align: center">
+    DefaultInterfaceMethodInvocationHandler (Java 8)
+</figcaption>
+<pre><code class="language-java">public interface DefaultInterfaceMethodInvocationHandler extends InvocationHandler {
+    @Override
+    default Object invoke(Object proxy, Method method, Object[] argv) throws Throwable {
+        Constructor&lt;MethodHandles.Lookup&gt; constructor =
+            MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
+
+        constructor.setAccessible(true);
+
+        Class&lt;?&gt; declarer = method.getDeclaringClass();
+        Object result =
+            constructor.newInstance(declarer)
+            .in(declarer)
+            .unreflectSpecial(method, declarer)
+            .bindTo(proxy)
+            .invokeWithArguments(argv);
+
+        return result;
+    }
+}
+</code></pre>
+
+<p>While the <a href="https://www.oracle.com/java/java9.html">Java 9</a> implementation is:</p>
+
+<figcaption style="text-align: center">
+    DefaultInterfaceMethodInvocationHandler (Java 9)
+</figcaption>
+<pre><code class="language-java">public interface DefaultInterfaceMethodInvocationHandler extends InvocationHandler {
+    @Override
+    default Object invoke(Object proxy, Method method, Object[] argv) throws Throwable {
+        Class&lt;?&gt; declarer = method.getDeclaringClass();
+        Object result =
+            MethodHandles.lookup()
+            .findSpecial(declarer, method.getName(),
+                         methodType(method.getReturnType(), method.getParameterTypes()), declarer)
+            .bindTo(proxy)
+            .invokeWithArguments(argv);
+
+        return result;
+    }
+}
+</code></pre>
+
+<p>The Java 9 alternative is saved to
+<code>${basedir}/src/main/java9/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.java</code>
+within the Maven project.  Compiling with the <code>maven-compiler-plugin</code> is
+straightforward as the following profile demonstrates the incremental
+configuration.<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+
+<figcaption style="text-align: center">Parent POM: Java 9 Profile</figcaption>
+<pre><code class="language-xml">&lt;project ...&gt;
+  ...
+  &lt;profiles&gt;
+  ...
+    &lt;profile&gt;
+      &lt;id&gt;[+] src/main/java9&lt;/id&gt;
+      &lt;activation&gt;
+        &lt;file&gt;&lt;exists&gt;${basedir}/src/main/java9&lt;/exists&gt;&lt;/file&gt;
+      &lt;/activation&gt;
+      &lt;build&gt;
+        &lt;pluginManagement&gt;
+          &lt;plugins&gt;
+            &lt;plugin&gt;
+              &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+              &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+              &lt;executions&gt;
+                &lt;execution&gt;
+                  &lt;id&gt;jdk9&lt;/id&gt;
+                  &lt;goals&gt;
+                    &lt;goal&gt;compile&lt;/goal&gt;
+                  &lt;/goals&gt;
+                  &lt;configuration&gt;
+                    &lt;release&gt;9&lt;/release&gt;
+                    &lt;compileSourceRoots&gt;
+                      &lt;compileSourceRoot&gt;${project.basedir}/src/main/java9&lt;/compileSourceRoot&gt;
+                    &lt;/compileSourceRoots&gt;
+                    &lt;multiReleaseOutput&gt;true&lt;/multiReleaseOutput&gt;
+                  &lt;/configuration&gt;
+                &lt;/execution&gt;
+              &lt;/executions&gt;
+            &lt;/plugin&gt;
+          &lt;/plugins&gt;
+        &lt;/pluginManagement&gt;
+      &lt;/build&gt;
+    &lt;/profile&gt;
+  ...
+  &lt;/profiles&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>To complete the JAR’s configuration, the <code>Multi-Release</code> flag must be set in
+the JAR’s manifest.</p>
+
+<figcaption style="text-align: center">META-INF/MANIFEST.MF</figcaption>
+<pre><code class="language-properties">Manifest-Version: 1.0
+...
+Multi-Release: true
+...
+</code></pre>
+
+<p>The resulting JAR hierarchy is depicted below.</p>
+
+<figcaption style="text-align: center">Muti-Release JAR Hierarchy</figcaption>
+<pre><code class="language-log">ball-util.jar
+├── META-INF
+│   ├── MANIFEST.MF
+│   ├── ...
+│   └── versions
+│       └── 9
+│           └── ball
+│               └── lang
+│                   └── reflect
+│                       └── DefaultInterfaceMethodInvocationHandler.class
+└── ball
+    ├── ...
+    ├── lang
+    │   ├── ...
+    │   └── reflect
+    │       ├── DefaultInterfaceMethodInvocationHandler.class
+    │       ├── DefaultInvocationHandler.class
+    │       └── ...
+    ├── ...
+    ...
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p>Multi-release JARs provide a solution for a single JAR to support a range of
+Java platform versions.  Developers should be aware that the solution does
+present some challenges: The compiled <em>versioned</em> class files cannot be run
+outside the JAR (making testing difficult) and class-loader implementation
+details will effect resource discovery and
+loading<sup id="ref2"><a href="#endnote2">2</a></sup> (to name a few).  However, as
+illustrated with this use-case, it is a powerful tool for creating JARs that
+support a wide range of Java platforms.</p>
+
+<p><b id="endnote1">[1]</b>
+The Parent POM has similar profiles for Java 10 through 14.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+Please see the discussion in <a href="https://openjdk.java.net/jeps/238">“JEP 238: Multi-Release JAR Files”</a>.
+<a href="#ref2">↩</a></p>]]></content><author><name></name></author><category term="Java" /><summary type="html"><![CDATA[“Adding Support to Java InvocationHandler Implementations for Interface Default Methods” describes how to implement an InvocationHandler to invoke default interface methods. This mechanism is critical to the FluentNode implementation described in “Java Interface Facades”. The first article also notes that the MethodHandles.Lookup method used with Java 8 would not work with Java 9 which means the whole API will not work on Java 9 and subsequent JVMs. This article describes the Java 9-specific solution, refactoring the InvocationHandler implementation to separate and compartmentalize the Java 8 and Java 9-specific solution logic, and introduces “JEP 238: Multi-Release JAR Files” to deliver a Java 8 and Java 9 (and later) solutions simultaneously in the same JAR.]]></summary></entry><entry><title type="html">Spring Boot Part 6: Auto Configuration and Starters</title><link href="https://blog.hcf.dev//article/2020-07-19-spring-boot-part-06" rel="alternate" type="text/html" title="Spring Boot Part 6: Auto Configuration and Starters" /><published>2020-07-19T00:00:00+00:00</published><updated>2020-07-19T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/spring-boot-part-06</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-07-19-spring-boot-part-06"><![CDATA[<p><a href="https://spring.io/projects/spring-boot">Spring Boot</a> allows for the creation of “starters:” Convenient dependency
+descriptors that often provide some specific but complex functionality.
+Examples from Spring Boot discussed in this series of articles include
+<a href="https://spring.io/guides/gs/spring-boot/"><code>spring-boot-starter-web</code></a>,
+<code>spring-boot-starter-thymeleaf</code>, and <code>spring-boot-starter-actuator</code>.</p>
+
+<p>This article describes some reusable code targeted for development and
+testing (a REST controller @ <code>/jig/bean/{name}.json</code> and
+<code>/jig/bean/{name}.xml</code>) and the steps necessary to create a Spring Boot
+starter.  It also describes a starter for the embedded MySQL server process
+described in
+<a href="/article/2019-10-19-spring-embedded-mysqld">“Spring Embedded MySQL Server”</a>.</p>
+
+<!--more-->
+
+<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/allclasses-noframe.html">javadoc</a> is provided.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>As discussed in
+<a href="/article/2019-11-16-spring-boot-part-01">part 1</a>, the
+<code>spring-boot-starter-actuator</code> may be configured.  One of its sevices may be
+used to get the list (with attributes) of the configured beans.  Sample
+partial output below:</p>
+
+<pre><code class="language-bash">$ curl -is -X GET http://localhost:5001/actuator/beans/
+HTTP/1.1 200
+Content-Type: application/vnd.spring-boot.actuator.v3+json
+Transfer-Encoding: chunked
+Date: Sun, 19 Jul 2020 20:22:10 GMT
+
+{
+  "contexts" : {
+    "application" : {
+      "beans" : {
+        ...
+        "discoveryService" : {
+          "scope" : "singleton",
+          "type" : "upnp.DiscoveryService",
+          "resource" : "file [/Users/ball/upnp-media-server/target/classes/upnp/DiscoveryService.class]",
+          "dependencies" : [ "mediaServer" ]
+        },
+        ...
+      },
+      "parentId" : null
+    }
+  }
+}
+</code></pre>
+
+<p>The <code>ball-spring-jig-starter</code> will provide the following two REST APIs to
+retrieve a specific bean’s value and demonstrate serialization to JSON or
+XML as appropriate.  JSON partial output:</p>
+
+<pre><code class="language-bash">$ curl -is -X GET http://localhost:5000/jig/bean/discoveryService.json
+HTTP/1.1 200
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sun, 19 Jul 2020 20:23:38 GMT
+
+{
+  "uuid:00000000-0000-1010-8000-0024BEF18BCC" : {
+    "expiration" : 1595191949391,
+    "ssdpmessage" : {
+      "params" : { },
+      "entity" : null,
+      "locale" : null,
+      "inetAddress" : "10.0.1.9",
+      "st" : "uuid:00000000-0000-1010-8000-0024BEF18BCC",
+      "location" : "http://10.0.1.9:52323/dmr.xml",
+      "usn" : "uuid:00000000-0000-1010-8000-0024BEF18BCC",
+      "protocolVersion" : {
+        "protocol" : "HTTP",
+        "major" : 1,
+        "minor" : 1
+      },
+      ...
+    },
+    ...
+  },
+  ...
+}
+</code></pre>
+
+<p>And corresponding XML output:</p>
+
+<pre><code class="language-bash">$ curl -is -X GET http://localhost:5000/jig/bean/discoveryService.xml
+HTTP/1.1 200
+Content-Type: application/xml
+Transfer-Encoding: chunked
+Date: Sun, 19 Jul 2020 20:29:47 GMT
+
+&lt;DiscoveryService&gt;
+  &lt;uuid:00000000-0000-1010-8000-0024BEF18BCC&gt;
+    &lt;expiration&gt;1595192286661&lt;/expiration&gt;
+    &lt;ssdpmessage&gt;
+      &lt;params/&gt;
+      &lt;entity/&gt;
+      &lt;locale/&gt;
+      &lt;inetAddress&gt;10.0.1.9&lt;/inetAddress&gt;
+      &lt;st&gt;uuid:00000000-0000-1010-8000-0024BEF18BCC&lt;/st&gt;
+      &lt;location&gt;http://10.0.1.9:52323/dmr.xml&lt;/location&gt;
+      &lt;usn&gt;uuid:00000000-0000-1010-8000-0024BEF18BCC&lt;/usn&gt;
+      &lt;protocolVersion&gt;
+        &lt;protocol&gt;HTTP&lt;/protocol&gt;
+        &lt;major&gt;1&lt;/major&gt;
+        &lt;minor&gt;1&lt;/minor&gt;
+      &lt;/protocolVersion&gt;
+      ...
+    &lt;/ssdpmessage&gt;
+  &lt;/uuid:00000000-0000-1010-8000-0024BEF18BCC&gt;
+  ...
+&lt;/DiscoveryService&gt;
+</code></pre>
+
+<p>The implementation is described in the next section.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The steps to create the “jig” starter:</p>
+
+<ol>
+  <li>
+    <p>Implement the REST controller</p>
+  </li>
+  <li>
+    <p>Create a project and POM for the starter artifact</p>
+  </li>
+  <li>
+    <p>Create the auto-configuration class(es)</p>
+  </li>
+  <li>
+    <p>Link the auto-configuration class(es) into the starter’s
+<code>META-INF/spring.factories</code> resource<sup id="ref1"><a href="#endnote1">1</a></sup></p>
+  </li>
+</ol>
+
+<p>The <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/BeanRestController.html"><code>BeanRestController</code></a> implementation is shown
+below.</p>
+
+<figcaption style="text-align: center">
+    ball.spring.jig.BeanRestController
+</figcaption>
+<pre><code class="language-java">@RestController
+@RequestMapping(value = { "/jig/bean/" })
+@ResponseBody
+@NoArgsConstructor @ToString @Log4j2
+public class BeanRestController implements ApplicationContextAware {
+    private ApplicationContext context = null;
+
+    @Override
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
+    }
+
+    @RequestMapping(method = { GET }, value = { "{name}.json" }, produces = APPLICATION_JSON_VALUE)
+    public Object json(@PathVariable String name) throws Exception {
+        return context.getBean(name);
+    }
+
+    @RequestMapping(method = { GET }, value = { "{name}.xml" }, produces = APPLICATION_XML_VALUE)
+    public Object xml(@PathVariable String name) throws Exception {
+        return context.getBean(name);
+    }
+
+    @ExceptionHandler({ NoSuchBeanDefinitionException.class, NoSuchElementException.class })
+    @ResponseStatus(value = NOT_FOUND, reason = "Resource not found")
+    public void handleNOT_FOUND() { }
+}
+</code></pre>
+
+<p>Its implementation is straightforward: A method each to look-up the
+requested bean and then serialize to JSON and XML.</p>
+
+<p>In the project for the starter, add the
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class.</p>
+
+<figcaption style="text-align: center">
+    ball.spring.jig.autoconfigure.AutoConfiguration
+</figcaption>
+<pre><code class="language-java">@Configuration
+@ConditionalOnClass({ BeanRestController.class })
+@Import({ BeanRestController.class })
+@NoArgsConstructor @ToString @Log4j2
+public class AutoConfiguration {
+}
+</code></pre>
+
+<p>It is critical that <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Configuration.html"><code>@Configuration</code></a> classes are added
+through <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Import.html?is-external=true"><code>@Import</code></a> annotations and <em>not</em>
+<a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/index.html?org/springframework/context/annotation/ComponentScan.html"><code>@ComponentScan</code></a> Neither the starter author nor the
+integrator will be able to predict what components will or will not be
+included in a scan.</p>
+
+<p>It is a good practice to include a “conditional-on” annotation (e.g.,
+<a href="https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnClass.html"><code>@ConditionalOnClass</code></a> to test any required dependency
+software has been configured and/or is on the class path.</p>
+
+<p>Finally, <code>META-INF/spring.factories</code> must be configured in the starter JAR
+to notify Spring Boot to add the
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a>.</p>
+
+<figcaption style="text-align: center">META-INF/spring.factories</figcaption>
+<pre><code class="language-properties">org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.jig.autoconfigure.AutoConfiguration
+</code></pre>
+
+<p>Creating a starter for the embedded MySQL process described in
+<a href="/article/2019-10-19-spring-embedded-mysqld">“Spring Embedded MySQL Server”</a>
+is equally straightforward.  Its
+<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/mysqld/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class is shown below:</p>
+
+<figcaption style="text-align: center">
+    ball.spring.mysqld.autoconfigure.AutoConfiguration
+</figcaption>
+<pre><code class="language-java">@Configuration
+@ConditionalOnClass({ MysqldConfiguration.class })
+@Import({ EntityManagerFactoryComponent.class, MysqldConfiguration.class })
+@NoArgsConstructor @ToString @Log4j2
+public class AutoConfiguration {
+}
+</code></pre>
+
+<p>With it corresponding <code>META-INF/spring.factories</code>:</p>
+
+<figcaption style="text-align: center">META-INF/spring.factories</figcaption>
+<pre><code class="language-properties">org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.mysqld.autoconfigure.AutoConfiguration
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p>Creating a <a href="https://spring.io/projects/spring-boot">Spring Boot</a> starter is straightfoward: Create a project/POM to
+host the starter’s dependencies and auto-configuration class(es), add the
+annotated auto-configuration class(es), and configure the starter JAR’s
+<code>META-INF/spring.factories</code> with the auto-configuration class(es).  That
+starter’s functionality can then be added to a Spring Boot application
+simply by including a single dependency in the application POM.</p>
+
+<p><b id="endnote1">[1]</b>
+Many <a href="https://spring.io/projects/spring-boot">Spring Boot</a> components provide separate auto-configuration and
+starter artifacts to support all use cases.  The author feels these example
+implementations do not benefit from separate auto-configuration artifacts.
+<a href="#ref1">↩</a></p>]]></content><author><name></name></author><category term="Java" /><category term="Spring" /><summary type="html"><![CDATA[Spring Boot allows for the creation of “starters:” Convenient dependency descriptors that often provide some specific but complex functionality. Examples from Spring Boot discussed in this series of articles include spring-boot-starter-web, spring-boot-starter-thymeleaf, and spring-boot-starter-actuator. This article describes some reusable code targeted for development and testing (a REST controller @ /jig/bean/{name}.json and /jig/bean/{name}.xml) and the steps necessary to create a Spring Boot starter. It also describes a starter for the embedded MySQL server process described in “Spring Embedded MySQL Server”.]]></summary></entry><entry><title type="html">Spring Boot Part 5: voyeur, A Non-Trivial Application</title><link href="https://blog.hcf.dev//article/2020-06-26-spring-boot-part-05" rel="alternate" type="text/html" title="Spring Boot Part 5: voyeur, A Non-Trivial Application" /><published>2020-06-26T00:00:00+00:00</published><updated>2020-06-26T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/spring-boot-part-05</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-06-26-spring-boot-part-05"><![CDATA[<p><a href="/article/2019-11-16-spring-boot-part-01">This</a>
+<a href="/article/2019-11-17-spring-boot-part-02">series</a>
+<a href="/article/2019-12-15-spring-boot-part-03">of</a>
+<a href="/article/2020-01-01-spring-boot-part-04">articles</a> examines <a href="https://spring.io/projects/spring-boot">Spring Boot</a>
+features.  This fifth article in the series presents a non-trivial
+application which probes local hosts (with the help of the <a href="https://nmap.org/"><code>nmap</code></a>
+command) to assist in developing <a href="https://openconnectivity.org/developer/specifications/upnp-resources/upnp-developer-resources">UPNP</a> and <a href="https://tools.ietf.org/id/draft-cai-ssdp-v1-03.txt">SSDP</a> applications.</p>
+
+<p><img src="/assets/article/2020-06-26-spring-boot-part-05/screen-shot-nmap.png" alt="" /></p>
+
+<p>Complete <a href="https://github.com/allen-ball/voyeur">source</a> and
+<a href="https://allen-ball.github.io/voyeur/">javadoc</a> are available on
+<a href="https://github.com/allen-ball">GitHub</a>.</p>
+
+<p>Specific topics covered herein:</p>
+
+<ul>
+  <li><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true"><code>@Service</code></a> implementations with <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true"><code>@Scheduled</code></a>
+updates
+    <ul>
+      <li><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html"><code>@Autowired</code></a></li>
+    </ul>
+  </li>
+  <li>UI <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Controller.html"><code>@Controller</code></a>
+    <ul>
+      <li>Populates <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a></li>
+      <li>Thymeleaf temlates and decoupled logic</li>
+    </ul>
+  </li>
+  <li><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RestController.html"><code>@RestController</code></a> implementation</li>
+</ul>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The following subsections describe the components.</p>
+
+<h3 id="service-implementations">@Service Implementations</h3>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/package-summary.html"><code>voyeur</code></a> package defines a number of (annotated)
+<a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true"><code>@Service</code>s</a>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Service.html?is-external=true"><code>@Service</code></a></th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/ARPCache.html"><code>ArpCache</code></a></td>
+      <td><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a> of <a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> to hardware address periodically updated by reading <code>/proc/net/arp</code> or parsing the output of <code>arp -an</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/NetworkInterfaces.html"><code>NetworkInterfaces</code></a></td>
+      <td><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html"><code>Set</code></a> of <a href="https://docs.oracle.com/javase/8/docs/api/java/net/NetworkInterface.html?is-external=true"><code>NetworkInterface</code>s</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html"><code>Nmap</code></a></td>
+      <td><code>Map</code> of XML output of the <code>nmap</code> command for each <code>InetAddress</code> discovered via <code>ARPCache</code>, <code>NetworkInterfaces</code>, and/or <code>SSDP</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://allen-ball.github.io/voyeur/voyeur/SSDP.html"><code>SSDP</code></a></td>
+      <td>SSDP hosts discovered via <a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true"><code>SSDPDiscoveryCache</code></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Each of these services implement a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Set.html"><code>Set</code></a> or <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a>, which may
+be <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html"><code>@Autowire</code>d</a> into other components, and periodically update
+themselves with a <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true"><code>@Scheduled</code></a> method.  The
+<a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html"><code>Nmap</code></a> service is examined in detail.</p>
+
+<p>First, the <a href="https://javaee.github.io/javaee-spec/javadocs/javax/annotation/PostConstruct.html?is-external=true"><code>@PostConstruct</code></a> method (in addition to
+performing other initialization chores) tests to determine if the
+<a href="https://nmap.org/"><code>nmap</code></a> command is available:</p>
+
+<pre><code class="language-java">...
+@Service
+@NoArgsConstructor @Log4j2
+public class Nmap extends InetAddressMap&lt;Document&gt; ... {
+    ...
+    private static final String NMAP = "nmap";
+    ...
+    private boolean disabled = true;
+    ...
+    @PostConstruct
+    public void init() throws Exception {
+        ...
+        try {
+            List&lt;String&gt; argv = Stream.of(NMAP, "-version").collect(toList());
+
+            log.info(String.valueOf(argv));
+
+            Process process =
+                new ProcessBuilder(argv)
+                .inheritIO()
+                .redirectOutput(PIPE)
+                .start();
+
+            try (InputStream in = process.getInputStream()) {
+                new BufferedReader(new InputStreamReader(in, UTF_8))
+                    .lines()
+                    .forEach(t -&gt; log.info(t));
+            }
+
+            disabled = (process.waitFor() != 0);
+        } catch (Exception exception) {
+            disabled = true;
+        }
+
+        if (disabled) {
+            log.warn("nmap command is not available");
+        }
+    }
+    ...
+    public boolean isDisabled() { return disabled; }
+    ...
+}
+</code></pre>
+
+<p>If the <a href="https://nmap.org/"><code>nmap</code></a> command is successful, its version is logged.
+Otherwise, <code>disabled</code> is set to <code>true</code> and no further attempt is made to run
+the <code>nmap</code> command in other methods.</p>
+
+<p>The <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html?is-external=true"><code>@Scheduled</code></a> <a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#update--"><code>update()</code></a> method is
+invoked every 30 seconds and ensures a map entry exists for every
+<a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> previously discovered by the
+<a href="https://allen-ball.github.io/voyeur/voyeur/NetworkInterfaces.html"><code>NetworkInterfaces</code></a>,
+<a href="https://allen-ball.github.io/voyeur/voyeur/ARPCache.html"><code>ARPCache</code></a>, and <a href="https://allen-ball.github.io/voyeur/voyeur/SSDP.html"><code>SSDP</code></a> components and then
+queues a <code>Worker</code> <code>Runnable</code> for any value whose output is more than
+<code>INTERVAL</code> (60 minutes) old.  The <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/event/EventListener.html?is-external=true"><code>@EventListener</code></a> (with
+<a href="https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/context/event/ApplicationReadyEvent.html?is-external=true)"><code>ApplicationReadyEvent</code></a> guarantees the method won’t
+be called before the application is ready (to serve requests).</p>
+
+<pre><code class="language-java">public class Nmap extends InetAddressMap&lt;Document&gt; ... {
+    ...
+    private static final Duration INTERVAL = Duration.ofMinutes(60);
+    ...
+    @Autowired private NetworkInterfaces interfaces = null;
+    @Autowired private ARPCache arp = null;
+    @Autowired private SSDP ssdp = null;
+    @Autowired private ThreadPoolTaskExecutor executor = null;
+    ...
+    @EventListener(ApplicationReadyEvent.class)
+    @Scheduled(fixedDelay = 30 * 1000)
+    public void update() {
+        if (! isDisabled()) {
+            try {
+                Document empty = factory.newDocumentBuilder().newDocument();
+
+                empty.appendChild(empty.createElement("nmaprun"));
+
+                interfaces
+                    .stream()
+                    .map(NetworkInterface::getInterfaceAddresses)
+                    .flatMap(List::stream)
+                    .map(InterfaceAddress::getAddress)
+                    .filter(t -&gt; (! t.isMulticastAddress()))
+                    .forEach(t -&gt; putIfAbsent(t, empty));
+
+                arp.keySet()
+                    .stream()
+                    .filter(t -&gt; (! t.isMulticastAddress()))
+                    .forEach(t -&gt; putIfAbsent(t, empty));
+
+                ssdp.values()
+                    .stream()
+                    .map(SSDP.Value::getSSDPMessage)
+                    .filter(t -&gt; t instanceof SSDPResponse)
+                    .map(t -&gt; ((SSDPResponse) t).getInetAddress())
+                    .forEach(t -&gt; putIfAbsent(t, empty));
+
+                keySet()
+                    .stream()
+                    .filter(t -&gt; INTERVAL.compareTo(getOutputAge(t)) &lt; 0)
+                    .map(Worker::new)
+                    .forEach(t -&gt; executor.execute(t));
+            } catch (Exception exception) {
+                log.error(exception.getMessage(), exception);
+            }
+        }
+    }
+    ...
+    private Duration getOutputAge(InetAddress key) {
+        long start = 0;
+        Number number = (Number) get(key, "/nmaprun/runstats/finished/@time", NUMBER);
+
+        if (number != null) {
+            start = number.longValue();
+        }
+
+        return Duration.between(Instant.ofEpochSecond(start), Instant.now());
+    }
+
+    private Object get(InetAddress key, String expression, QName qname) {
+        Object object = null;
+        Document document = get(key);
+
+        if (document != null) {
+            try {
+                object = xpath.compile(expression).evaluate(document, qname);
+            } catch (Exception exception) {
+                log.error(exception.getMessage(), exception);
+            }
+        }
+
+        return object;
+    }
+    ...
+}
+</code></pre>
+
+<p><a href="https://spring.io/projects/spring-boot">Spring Boot</a>’s <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/scheduling/concurrent/ThreadPoolTaskExecutor.html"><code>ThreadPoolTaskExecutor</code></a> is
+injected.  To guarantee more than one thread is allocated the
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/application.properties"><code>application.properties</code></a>
+contains the following property:</p>
+
+<pre><code class="language-properties">spring.task.scheduling.pool.size: 4
+</code></pre>
+
+<p>The <code>Worker</code> implementation is given below.</p>
+
+<pre><code class="language-java">    ...
+    private static final List&lt;String&gt; NMAP_ARGV =
+        Stream.of(NMAP, "--no-stylesheet", "-oX", "-", "-n", "-PS", "-A")
+        .collect(toList());
+    ...
+    @RequiredArgsConstructor @EqualsAndHashCode @ToString
+    private class Worker implements Runnable {
+        private final InetAddress key;
+
+        @Override
+        public void run() {
+            try {
+                List&lt;String&gt; argv = NMAP_ARGV.stream().collect(toList());
+
+                if (key instanceof Inet4Address) {
+                    argv.add("-4");
+                } else if (key instanceof Inet6Address) {
+                    argv.add("-6");
+                }
+
+                argv.add(key.getHostAddress());
+
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Process process =
+                    new ProcessBuilder(argv)
+                    .inheritIO()
+                    .redirectOutput(PIPE)
+                    .start();
+
+                try (InputStream in = process.getInputStream()) {
+                    put(key, builder.parse(in));
+
+                    int status = process.waitFor();
+
+                    if (status != 0) {
+                        throw new IOException(argv + " returned exit status " + status);
+                    }
+                }
+            } catch (Exception exception) {
+                remove(key);
+                log.error(exception.getMessage(), exception);
+            }
+        }
+    }
+    ...
+</code></pre>
+
+<p>Note that the <a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> will be removed from the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Map.html"><code>Map</code></a> if the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html"><code>Process</code></a> fails.</p>
+
+<h3 id="ui-controller-model-and-thymeleaf-template">UI @Controller, Model, and Thymeleaf Template</h3>
+
+<p>The complete <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html"><code>UIController</code></a> implementation is given
+below.</p>
+
+<pre><code class="language-java">@Controller
+@NoArgsConstructor @ToString @Log4j2
+public class UIController extends AbstractController {
+    @Autowired private SSDP ssdp = null;
+    @Autowired private NetworkInterfaces interfaces = null;
+    @Autowired private ARPCache arp = null;
+    @Autowired private Nmap nmap = null;
+
+    @ModelAttribute("upnp")
+    public Map&lt;URI,List&lt;URI&gt;&gt; upnp() {
+        Map&lt;URI,List&lt;URI&gt;&gt; map =
+            ssdp().values()
+            .stream()
+            .map(SSDP.Value::getSSDPMessage)
+            .collect(groupingBy(SSDPMessage::getLocation,
+                                ConcurrentSkipListMap::new,
+                                mapping(SSDPMessage::getUSN, toList())));
+
+        return map;
+    }
+
+    @ModelAttribute("ssdp")
+    public SSDP ssdp() { return ssdp; }
+
+    @ModelAttribute("interfaces")
+    public NetworkInterfaces interfaces() { return interfaces; }
+
+    @ModelAttribute("arp")
+    public ARPCache arp() { return arp; }
+
+    @ModelAttribute("nmap")
+    public Nmap nmap() { return nmap; }
+
+    @RequestMapping(value = {
+                        "/",
+                        "/upnp/devices", "/upnp/ssdp",
+                        "/network/interfaces", "/network/arp", "/network/nmap"
+                    })
+    public String root(Model model) { return getViewName(); }
+
+    @RequestMapping(value = { "/index", "/index.htm", "/index.html" })
+    public String index() { return "redirect:/"; }
+}
+</code></pre>
+
+<p>The <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Controller.html"><code>@Controller</code></a> populates the <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a> with five
+attributes and implements the
+<a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html#root-org.springframework.ui.Model-"><code>root</code></a>
+method<sup id="ref1"><a href="#endnote1">1</a></sup> to serve the UI request paths.
+The
+<a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html?is-external=true">superclass</a>
+implements
+<a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html#getViewName--"><code>getViewName()</code></a>
+which creates a view name based on the implementing class’s package which
+translates to
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.html">classpath:/templates/voyeur.html</a>,
+a <a href="https://www.thymeleaf.org">Thymeleaf</a> template to generate a pure HTML5 document.  Its outline is
+shown below.</p>
+
+<pre><code class="language-xml">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:th="http://www.thymeleaf.org" th:xmlns="@{http://www.w3.org/1999/xhtml}"&gt;
+  &lt;head&gt;
+    ...
+  &lt;/head&gt;
+  &lt;body&gt;
+    ...
+    &lt;header&gt;
+      &lt;nav th:ref="navbar"&gt;
+        ...
+      &lt;/nav&gt;
+    &lt;/header&gt;
+    &lt;main th:unless="${#ctx.containsVariable('exception')}"
+          th:switch="${#request.servletPath}"&gt;
+      &lt;section th:case="'/error'"&gt;
+        ...
+      &lt;/section&gt;
+      &lt;section th:case="'/upnp/devices'"&gt;
+        ...
+      &lt;/section&gt;
+      &lt;section th:case="'/upnp/ssdp'"&gt;
+        ...
+      &lt;/section&gt;
+      ...
+    &lt;/main&gt;
+    &lt;main th:if="${#ctx.containsVariable('exception')}"&gt;
+      ...
+    &lt;/main&gt;
+    &lt;footer&gt;
+      &lt;nav th:ref="navbar"&gt;
+        ...
+      &lt;/nav&gt;
+    &lt;/footer&gt;
+    &lt;script/&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>The template’s <code>&lt;header/&gt;</code> <code>&lt;nav/&gt;</code> implements the menu and references the
+paths specified in the <code>UIController.root()</code>.</p>
+
+<pre><code class="language-xml">      &lt;nav th:ref="navbar"&gt;
+        &lt;th:block th:ref="container"&gt;
+          &lt;div th:ref="navbar-brand"&gt;
+            &lt;a th:text="${#strings.defaultString(brand, 'Home')}" th:href="@{/}"/&gt;
+          &lt;/div&gt;
+          &lt;div th:ref="navbar-menu"&gt;
+            &lt;ul th:ref="navbar-start"&gt;&lt;/ul&gt;
+            &lt;ul th:ref="navbar-end"&gt;
+              &lt;li th:ref="navbar-item"&gt;
+                &lt;button th:text="'UPNP'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Devices'" th:href="@{/upnp/devices}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'SSDP'" th:href="@{/upnp/ssdp}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li th:ref="navbar-item"&gt;
+                &lt;button th:text="'Network'"/&gt;
+                &lt;ul th:ref="navbar-dropdown"&gt;
+                  &lt;li&gt;&lt;a th:text="'Interfaces'" th:href="@{/network/interfaces}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'ARP'" th:href="@{/network/arp}"/&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a th:text="'Nmap'" th:href="@{/network/nmap}"/&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/div&gt;
+        &lt;/th:block&gt;
+      &lt;/nav&gt;
+</code></pre>
+
+<p>The template is also structured to produce a <code>&lt;main/&gt;</code> node with a
+<code>&lt;section/&gt;</code> node corresponding to the request path if there is no
+<code>exception</code> variable in the context (normal operation).  The <code>th:switch</code> and
+<code>th:case</code> attributes are used to create a <code>&lt;section/&gt;</code> corresponding to each
+<code>${#request.servletPath}</code>.  The <code>&lt;section/&gt;</code> specific to the <code>/network/nmap</code>
+path is shown below:</p>
+
+<pre><code class="language-xml">    &lt;main th:unless="${#ctx.containsVariable('exception')}"
+          th:switch="${#request.servletPath}"&gt;
+      ...
+      &lt;section th:case="'/network/nmap'"&gt;
+        &lt;table&gt;
+          &lt;tbody&gt;
+            &lt;tr th:each="key : ${nmap.keySet()}"&gt;
+              &lt;td&gt;
+                &lt;a th:href="@{/network/nmap/{ip}.xml(ip=${key.hostAddress})}" th:target="_newtab"&gt;
+                  &lt;code th:text="${key.hostAddress}"/&gt;
+                &lt;/a&gt;
+                &lt;p&gt;&lt;code th:text="${nmap.getPorts(key)}"/&gt;&lt;/p&gt;
+              &lt;/td&gt;
+              &lt;td&gt;
+                &lt;p th:each="product : ${nmap.getProducts(key)}" th:text="${product}"/&gt;
+              &lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/section&gt;
+      ...
+    &lt;/main&gt;
+</code></pre>
+
+<p>The template generates a <code>&lt;table/&gt;</code> with a row (<code>&lt;tr/&gt;</code>) for each key in the
+<code>Nmap</code>.  Each row consists of two columns (<code>&lt;td/&gt;</code>):</p>
+
+<ol>
+  <li>
+    <p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html?is-external=true"><code>InetAddress</code></a> of the host with a link to the <code>nmap</code>
+command output<sup id="ref2"><a href="#endnote2">2</a></sup> and a list of open TCP
+ports</p>
+  </li>
+  <li>
+    <p>The services/products detected</p>
+  </li>
+</ol>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getPorts-java.net.InetAddress-"><code>getPorts(InetAddress)</code></a> and
+<a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getProducts-java.net.InetAddress-"><code>getProducts(InetAddress)</code></a> methods are provided
+to avoid <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/XPath.html"><code>XPath</code></a> calculations within the <a href="https://www.thymeleaf.org">Thymeleaf</a> template.</p>
+
+<pre><code class="language-java">...
+@Service
+@NoArgsConstructor @Log4j2
+public class Nmap extends InetAddressMap&lt;Document&gt; ... {
+    ...
+    public Set&lt;Integer&gt; getPorts(InetAddress key) {
+        Set&lt;Integer&gt; ports = new TreeSet&lt;&gt;();
+        NodeList list = (NodeList) get(key, "/nmaprun/host/ports/port/@portid", NODESET);
+
+        if (list != null) {
+            for (int i = 0; i &lt; list.getLength(); i += 1) {
+                ports.add(Integer.parseInt(list.item(i).getNodeValue()));
+            }
+        }
+
+        return ports;
+    }
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#getProducts-java.net.InetAddress-"><code>getProducts(InetAddress)</code></a> implementation is
+similar with an <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/XPathExpression.html"><code>XPathExression</code></a> of
+<code>/nmaprun/host/ports/port/service/@product</code>.</p>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html"><code>UIController</code></a> instance combined with the
+<a href="https://www.thymeleaf.org">Thymeleaf</a> template described so far will only generate pure HTML5 with no
+style markup.  This implementation uses Thymeleaf’s <a href="https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#decoupled-template-logic">Decoupled Template
+Logic</a> feature and can be found at
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.th.xml">classpath:/templates/voyeur.th.xml</a>.<sup id="ref3"><a href="#endnote3">3</a></sup>
+The decoupled logic for the table described
+in this section is shown below.</p>
+
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;thlogic&gt;
+  ...
+  &lt;attr sel="body"&gt;
+    ...
+    &lt;attr sel="main" th:class="'container'"&gt;
+      &lt;attr sel="table" th:class="'table table-striped'"&gt;
+        &lt;attr sel="tbody"&gt;
+          &lt;attr sel="tr" th:class="'row'"/&gt;
+          &lt;attr sel="tr/td" th:class="'col'"/&gt;
+        &lt;/attr&gt;
+      &lt;/attr&gt;
+    &lt;/attr&gt;
+    ...
+  &lt;/attr&gt;
+&lt;/thlogic&gt;
+</code></pre>
+
+<p>The <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html"><code>UIController</code></a> superclass provides one more
+feature: To inject the proprties defined in
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.model.properties">classpath:/templates/voyeur.model.properties</a>
+into the <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a>.</p>
+
+<pre><code class="language-properties">brand = ${application.brand:}
+
+stylesheets: /webjars/bootstrap/css/bootstrap.css
+style:\
+body { padding-top: 60px; margin-bottom: 60px; }\n\
+@media (max-width: 979px) { body { padding-top: 0px; } }
+scripts: /webjars/jquery/jquery.js, /webjars/bootstrap/js/bootstrap.js
+</code></pre>
+
+<p>The design goal of this implementation was to commit all markup logic to the
+<code>*.th.xml</code> resource allowing only the necessity to modify the decoupled
+logic and the model properties to use an alternate framework.  This goal was
+defeated in this implementation because different frameworks support to
+different degrees HTML5 elements.  A partial Bulma implementation is
+available in
+https://github.com/allen-ball/voyeur/tree/trunk/src/main/resources/templates-bulma
+which demonstrates the HTML5 differences.</p>
+
+<p>The <code>/network/nmap</code> request is shown rendered in the image in the
+<a href="#introduction">Introduction</a> of this article.</p>
+
+<h3 id="nmap-output-restcontroller">nmap Output @RestController</h3>
+
+<p><code>nmap</code> XML output can be served by implementing a
+<a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RestController.html"><code>@RestController</code></a>.  The <code>Nmap</code> class is annotated with
+<code>@RestController</code> and <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/web/bind/annotation/RequestMapping.html"><code>@RequestMapping</code></a> to requests for
+<code>/network/nmap/</code> and the
+<a href="https://allen-ball.github.io/voyeur/voyeur/Nmap.html#nmap-java.lang.String-"><code>nmap(String)</code></a>
+method provides the XML serialized to a String.</p>
+
+<pre><code class="language-java">@RestController
+@RequestMapping(value = { "/network/nmap/" }, produces = MediaType.APPLICATION_XML_VALUE)
+...
+public class Nmap ... {
+    ...
+    @RequestMapping(value = { "{ip}.xml" })
+    public String nmap(@PathVariable String ip) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        transformer.transform(new DOMSource(get(InetAddress.getByName(ip))),
+                              new StreamResult(out));
+
+        return out.toString("UTF-8");
+    }
+    ...
+}
+</code></pre>
+
+<h3 id="packaging">Packaging</h3>
+
+<p>The <a href="https://docs.spring.io/spring-boot/docs/2.4.5/maven-plugin/reference/html/"><code>spring-boot-maven-plugin</code></a> has a <code>repackage</code>
+goal which may be used to create a self-contained JAR with an embedded
+launch script.  That goal is used in the project
+<a href="https://github.com/allen-ball/voyeur/blob/trunk/pom.xml"><code>pom</code></a> to create
+and attach a self-contained JAR atifact.</p>
+
+<pre><code class="language-xml">&lt;project ...&gt;
+  ...
+  &lt;build&gt;
+    &lt;pluginManagement&gt;
+      &lt;plugins&gt;
+        ...
+        &lt;plugin&gt;
+          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+          &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+          &lt;executions&gt;
+            &lt;execution&gt;
+              &lt;goals&gt;
+                &lt;goal&gt;build-info&lt;/goal&gt;
+                &lt;goal&gt;repackage&lt;/goal&gt;
+              &lt;/goals&gt;
+            &lt;/execution&gt;
+          &lt;/executions&gt;
+          &lt;configuration&gt;
+            &lt;attach&gt;true&lt;/attach&gt;
+            &lt;classifier&gt;bin&lt;/classifier&gt;
+            &lt;executable&gt;true&lt;/executable&gt;
+            &lt;mainClass&gt;${start-class}&lt;/mainClass&gt;
+            &lt;embeddedLaunchScriptProperties&gt;
+              &lt;inlinedConfScript&gt;${basedir}/src/bin/inline.conf&lt;/inlinedConfScript&gt;
+            &lt;/embeddedLaunchScriptProperties&gt;
+          &lt;/configuration&gt;
+        &lt;/plugin&gt;
+        ...
+      &lt;/plugins&gt;
+    &lt;/pluginManagement&gt;
+    ...
+  &lt;/build&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>Please see the project GitHub
+<a href="https://github.com/allen-ball/voyeur">page</a> for instructions
+on how to run the JAR.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This article discusses aspects of the
+<a href="https://github.com/allen-ball/voyeur"><code>voyeur</code></a> application
+and provides specific examples of:</p>
+
+<ul>
+  <li>
+    <p><code>@Service</code> implementation and <code>@Autowired</code> components with <code>@Scheduled</code>
+methods</p>
+  </li>
+  <li>
+    <p><code>@Controller</code> implementation, <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/ui/Model.html"><code>Model</code></a> population, and <a href="https://www.thymeleaf.org">Thymeleaf</a>
+templates and decoupled logic</p>
+  </li>
+  <li>
+    <p><code>@RestController</code> implementation</p>
+  </li>
+</ul>
+
+<p><b id="endnote1">[1]</b>
+A misleading method name at best.
+<a href="#ref1">↩</a></p>
+
+<p><b id="endnote2">[2]</b>
+The <code>@RestController</code> is described in the next subsection.
+<a href="#ref2">↩</a></p>
+
+<p><b id="endnote3">[3]</b>
+The <a href="https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/appendix-application-properties.html">common application properties</a> do not provide an option to enable this
+functionality.  It is enabled in the <code>UIController</code> suprclass by configuring
+the injected <code>SpringResourceTemplateResolver</code>.
+<a href="#ref3">↩</a></p>]]></content><author><name></name></author><category term="Java" /><category term="Spring" /><category term="Thymeleaf" /><summary type="html"><![CDATA[This series of articles examines Spring Boot features. This fifth article in the series presents a non-trivial application which probes local hosts (with the help of the nmap command) to assist in developing UPNP and SSDP applications.]]></summary></entry><entry><title type="html">Java Stream Tree Walker</title><link href="https://blog.hcf.dev//article/2020-06-17-java-stream-tree-walker" rel="alternate" type="text/html" title="Java Stream Tree Walker" /><published>2020-06-17T00:00:00+00:00</published><updated>2020-06-17T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/java-stream-tree-walker</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-06-17-java-stream-tree-walker"><![CDATA[<p>This article discusses walking a tree or graph of nodes with a
+<a href="https://www.java.com/en/download/help/java8.html">Java 8</a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> implementation.  The implementation is
+codified in a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> The strategy described herein can
+be a useful alternative to implementing a class-hierarchy specific visitor
+because only a single per-type method need be defined (often as a Java
+lambda).</p>
+
+<p>Please refer to this
+<a href="/article/2019-03-28-java-streams-and-spliterators">article</a> for an
+in-depth discussion of creating <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code>s</a>.</p>
+
+<h2 id="api-definition">API Definition</h2>
+
+<p>The implementaion provides the following API:</p>
+
+<pre><code class="language-java">public class Walker&lt;T&gt; ... {
+    ...
+    public static &lt;T&gt; Stream&lt;T&gt; walk(T root, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf)
+    ...
+}
+</code></pre>
+
+<p>The <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html"><code>Function</code></a> provides the subordinate (“children”) nodes of
+the argument node.  For example, for Java <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html"><code>Class</code>es</a> to obtain inner
+(declared) <code>Class</code>es:</p>
+
+<pre><code class="language-java">    t -&gt; Stream.of(t.getDeclaredClasses()
+</code></pre>
+
+<p>or for <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html"><code>File</code>s</a>:</p>
+
+<pre><code class="language-java">    t -&gt; t.isDirectory() ? Stream.of(t.listFiles()) : Stream.empty()
+</code></pre>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The API provides a static method to create a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> from the
+implemented <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>:</p>
+
+<pre><code class="language-java">    public static &lt;T&gt; Stream&lt;T&gt; walk(T root, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        return StreamSupport.stream(new Walker&lt;&gt;(root, childrenOf), false);
+    }
+</code></pre>
+
+<p>The complete <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation is:</p>
+
+<pre><code class="language-java">public class Walker&lt;T&gt; extends Spliterators.AbstractSpliterator&lt;T&gt; {
+    private final Stream&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; stream;
+    private Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; iterator = null;
+    private Spliterator&lt;? extends T&gt; spliterator = null;
+
+    private Walker(T node, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        super(Long.MAX_VALUE, IMMUTABLE | NONNULL);
+
+        stream =
+            Stream.of(node)
+            .filter(Objects::nonNull)
+            .flatMap(childrenOf)
+            .filter(Objects::nonNull)
+            .map(t -&gt; (() -&gt; new Walker&lt;T&gt;(t, childrenOf)));
+        spliterator = Stream.of(node).spliterator();
+    }
+
+    @Override
+    public Spliterator&lt;T&gt; trySplit() {
+        if (iterator == null) {
+            iterator = stream.iterator();
+        }
+
+        return iterator.hasNext() ? iterator.next().get() : null;
+    }
+
+    @Override
+    public boolean tryAdvance(Consumer&lt;? super T&gt; consumer) {
+        boolean accepted = false;
+
+        while (! accepted) {
+            if (spliterator == null) {
+                spliterator = trySplit();
+            }
+
+            if (spliterator != null) {
+                accepted = spliterator.tryAdvance(consumer);
+
+                if (! accepted) {
+                    spliterator = null;
+                }
+            } else {
+                break;
+            }
+        }
+
+        return accepted;
+    }
+    ...
+}
+</code></pre>
+
+<p>A <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html"><code>Supplier</code>s</a>
+is created at instantiation (and the <code>Supplier</code> will supply another
+<code>Walker</code>).  The first time <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#trySplit--"><code>trySplit()</code></a> is called
+the <code>Stream</code> is converted to an <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Iterator.html"><code>Iterator</code></a> and the next
+<code>Spliterator</code> is generated.  The
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-"><code>tryAdvance(Consumer)</code></a> will exhaust the last
+created <code>Spliterator</code> before calling <code>tryAdvance()</code> to obtain another.  The
+first <code>Spliterator</code> consists solely of the root node.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>To print the inner defined classes of
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html"><code>Collections</code></a>:</p>
+
+<pre><code class="language-java">        Walker.&lt;Class&lt;?&gt;&gt;walk(java.util.Collections.class,
+                              t -&gt; Stream.of(t.getDeclaredClasses()))
+            .limit(10)
+            .forEach(System.out::println);
+</code></pre>
+
+<p>Yields:</p>
+
+<pre><code class="language-bash">class java.util.Collections
+class java.util.Collections$UnmodifiableCollection
+class java.util.Collections$UnmodifiableSet
+class java.util.Collections$UnmodifiableSortedSet
+class java.util.Collections$UnmodifiableNavigableSet
+class java.util.Collections$UnmodifiableNavigableSet$EmptyNavigableSet
+class java.util.Collections$UnmodifiableRandomAccessList
+class java.util.Collections$UnmodifiableList
+class java.util.Collections$UnmodifiableMap
+class java.util.Collections$UnmodifiableMap$UnmodifiableEntrySet
+</code></pre>
+
+<p>And to print the directory structure (sorted):</p>
+
+<pre><code class="language-java">        Walker.walk(new File("."),
+                    t -&gt; t.isDirectory() ? Stream.of(t.listFiles()) : Stream.empty())
+            .filter(File::isDirectory)
+            .sorted()
+            .forEach(System.out::println);
+</code></pre>
+
+<p>Yields:</p>
+
+<pre><code class="language-bash">.
+./src
+./src/main
+./src/main/resources
+./target
+</code></pre>
+
+<p>This presents a flexible solution and can be extended with disparate
+objects.  For example, a method to walk XML <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html"><code>Node</code>s</a> might be:</p>
+
+<pre><code class="language-java">    public static Stream&lt;Node&gt; childrenOf(Node node) {
+        NodeList list = node.getChildNodes();
+
+        return IntStream.range(0, list.getLength()).mapToObj(list::item);
+    }
+</code></pre>
+
+<h2 id="alternate-entry-point">Alternate Entry Point</h2>
+
+<p>It is straightforward to offer an alternate entry point where multiple root
+nodes are supplied by defining a corresponding constructor:</p>
+
+<pre><code class="language-java">public class Walker&lt;T&gt; extends Spliterators.AbstractSpliterator&lt;T&gt; {
+    ...
+    private Walker(Stream&lt;T&gt; nodes, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        super(Long.MAX_VALUE, IMMUTABLE | NONNULL);
+
+        stream = nodes.map(t -&gt; (() -&gt; new Walker&lt;T&gt;(t, childrenOf)));
+    }
+    ...
+    public static &lt;T&gt; Stream&lt;T&gt; walk(Stream&lt;T&gt; roots, Function&lt;? super T,Stream&lt;? extends T&gt;&gt; childrenOf) {
+        return StreamSupport.stream(new Walker&lt;&gt;(roots, childrenOf), false);
+    }
+    ...
+}
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code>s</a> created from the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>
+implementation described herein provide a versatile means for walking any
+tree with a minimum per-type implementation while offering all the filtering
+and processing power of the <code>Stream</code> API.</p>]]></content><author><name></name></author><category term="Java" /><category term="Stream" /><category term="Spliterator" /><summary type="html"><![CDATA[This article discusses walking a tree or graph of nodes with a Java 8 Stream implementation. The implementation is codified in a Spliterator The strategy described herein can be a useful alternative to implementing a class-hierarchy specific visitor because only a single per-type method need be defined (often as a Java lambda).]]></summary></entry><entry><title type="html">AWS VPC Set-Up with Ansible</title><link href="https://blog.hcf.dev//article/2020-03-16-aws-vpc-with-ansible" rel="alternate" type="text/html" title="AWS VPC Set-Up with Ansible" /><published>2020-03-16T00:00:00+00:00</published><updated>2020-03-16T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/aws-vpc-with-ansible</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-03-16-aws-vpc-with-ansible"><![CDATA[<p>A critical first step to creating an <a href="https://aws.amazon.com/">Amazon Web Services (AWS)</a>
+<a href="https://aws.amazon.com/ec2/">AWS Elastic Compute Cloud (EC2)</a> configuration is to configure a
+<a href="https://aws.amazon.com/vpc/">Virtual Private Cloud (VPC)</a> Often, the default configuration is
+sufficient for most administrators’ needs but some solutions require an IP
+address space different than the Amazon default.  This article presents the
+<a href="https://www.ansible.com/">Ansible</a> boilerplate for configuring an alternative IP address space
+specified by a minimum of parameters:
+<a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.partial.html">region</a>,
+VPC CIDR block (e.g., 10.1.0.0/16) and subnet mask size (e.g., 20).  The
+boilerplate calculates subnet CIDR blocks (e.g., 10.1.0.0/20, 10.1.16.0/20,
+etc…) for each availability zone within the region.</p>
+
+<p>The solution leverages <a href="https://www.ansible.com/">Ansible’s</a> <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters_ipaddr.html"><code>ipaddr</code></a> filter
+interface to the <a href="https://pypi.org/project/netaddr/"><code>netaddr</code></a> Python package with its
+<a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_loops.html#extended-loop-variables">extended loop variables</a>.  The solution also makes extensive use of the
+Ansible <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html#json-query-filter">JSON query filter</a> to parse the results of the AWS modules.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The implementation:</p>
+
+<ol>
+  <li>
+    <p>Requires the specification of:</p>
+
+    <ul>
+      <li>AWS profile (for autheniticaion and use as a project-level name)</li>
+      <li>AWS region (where the VPC will be deployed)</li>
+      <li>VPC CIDR block</li>
+      <li>subnet mask size (in bits)</li>
+    </ul>
+  </li>
+  <li>
+    <p>Creates the VPC in the specified region (with the same name as the
+profile for idempotent operation)</p>
+  </li>
+  <li>
+    <p>For each availability zone within the region, creates a unique subnet
+within the VPC’s CIDR block of the specified size</p>
+  </li>
+  <li>
+    <p>Creates an <a href="https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html">Internet Gateway</a> and connects to each of the subnets</p>
+  </li>
+</ol>
+
+<p>The implementation also demonstrates how host IP address may be calculated
+relative to an availability zone’s subnet.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The Ansible controller must have the <a href="https://pypi.org/project/netaddr/"><code>netaddr</code></a> Python package
+installed.</p>
+
+<pre><code class="language-bash">$ pip install --upgrade netaddr
+</code></pre>
+
+<p>In these examples the administrator has configured the AWS CLI
+<a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html">environment variables</a>
+<code>AWS_PROFILE</code> and <code>AWS_DEFAULT_REGION</code> to provide the necessary parameters.
+The CIDR block and subnet mask size are also specified for the project as
+Ansible facts.</p>
+
+<pre><code class="language-yaml">- name: Role Parameters
+  set_fact:
+    profile: "{{ lookup('env', 'AWS_PROFILE') }}"
+    cidr_block: 10.1.0.0/16
+    subnet_mask_size: 20
+
+- name: aws_region_info
+  aws_region_info:
+    filters:
+      region_name: "{{ lookup('env', 'AWS_DEFAULT_REGION') }}"
+  register: aws_region_info
+</code></pre>
+
+<p>The <code>aws_region_info</code> module is invoked to verify the <code>AWS_DEFAULT_REGION</code>
+parameter.</p>
+
+<pre><code class="language-json">    "aws_region_info": {
+        "changed": false,
+        "failed": false,
+        "regions": [
+            {
+                "endpoint": "ec2.us-west-1.amazonaws.com",
+                "opt_in_status": "opt-in-not-required",
+                "region_name": "us-west-1"
+            }
+        ]
+    }
+</code></pre>
+
+<p>Once verified, the region is set as a fact for clarity and ease of reference
+in subsequent module invocations.</p>
+
+<pre><code class="language-yaml">- name: region
+  set_fact:
+    region: "{{ aws_region_info.regions[0].region_name }}"
+</code></pre>
+
+<p>The VPC may be created with the above parameters.  Note that the
+<code>AWS_PROFILE</code> value is used to name the VPC for idempotent operation.</p>
+
+<pre><code class="language-yaml">- name: "{{ profile }} VPC"
+  ec2_vpc_net:
+    name: "{{ profile }}"
+    region: "{{ region }}"
+    cidr_block: "{{ cidr_block }}"
+  register: ec2_vpc_net
+</code></pre>
+
+<pre><code class="language-json">    "ec2_vpc_net": {
+        "changed": true,
+        "failed": false,
+        "vpc": {
+            "cidr_block": "10.1.0.0/16",
+            "cidr_block_association_set": [
+                {
+                    "association_id": "vpc-cidr-assoc-ffffffffffffa4c3",
+                    "cidr_block": "10.1.0.0/16",
+                    "cidr_block_state": {
+                        "state": "associated"
+                    }
+                }
+            ],
+            "classic_link_enabled": false,
+            "dhcp_options_id": "dopt-ffffffffffff49b8",
+            "id": "vpc-ffffffffffff9ace",
+            "instance_tenancy": "default",
+            "is_default": false,
+            "owner_id": "999999999999",
+            "state": "available",
+            "tags": {
+                "Name": "PROFILE"
+            }
+        }
+    }
+</code></pre>
+
+<p>The <code>ec2_vpc_net.vpc</code> is set as a fact for ease of reference in subsequent
+modules.</p>
+
+<pre><code class="language-yaml">- name: vpc
+  set_fact:
+    vpc: "{{ ec2_vpc_net.vpc }}"
+</code></pre>
+
+<p>The <code>aws_az_info</code> module is invoked to retrieve the availability zones for
+the region:</p>
+
+<pre><code class="language-yaml">- name: aws_az_info
+  aws_az_info:
+    filters:
+      region_name: "{{ aws_region_info.regions[0].region_name }}"
+  register: aws_az_info
+</code></pre>
+
+<pre><code class="language-json">    "aws_az_info": {
+        "availability_zones": [
+            {
+                "group_name": "us-west-1",
+                "messages": [],
+                "network_border_group": "us-west-1",
+                "opt_in_status": "opt-in-not-required",
+                "region_name": "us-west-1",
+                "state": "available",
+                "zone_id": "usw1-az1",
+                "zone_name": "us-west-1a"
+            },
+            {
+                "group_name": "us-west-1",
+                "messages": [],
+                "network_border_group": "us-west-1",
+                "opt_in_status": "opt-in-not-required",
+                "region_name": "us-west-1",
+                "state": "available",
+                "zone_id": "usw1-az3",
+                "zone_name": "us-west-1c"
+            }
+        ],
+        "changed": false,
+        "failed": false
+    }
+</code></pre>
+
+<p>The necessary parameters to create the subnets have been accumulated.  The
+JSON query <code>availability_zones[].zone_name</code> is applied to the results of
+<code>aws_az_info</code> resulting in the string array (<code>['us-west-1a', 'us-west-1c']</code>)
+of availability zone names.  This array is iterated over to calculate the
+subnet CIDR blocks based on <code>vpc.cidr_block</code>, subnet mask size, and the
+array index (<code>ansible_loop.index0</code>).</p>
+
+<pre><code class="language-yaml">- name: "{{ profile }} VPC Subnets"
+  vars:
+    json: "{{ aws_az_info }}"
+    query: "availability_zones[].zone_name"
+    availability_zones: "{{ json | json_query(query) }}"
+  ec2_vpc_subnet:
+    vpc_id: "{{ vpc.id }}"
+    az: "{{ item }}"
+    cidr: &gt;-
+      {{ vpc.cidr_block | ipsubnet(subnet_mask_size, ansible_loop.index0) }}
+  loop: "{{ availability_zones }}"
+  loop_control:
+    extended: yes
+
+- name: ec2_vpc_subnet_info
+  ec2_vpc_subnet_info:
+    filters:
+      vpc-id: "{{ vpc.id }}"
+  register: ec2_vpc_subnet_info
+</code></pre>
+
+<p>The descriptions of the subnets are retrieved with <code>ec2_vpc_subnet_info</code>:</p>
+
+<pre><code class="language-json">    "ec2_vpc_subnet_info": {
+        "changed": false,
+        "failed": false,
+        "subnets": [
+            {
+                "assign_ipv6_address_on_creation": false,
+                "availability_zone": "us-west-1c",
+                "availability_zone_id": "usw1-az3",
+                "available_ip_address_count": 4091,
+                "cidr_block": "10.1.16.0/20",
+                "default_for_az": false,
+                "id": "subnet-ffffffffffffeb5e",
+                "ipv6_cidr_block_association_set": [],
+                "map_public_ip_on_launch": false,
+                "owner_id": "999999999999",
+                "state": "available",
+                "subnet_arn": "arn:aws:ec2:us-west-1:999999999999:subnet/subnet-ffffffffffffeb5e",
+                "subnet_id": "subnet-ffffffffffffeb5e",
+                "tags": {},
+                "vpc_id": "vpc-ffffffffffff9ace"
+            },
+            {
+                "assign_ipv6_address_on_creation": false,
+                "availability_zone": "us-west-1a",
+                "availability_zone_id": "usw1-az1",
+                "available_ip_address_count": 4091,
+                "cidr_block": "10.1.0.0/20",
+                "default_for_az": false,
+                "id": "subnet-ffffffffffff57fd",
+                "ipv6_cidr_block_association_set": [],
+                "map_public_ip_on_launch": false,
+                "owner_id": "999999999999",
+                "state": "available",
+                "subnet_arn": "arn:aws:ec2:us-west-1:999999999999:subnet/subnet-ffffffffffff57fd",
+                "subnet_id": "subnet-ffffffffffff57fd",
+                "tags": {},
+                "vpc_id": "vpc-ffffffffffff9ace"
+            }
+        ]
+    }
+</code></pre>
+
+<p>With the above information, an Internet Gateway may be created and added to
+the route tables for the subnets.</p>
+
+<pre><code class="language-yaml">- name: "{{ profile }} VPC IGW"
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc.id }}"
+  register: ec2_vpc_igw
+
+- name: "{{ profile }} VPC IGW Route Table"
+  vars:
+    json: "{{ ec2_vpc_subnet_info }}"
+    query: "subnets[].id"
+    subnets: "{{ json | json_query(query) }}"
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.id }}"
+    tags:
+      Name: Internet
+    subnets: "{{ subnets }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ ec2_vpc_igw.gateway_id }}"
+</code></pre>
+
+<p>The following snippet demonstrates how a subnet may be found for an
+availability zone and a host IP may be calculated relative to that subnet.</p>
+
+<pre><code class="language-yaml">- name: availability_zone
+  set_fact:
+    availability_zone: "{{ region }}a"
+
+- name: "subnet ({{ availability_zone }})"
+  vars:
+    json: "{{ ec2_vpc_subnet_info }}"
+    query: "subnets[?availability_zone=='{{ availability_zone }}'] | [0]"
+    subnet: "{{ json | json_query(query) }}"
+  set_fact:
+    subnet: "{{ subnet }}"
+
+- name: ENI
+  vars:
+    index: 4
+    private_ip_address: "{{ subnet.cidr_block | ipmath(index) }}"
+  ec2_eni:
+    subnet_id: "{{ subnet.id }}"
+    private_ip_address: "{{ private_ip_address }}"
+  register: eni
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p>The Ansible boilerplate discussed herein can configure an AWS VPC with a
+minimum of parameters specified by the administrator.</p>
+
+<h2 id="boilerplate">Boilerplate</h2>
+
+<p>The complete boilerplate suitable for cut-and-paste is provide below.</p>
+
+<pre><code class="language-yaml">- name: Role Parameters
+  set_fact:
+    profile: "{{ lookup('env', 'AWS_PROFILE') }}"
+    cidr_block: 10.1.0.0/16
+    subnet_mask_size: 20
+
+- name: aws_region_info
+  aws_region_info:
+    filters:
+      region_name: "{{ lookup('env', 'AWS_DEFAULT_REGION') }}"
+  register: aws_region_info
+
+- name: aws_az_info
+  aws_az_info:
+    filters:
+      region_name: "{{ aws_region_info.regions[0].region_name }}"
+  register: aws_az_info
+
+- name: region
+  vars:
+    region: "{{ aws_region_info.regions[0].region_name }}"
+  set_fact:
+    region: "{{ region }}"
+
+- name: "{{ profile }} VPC"
+  ec2_vpc_net:
+    name: "{{ profile }}"
+    region: "{{ region }}"
+    cidr_block: "{{ cidr_block }}"
+  register: ec2_vpc_net
+
+- name: vpc
+  vars:
+    vpc: "{{ ec2_vpc_net.vpc }}"
+  set_fact:
+    vpc: "{{ vpc }}"
+
+- name: "{{ profile }} VPC Subnets"
+  vars:
+    json: "{{ aws_az_info }}"
+    query: "availability_zones[].zone_name"
+    availability_zones: "{{ json | json_query(query) }}"
+  ec2_vpc_subnet:
+    vpc_id: "{{ vpc.id }}"
+    az: "{{ item }}"
+    cidr: &gt;-
+      {{ vpc.cidr_block | ipsubnet(subnet_mask_size, ansible_loop.index0) }}
+  loop: "{{ availability_zones }}"
+  loop_control:
+    extended: yes
+
+- name: ec2_vpc_subnet_info
+  ec2_vpc_subnet_info:
+    filters:
+      vpc-id: "{{ vpc.id }}"
+  register: ec2_vpc_subnet_info
+
+- name: "{{ profile }} VPC IGW"
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc.id }}"
+  register: ec2_vpc_igw
+
+- name: "{{ profile }} VPC IGW Route Table"
+  vars:
+    json: "{{ ec2_vpc_subnet_info }}"
+    query: "subnets[].id"
+    subnets: "{{ json | json_query(query) }}"
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.id }}"
+    tags:
+      Name: Internet
+    subnets: "{{ subnets }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ ec2_vpc_igw.gateway_id }}"
+</code></pre>]]></content><author><name></name></author><category term="AWS" /><category term="EC2" /><category term="Ansible" /><summary type="html"><![CDATA[A critical first step to creating an Amazon Web Services (AWS) AWS Elastic Compute Cloud (EC2) configuration is to configure a Virtual Private Cloud (VPC) Often, the default configuration is sufficient for most administrators’ needs but some solutions require an IP address space different than the Amazon default. This article presents the Ansible boilerplate for configuring an alternative IP address space specified by a minimum of parameters: region, VPC CIDR block (e.g., 10.1.0.0/16) and subnet mask size (e.g., 20). The boilerplate calculates subnet CIDR blocks (e.g., 10.1.0.0/20, 10.1.16.0/20, etc…) for each availability zone within the region.]]></summary></entry><entry><title type="html">CentOS In-Place Upgrade</title><link href="https://blog.hcf.dev//article/2020-03-15-centos-in-place-upgrade" rel="alternate" type="text/html" title="CentOS In-Place Upgrade" /><published>2020-03-15T00:00:00+00:00</published><updated>2020-03-15T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/centos-in-place-upgrade</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-03-15-centos-in-place-upgrade"><![CDATA[<p><a href="https://centos.org/">CentOS</a> 8.0 was released on September 24th, 2019 and <a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911">8.1</a> on
+January 15, 2020.  This article describes how a <a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS7.1908">CentOS 7</a> may be upgraded
+in place.
+<!--more-->
+The steps are captured in an <a href="https://www.ansible.com/">Ansible</a> role published on
+<a href="https://github.com/allen-ball/ball-ansible/blob/trunk/roles/centos/tasks/main.yml">GitHub</a>.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The steps to migrate a CentOS 7 instance to CentOS 8.1 are:</p>
+
+<ol>
+  <li>
+    <p>Replace <code>yum</code> with <code>dnf</code></p>
+
+    <p>a. Prepare <code>yum</code> installation</p>
+
+    <p>b. Install <code>dnf</code></p>
+
+    <p>c. Remove <code>yum</code></p>
+  </li>
+  <li>
+    <p>Use <code>dnf</code> to upgrade</p>
+
+    <p>a. Configure CentOS 8.1 packages</p>
+
+    <p>b. Install CentOS 8.1 (userland)</p>
+
+    <p>c. Install CentOS 8.1 kernel</p>
+  </li>
+</ol>
+
+<p>Step #1 is necessitated because
+<a href="https://fedoraproject.org/wiki/DNF?rd=Dnf"><code>dnf</code></a> has
+replaced
+<a href="https://wiki.centos.org/PackageManagement/Yum"><code>yum</code></a> in
+CentOS/RHEL 8 systems.  The implementation is discussed in the next session.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>The following subsection describe the major steps of the upgrade.</p>
+
+<h3 id="replace-yum-with-dnf">Replace <code>yum</code> with <code>dnf</code></h3>
+
+<p>The first step is to replace <code>yum</code> with <code>dnf</code>.  The implementation uses the
+fact that <code>/usr/bin/yum</code> is a regular file when <code>yum</code> is installed and a
+symbolic link to <code>dnf-3</code> when dnf is installed.</p>
+
+<pre><code class="language-yaml">- name: /usr/bin/yum
+  stat: path=/usr/bin/yum
+  register: yum
+</code></pre>
+
+<p>The condition <code>yum.stat.isreg is defined and yum.stat.isreg</code>, if true,
+indicates <code>yum</code> was the package manager when Anisble was invoked.  The
+Ansible script takes advantage of this observation to provide idempotent
+operation.  <a href="https://linux.die.net/man/1/package-cleanup"><code>package-cleanup(1)</code></a> is installed from
+<a href="https://fedoraproject.org/wiki/EPEL"><code>epel-release</code></a> and used to remove locally installed RPMs.</p>
+
+<pre><code class="language-yaml">- name: epel-release
+  package:
+    name: epel-release
+    state: latest
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+
+- name: yum-utils
+  package:
+    name: yum-utils
+    state: latest
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+
+- name: package-cleanup
+  command:
+    cmd: "{{ item }}"
+  loop:
+    - package-cleanup --leaves
+    - package-cleanup --orphans
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+</code></pre>
+
+<p>The author’s use case is to upgrade a fresh install of CentOS 7.  However,
+if the upgrade is to be performed on a configured system, then <code>rpmconf</code>
+should be invoked to determine if any configuration files need to be
+preserved and/or migrated:</p>
+
+<pre><code class="language-bash"># yum -y install rpmconf
+# rpmconf -a
+</code></pre>
+
+<p><code>dnf</code> is installed with <code>yum</code> and then <code>yum</code> is removed with the
+corresponding <code>dnf</code> request, <code>/etc/yum</code> is removed, and <code>dnf</code> is updated.
+It is critical that these steps are completed so the system is not left in
+an inconsistent state without a functioning <code>yum</code> or <code>dnf</code>.</p>
+
+<pre><code class="language-yaml">- name: dnf
+  package:
+    name: dnf
+    state: latest
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+
+- name: yum -&gt; dnf
+  shell: |-
+    dnf -y remove yum yum-metadata-parser
+    rm -rf /etc/yum
+    dnf -y upgrade
+  args:
+    warn: false
+  when:
+    - yum.stat.isreg is defined and yum.stat.isreg
+</code></pre>
+
+<p><code>dnf</code> is now installed and available to use for an in-place upgrade.</p>
+
+<h3 id="upgrade-centos">Upgrade CentOS</h3>
+
+<p><a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911">CentOS 8</a> requires 3 <a href="https://centos.org/">CentOS</a> RPMs plus the latest
+<a href="https://fedoraproject.org/wiki/EPEL"><code>epel-release</code></a> (obtained via RPM) which are installed
+explicitly with <code>dnf</code>.  The conditional <code>ansible_distribution_major_version
+is version(releasever, "lt")</code> is leveraged to provide idempotent operation
+and avoid re-running once CentOS 8 is installed.</p>
+
+<pre><code class="language-yaml">- name: centos_packages
+  vars:
+    target: 8.1-1.1911.0.8.el8
+    arch: "{{ ansible_architecture }}"
+    releasever: "{{ target | regex_replace('^([0-9]+)[.].*$', '\\1') }}"
+    BaseOS: "http://mirror.centos.org/centos/{{ releasever }}/BaseOS"
+    Packages: "{{ BaseOS }}/{{ arch }}/os/Packages"
+  set_fact:
+    releasever: "{{ releasever }}"
+    centos_packages:
+      - "{{ Packages }}/centos-gpg-keys-{{ target }}.noarch.rpm"
+      - "{{ Packages }}/centos-release-{{ target }}.{{ arch }}.rpm"
+      - "{{ Packages }}/centos-repos-{{ target }}.{{ arch }}.rpm"
+      - "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ releasever }}.noarch.rpm"
+</code></pre>
+
+<p>The system is now ready for the actual upgrade.  The CentOS Upgrade script
+has to run until reboot or the system will be left in an inconsistent state.
+Unfortunately <code>python</code> is replaced (and moved) so the Anisble client loses
+communication during the process eliminating the possibility of using the
+Anisble <code>reboot</code> module.  Instead, the administrator should reinvoke the
+Ansible play once the update and reboot are complete.</p>
+
+<pre><code class="language-yaml">- name: warn
+  debug:
+    msg: &gt;-
+      Warning: CentOS Upgrade will install kernel and initiate reboot
+  when:
+    - ansible_distribution_major_version is version(releasever, "lt")
+
+- name: CentOS Upgrade
+  shell: |-
+    dnf -y install {{ centos_packages | join(" ") }}
+    dnf clean all
+    rpm -e $(rpm -q kernel)
+    rpm -e --nodeps sysvinit-tools
+    dnf -y --releasever={{ releasever }} --allowerasing --setopt=deltarpm=false distro-sync
+    dnf -y install kernel-core
+    dnf -y groupupdate "Core" "Minimal Install"
+    shutdown -r now
+  args:
+    warn: false
+  when:
+    - ansible_distribution_major_version is version(releasever, "lt")
+</code></pre>
+
+<h3 id="post-upgrade-steps">Post Upgrade Steps</h3>
+
+<p>The script allows for enabling the <code>CentOS-Plus</code> repository and updating
+installed packages <em>after</em> the reboot.</p>
+
+<pre><code class="language-yaml">- name: Enable CentOS-Plus repository
+  ini_file:
+    dest: /etc/yum.repos.d/CentOS-centosplus.repo
+    create: no
+    section: centosplus
+    option: enabled
+    value: "1"
+
+- name: package update
+  package:
+    name: "*"
+    state: latest
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p><a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS7.1908">CentOS 7</a> installation may be upgraded to <a href="https://wiki.centos.org/Manuals/ReleaseNotes/CentOS8.1911">CentOS 8</a> in-place once <code>yum</code> is
+replaced by <code>dnf</code>.</p>]]></content><author><name></name></author><category term="CentOS" /><category term="Ansible" /><summary type="html"><![CDATA[CentOS 8.0 was released on September 24th, 2019 and [8.1][CentOS 8] on January 15, 2020. This article describes how a CentOS 7 may be upgraded in place.]]></summary></entry></feed>

@@ -1,0 +1,342 @@
+<p>Creators of <a href="https://aws.amazon.com/ec2/">Amazon Elastic Compute Cloud (EC2)</a> instances may stuff a
+script into the “user data” which will be executed on the instance’s initial
+boot.  This script may be useful to mount <a href="https://aws.amazon.com/ebs/">Elastic Block Store (EBS)</a>
+volumes as file systems since those volumes cannot be attached to the
+instance until <em>after</em> the instance has been created and started.</p>
+
+<p>This article presents a script which leverages the functions provided in the
+<code>aws.rc</code> script described in a previous
+<a href="/article/2018-08-20-auto-ebs-map">article</a>.
+<!--more-->
+The “user data” script described herein provides the following
+services to Redhat and CentOS instances:</p>
+
+<ol>
+  <li>
+    <p>Update OS software:</p>
+
+    <p>a. <code>yum update</code></p>
+
+    <p>b. Install/Update Python</p>
+
+    <p>c. Install AWS CLI</p>
+  </li>
+  <li>
+    <p>Create users, install their SSH authorized keys, and configure <code>sudo</code></p>
+  </li>
+  <li>
+    <p>Attach volumes, create file systems (if neccessary), mount, and update
+<a href="https://linux.die.net/man/5/fstab">/etc/fstab</a></p>
+  </li>
+</ol>
+
+<h2 id="aws-configuration">AWS Configuration</h2>
+
+<p>The scripts require specific configuration in AWS.  These requirements are
+described in the next subsections.</p>
+
+<h3 id="users">Users</h3>
+
+<p>The script will configure all users specified in the instance’s
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">http://169.254.169.254/latest/meta-data/public-keys/</a>.
+These key pairs must be imported either through <a href="https://console.aws.amazon.com/organizations/home">AWS Management Console</a> or
+the <a href="https://docs.aws.amazon.com/cli/latest/reference/ec2/import-key-pair.html">AWS CLI</a>.  The name of the key pair must be
+the same as the user name.</p>
+
+<p>A primary use case is to create and configure <code>ec2-user</code> on CentOS images to
+be consistent with Amazon’s Linux images.</p>
+
+<h3 id="ebs-file-system-volumes">EBS File System Volumes</h3>
+
+<p>Any <a href="https://aws.amazon.com/ebs/">EBS</a> volume that will be mounted as a file system must be configured
+with the following
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html">tags</a>:</p>
+
+<ul>
+  <li><code>host</code></li>
+  <li><code>fstype</code></li>
+  <li><code>mntpt</code></li>
+</ul>
+
+<p>Where <code>host</code> is the
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">http://169.254.169.254/latest/meta-data/local-ipv4</a>
+address of the newly created instance, <code>fstype</code> is a file system type
+compatible with the <a href="https://linux.die.net/man/8/mkfs">mkfs(8)</a> and <a href="https://linux.die.net/man/8/mount">mount(8)</a> commands’<code>-t</code> argument, and
+<code>mntpt</code> is the local directory on which the file system will be mounted.</p>
+
+<p>Once the <a href="https://aws.amazon.com/ebs/">EBS</a> volume is formatted with a valid file system, the volume’s
+<code>uuid</code> tag should be updated with the file system’s UUID.  The
+<code>user-data.bash</code> script will <em>not</em> format the volume if the <code>uuid</code> tag is
+present.  The <code>user-data.bash</code> script will update the volume’s <code>uuid</code> tag if
+it successfully creates a file system on the volume.</p>
+
+<p>Finally, the script will configure <a href="https://linux.die.net/man/5/fstab">/etc/fstab</a> to mount the <a href="https://aws.amazon.com/ebs/">EBS</a>
+volume on the <code>mntpt</code> directory.</p>
+
+<h2 id="theory-of-operation">Theory of Operation</h2>
+
+<p>The script:</p>
+
+<ol>
+  <li>Update the operating system software</li>
+  <li>Configures the users whose keys are specified in
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">http://169.254.169.254/latest/meta-data/public-keys/</a></li>
+  <li>Attaches, formats, and mounts any EBS volumes tagged with this instance’s
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">http://169.254.169.254/latest/meta-data/local-ipv4</a>
+address</li>
+</ol>
+
+<p>The corresponding parts of the <code>user-data.bash</code> script are described in
+detail in the following subsections.</p>
+
+<h3 id="software-update">Software Update</h3>
+
+<p>The software update consists of:</p>
+
+<ol>
+  <li>Updating all packages managed by <a href="https://linux.die.net/man/8/yum">yum(8)</a></li>
+  <li>Install and update <a href="https://linux.die.net/man/1/python">python(1)</a></li>
+  <li>Install the <a href="https://aws.amazon.com/cli/">AWS Command Line Interface</a></li>
+</ol>
+
+<pre><code class="language-bash">export LANG=en_US.UTF-8
+export LC_ALL=${LANG}
+
+yum -y update
+yum -y install python
+easy_install --prefix /usr pip
+pip install --prefix /usr --upgrade pip
+pip install --prefix /usr --upgrade awscli
+</code></pre>
+
+<h3 id="users-configuration">Users Configuration</h3>
+
+<p>For each public key specified in
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">http://169.254.169.254/latest/meta-data/public-keys/</a>:</p>
+
+<ol>
+  <li>If they do not exist, create the user specified by the key name and
+create that user’s home directory</li>
+  <li>Add the
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">openssh-key</a>
+value to the user’s <code>~/.ssh/authorized_keys</code></li>
+  <li>Configure the user in <a href="https://linux.die.net/man/5/sudoers">sudoers(5)</a></li>
+</ol>
+
+<pre><code class="language-bash">for key in $(metadata public-keys/); do
+    username=${key#*=}
+
+    useradd -G wheel -m -s /bin/bash -U ${username}
+    userhome=$(eval echo ~${username})
+
+    mkdir -p ${userhome}/.ssh
+    echo "$(metadata public-keys/${key%%=*}/openssh-key)" \
+         &gt;&gt; ${userhome}/.ssh/authorized_keys
+    chown -R ${username}:${username} ${userhome}/.ssh
+    chmod -R go-rwx ${userhome}/.ssh
+
+    file=/etc/sudoers.d/user-data-${username}
+    echo "${username} ALL=(ALL) NOPASSWD:ALL" &gt; /Users/ball/hcf-dev/blog/2018-08-22-aws-user-data-script/pom.xml
+    chmod a-wx,o-r ${file}
+done
+</code></pre>
+
+<h3 id="attach-and-mount-ebs-volumes">Attach and Mount EBS Volumes</h3>
+
+<p>For each <a href="https://aws.amazon.com/ebs/">EBS</a> volume tagged with <code>host</code> equalling the value at
+<a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">http://169.254.169.254/latest/meta-data/local-ipv4</a>,
+a non-nil <code>fstype</code>, and non-nil <code>mntpt</code>:</p>
+
+<ol>
+  <li><a href="https://docs.aws.amazon.com/cli/latest/reference/ec2/attach-volume.html">Attach</a>
+the <a href="https://aws.amazon.com/ebs/">EBS</a> volume to this instance</li>
+  <li>Test if the volume contains data known to <a href="https://linux.die.net/man/1/file">file(1)</a> and, if it does
+<em>not</em>, <a href="https://linux.die.net/man/8/mkfs">create a file system</a> of type specified by <code>fstype</code></li>
+  <li>Determine the UUID of the file system and add an entry to
+<a href="https://linux.die.net/man/5/fstab">/etc/fstab</a></li>
+</ol>
+
+<pre><code class="language-bash"># ----------------------------------------------------------------------------
+# Attach local volumes and manage file systems
+#
+# File system volumes must define the following tags:
+#         host
+#         fstype
+#         mntpt
+#
+# This script will update the volume's "uuid" tag.
+# ----------------------------------------------------------------------------
+export HOST=$(metadata local-ipv4)
+export VOLUMES=$(ec2 describe-volumes \
+                       --filters Name=tag:host,Values=${HOST} \
+                       --output text --query 'Volumes[*].VolumeId')
+
+if [ -n "${VOLUMES}" ]; then
+    for volume in ${VOLUMES}; do
+        fstype=$(ec2-get-tag-value ${volume} fstype)
+
+        if [ "${fstype}" != "" ]; then
+            device=$(next-unattached-block-device)
+
+            ec2-attach-volume ${volume} ${device}
+
+            if [ "$(file -b -s ${device})" == "data" ]; then
+                volume-mkfs ${volume} ${device} ${fstype}
+            fi
+
+            uuid=$(ec2-get-tag-value ${volume} uuid)
+            mntpt=$(ec2-get-tag-value ${volume} mntpt)
+
+            if [ "${uuid}" != "" -a "${mntpt}" != "" ]; then
+                mkdir -p ${mntpt}
+                echo "UUID=${uuid} ${mntpt} ${fstype} defaults 0 2" &gt;&gt; /etc/fstab
+            fi
+        fi
+    done
+fi
+
+mount -a
+
+exit 0
+</code></pre>
+
+<p>The file systems are then mounted with <a href="https://linux.die.net/man/8/mount"><code>mount -a</code></a>.<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup></p>
+
+<p>systems were then connected on start-up.</p>
+
+<h2 id="user-databash">user-data.bash</h2>
+
+<p>For reference, the complete <code>user-data.bash</code> <a href="https://www.ansible.com/">Ansible</a> template is included
+below.  The <code>aws.rc</code> script is included through a relative path.  If another
+tool than Ansible is used, the <code>aws.rc</code> script must be included to provide
+the functions through that tool’s appropriate mechanism.</p>
+
+<pre><code class="language-bash">#!/bin/bash
+# ----------------------------------------------------------------------------
+# user-data.bash
+# ----------------------------------------------------------------------------
+export LANG=en_US.UTF-8
+export LC_ALL=${LANG}
+
+if [ -e /usr/bin/apt ]; then
+    apt -y update
+    apt -y install awscli
+else
+    yum -y update
+
+    if [ ! -e /usr/libexec/platform-python ]; then
+        yum -y install python
+    fi
+
+    if [ ! -e /usr/bin/pip -a -x /usr/bin/easy_install ]; then
+        /usr/bin/easy_install --prefix /usr pip
+    fi
+
+    /usr/bin/pip install --prefix /usr --upgrade pip
+    /usr/bin/pip install --prefix /usr --upgrade awscli
+fi
+# ----------------------------------------------------------------------------
+# Functions
+# ----------------------------------------------------------------------------
+{{ lookup('template', '../../aws-rc/templates/etc/aws.rc') }}
+# ----------------------------------------------------------------------------
+# Create users and install respective .ssh/authorized_keys for public-keys'
+# metadata
+# ----------------------------------------------------------------------------
+getent group sudo &gt;&gt; /dev/null 2&gt;&amp;1
+
+if [ $? -eq 0 ]; then
+    wheel=sudo
+else
+    wheel=wheel
+fi
+
+for key in $(metadata public-keys/); do
+    username=${key#*=}
+
+    useradd -G ${wheel} -m -s /bin/bash -U ${username}
+    userhome=$(eval echo ~${username})
+
+    mkdir -p ${userhome}/.ssh
+    echo "$(metadata public-keys/${key%%=*}/openssh-key)" &gt;&gt; ${userhome}/.ssh/authorized_keys
+    chown -R ${username}:${username} ${userhome}/.ssh
+    chmod -R go-rwx ${userhome}/.ssh
+
+    file=/etc/sudoers.d/user-data-${username}
+    echo "${username} ALL=(ALL) NOPASSWD:ALL" &gt; ${file}
+    chmod a-wx,o-r ${file}
+done
+export HOST=$(metadata local-ipv4)
+export VOLUMES=$(ec2 describe-volumes \
+                       --filters Name=tag:host,Values=${HOST} \
+                       --output text --query 'Volumes[*].VolumeId')
+
+if [ -n "${VOLUMES}" ]; then
+    for volume in ${VOLUMES}; do
+        fstype=$(ec2-get-tag-value ${volume} fstype)
+
+        if [ "${fstype}" != "" ]; then
+            device=$(next-unattached-block-device)
+
+            ec2-attach-volume ${volume} ${device}
+
+            if [ "$(file -b -s ${device})" == "data" ]; then
+                volume-mkfs ${volume} ${device} ${fstype}
+            fi
+
+            uuid=$(ec2-get-tag-value ${volume} uuid)
+            mntpt=$(ec2-get-tag-value ${volume} mntpt)
+
+            if [ "${uuid}" != "" -a "${mntpt}" != "" ]; then
+                mkdir -p ${mntpt}
+                echo "UUID=${uuid} ${mntpt} ${fstype} defaults 0 2" &gt;&gt; /etc/fstab
+            fi
+        fi
+    done
+fi
+
+mount -a
+
+exit 0
+</code></pre>
+
+<p>Within <a href="https://www.ansible.com/">Ansible</a>, the <code>user-data.bash</code> can be expanded from the template
+into a “fact:”</p>
+
+<pre><code class="language-yaml">- name: user-data script
+  set_fact:
+    user_data: &gt;
+      {{ lookup('template', 'user-data.bash') }}
+</code></pre>
+
+<p>An example fragment for creating the <a href="https://aws.amazon.com/ec2/">EC2</a> instance with the <code>user-data.bash</code>
+script is given below.</p>
+
+<pre><code class="language-yaml">- name: 172.31.0.4
+  community.aws.ec2_instance:
+    ...
+    instance_profile_name: ec2-user
+    key_name: ec2-user
+    user_data: &gt;
+      {{ user_data }}
+    ...
+</code></pre>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/allen-ball/ball-aws-collection/tree/trunk/roles/aws-user-data">Source</a></li>
+  <li><a href="/article/2018-08-20-auto-ebs-map">automount/autofs Executable Map for Amazon EBS Volumes</a></li>
+  <li><a href="https://aws.amazon.com/">Amazon Web Services (AWS)</a></li>
+  <li><a href="https://aws.amazon.com/ec2/">AWS Elastic Compute Cloud (EC2)</a></li>
+  <li><a href="https://aws.amazon.com/ebs/">AWS Elastic Block Store (EBS)</a></li>
+  <li><a href="https://www.ansible.com/">Ansible</a></li>
+</ul>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1">
+      <p>Previous versions of this script rebooted the instance and the file <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>

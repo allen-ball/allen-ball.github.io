@@ -1,0 +1,117 @@
+<p>This series of articles will examine
+<a href="https://spring.io/projects/spring-boot">Spring Boot</a>
+features.  This second article builds on the
+<a href="/article/2019-11-16-spring-boot-part-01">first article</a>
+by demonstrating how to serve static resources from the <code>classpath</code> and
+WebJars.</p>
+
+<p>Complete source code for the
+<a href="https://github.com/allen-ball/spring-boot-web-server">series</a>
+and for this
+<a href="https://github.com/allen-ball/spring-boot-web-server/tree/trunk/part-02">part</a>
+are available on <a href="https://github.com/allen-ball">Github</a>.</p>
+
+<p>Note that this post’s details and the example source code has been updated
+for Spring Boot version 2.5.3 so some output may show older Spring Boot
+versions.</p>
+
+<h2 id="static-resources">Static Resources</h2>
+
+<p>By default, resources found on the <code>classpath</code> under <code>/static</code> are served.
+This is demonstrated by creating
+<code>${project.basedir}/src/main/resources/static/index.html</code>:</p>
+
+<pre><code class="language-xml">&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+  &lt;head&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello, World!&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Starting the application as described in
+<a href="/article/2019-11-16-spring-boot-part-01">part 1</a> and browsing
+<a href="http://localhost:8080/">http://localhost:8080/</a> produces something similar to:</p>
+
+<p><img src="/assets/article/2019-11-17-spring-boot-part-02/hello-world.png" alt="" /></p>
+
+<p>Note: No additional Java code is required to serve static resources.</p>
+
+<h2 id="webjars">WebJars</h2>
+
+<p><a href="https://www.webjars.org/">WebJars</a> are client-side web
+libraries packaged into JAR (Java Archive) files.  Developers can use JVM
+build tools (e.g., Maven and Gradle) may be used to download and manage
+client-side dependencies.</p>
+
+<p>To use this feature:</p>
+
+<ol>
+  <li>
+    <p>Add <code>org.webjars:webjars-locator-core</code> (version specified in the parent
+POM) so Spring Boot finds it on the runtime <code>classpath</code> and enables the
+feature</p>
+  </li>
+  <li>
+    <p>Add the WebJars as dependencies</p>
+  </li>
+</ol>
+
+<p>The POM has been so modified to provide
+<a href="https://bulma.io/">Bulma</a>.</p>
+
+<pre><code class="language-xml">&lt;project&gt;
+  ...
+  &lt;dependencies&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.webjars&lt;/groupId&gt;
+      &lt;artifactId&gt;webjars-locator-core&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    ...
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.webjars.npm&lt;/groupId&gt;
+      &lt;artifactId&gt;bulma&lt;/artifactId&gt;
+      &lt;version&gt;0.9.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    ...
+  &lt;/dependencies&gt;
+  ...
+&lt;/project&gt;
+</code></pre>
+
+<p>After adding the corresponding stylesheet link to
+<code>${project.basedir}/src/main/resources/static/index.html</code>:</p>
+
+<pre><code class="language-xml">  ...
+  &lt;head&gt;
+    &lt;link rel="stylesheet" href="/webjars/bulma/css/bulma.css"/&gt;
+  &lt;/head&gt;
+  ...
+</code></pre>
+
+<p>And browsing <a href="http://localhost:8080/">http://localhost:8080/</a> shows the integration of the Bulma
+styles.</p>
+
+<p><img src="/assets/article/2019-11-17-spring-boot-part-02/hello-world-bulma.png" alt="" /></p>
+
+<p>One additional feature is the developer does not need to be concerned with
+the frontend versions when linking into HTML.  The
+<code>org.webjars:webjars-locator-core</code> serves <code>bulma.css</code> at both
+<a href="http://localhost:8080/webjars/bulma/0.9.2/css/bulma.css">http://localhost:8080/webjars/bulma/0.9.2/css/bulma.css</a> and
+<a href="http://localhost:8080/webjars/bulma/css/bulma.css">http://localhost:8080/webjars/bulma/css/bulma.css</a>.</p>
+
+<p>Note: Again, no additional Java code is required to serve static resources.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This article demonstrates how static resources may be provided to be served
+by the Spring Web Server.  These resources may be included on the
+<code>classpath</code> under the <code>/static</code> folder or within WebJars.</p>
+
+<p><a href="/article/2019-12-15-spring-boot-part-03">Part 3</a> of this series discusses
+dependency injection and implements a simple
+<a href="https://docs.spring.io/spring/docs/5.3.9/javadoc-api/org/springframework/web/bind/annotation/RestController.html"><code>@RestController</code></a>.</p>
+

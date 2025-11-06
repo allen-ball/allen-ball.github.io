@@ -1,0 +1,106 @@
+<p><a href="https://www.java.com/en/download/help/java8.html">Java 8</a> introduced default methods to interfaces.  Existing
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code></a> implementations will not invoke
+default interface methods.  This short article documents the necessary
+changes.
+<!--more-->
+Note: It first describes the implementation based on a reading of the
+documents and then provides a working implementation for Java 8.</p>
+
+<p>Given the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code></a> implementation:</p>
+
+<pre><code class="language-java">    @Override
+    public Object invoke(Object proxy,
+                         Method method, Object[] argv) throws Throwable {
+        Object result = null;
+        /*
+         * Logic to calculate result.
+         */
+        return result;
+    }
+</code></pre>
+
+<p>the <a href="https://www.java.com/en/download/help/java8.html">Java 8</a> solution appears to be to extend the implementation to invoke any
+interface default methods through a <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/invoke/MethodHandle.html"><code>MethodHandle</code></a>:</p>
+
+<pre><code class="language-java">    @Override
+    public Object invoke(Object proxy,
+                         Method method, Object[] argv) throws Throwable {
+        Object result = null;
+        Class&lt;?&gt; declaringClass = method.getDeclaringClass();
+
+        if (method.isDefault()) {
+            result =
+                MethodHandles.lookup()
+                .in(declaringClass)
+                .unreflectSpecial(method, declaringClass)
+                .bindTo(proxy)
+                .invokeWithArguments(argv);
+        } else {
+            /*
+             * Logic to calculate result.
+             */
+        }
+
+        return result;
+    }
+</code></pre>
+
+<p>If the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Method.html"><code>Method</code></a> is “default” then the target interface method is
+invoked.  Otherwise, the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code></a>
+implementation processes as before.  Any interface default method <em>should</em>
+be invoked by:</p>
+
+<ol>
+  <li>Finding the
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/invoke/MethodHandles.Lookup.html"><code>MethodHandles.Lookup</code></a> through
+<code>MethodHandles.lookup().in(declaringClass)</code>,</li>
+  <li>Get a <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/invoke/MethodHandle.html"><code>MethodHandle</code></a> bypassing any overriding methods
+through <code>.unreflectSpecial(method, declaringClass)</code>, and,</li>
+  <li>Invoke the method on the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html"><code>proxy</code></a> with
+<code>.bindTo(proxy).invokeWithArguments(argv)</code></li>
+</ol>
+
+<p>Unfortunately, this does not work if the <code>declaringClass</code> is not
+“private-accessible” to the caller (which is most of the time) resulting in:</p>
+
+<pre><code class="language-bash">Caused by: java.lang.IllegalAccessException: no private access for invokespecial: interface package1.SomeInterface, from package1.SomeInterface/public
+	at java.lang.invoke.MemberName.makeAccessException(MemberName.java:850)
+	at java.lang.invoke.MethodHandles$Lookup.checkSpecialCaller(MethodHandles.java:1572)
+	at java.lang.invoke.MethodHandles$Lookup.unreflectSpecial(MethodHandles.java:1231)
+	at package2.InvocationHandlerImpl.invoke(InvocationHandlerImpl.java:59)
+</code></pre>
+
+<p>The actual <a href="https://www.java.com/en/download/help/java8.html">Java 8</a> solution is:</p>
+
+<pre><code class="language-java">    @Override
+    public Object invoke(Object proxy,
+                         Method method, Object[] argv) throws Throwable {
+        Object result = null;
+        Class&lt;?&gt; declaringClass = method.getDeclaringClass();
+
+        if (method.isDefault()) {
+            Constructor&lt;MethodHandles.Lookup&gt; constructor =
+                MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
+
+            constructor.setAccessible(true);
+
+            result =
+                constructor.newInstance(declaringClass)
+                .in(declaringClass)
+                .unreflectSpecial(method, declaringClass)
+                .bindTo(proxy)
+                .invokeWithArguments(argv);
+        } else {
+            /*
+             * Logic to calculate result.
+             */
+        }
+
+        return result;
+    }
+</code></pre>
+
+<p>This will not work in <a href="https://www.oracle.com/java/java9.html">Java 9</a>+.  In Java 9 and subsequent releases, the
+solution should be based on <code>MethodHandles.Lookup.findSpecial()</code> and/or
+<code>MethodHandles.privateLookupIn()</code>.</p>
+
