@@ -1,4 +1,66 @@
-<p>This article describes some of the challenges and pecularities of deploying
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Google Cloud Platform App Engine Deployment Experience | Allen D. Ball</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Google Cloud Platform App Engine Deployment Experience" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This article describes some of the challenges and pecularities of deploying an annotated @SpringBootApplication application to Google Cloud Platform." />
+<meta property="og:description" content="This article describes some of the challenges and pecularities of deploying an annotated @SpringBootApplication application to Google Cloud Platform." />
+<link rel="canonical" href="https://blog.hcf.dev/article/2018-12-18-gae-deployment-experience" />
+<meta property="og:url" content="https://blog.hcf.dev/article/2018-12-18-gae-deployment-experience" />
+<meta property="og:site_name" content="Allen D. Ball" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-12-18T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Google Cloud Platform App Engine Deployment Experience" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2018-12-18T00:00:00+00:00","datePublished":"2018-12-18T00:00:00+00:00","description":"This article describes some of the challenges and pecularities of deploying an annotated @SpringBootApplication application to Google Cloud Platform.","headline":"Google Cloud Platform App Engine Deployment Experience","mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.hcf.dev/article/2018-12-18-gae-deployment-experience"},"url":"https://blog.hcf.dev/article/2018-12-18-gae-deployment-experience"}</script>
+<!-- End Jekyll SEO tag -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"/>
+  <link rel="stylesheet" href="/assets/prism.css"/>
+  <link rel="stylesheet" href="/assets/main.css"/><link type="application/atom+xml" rel="alternate" href="https://blog.hcf.dev//feed.xml" title="Allen D. Ball" /><!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-137275928-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-137275928-1');
+</script>
+</head>
+<body class="d-flex flex-column h-100"><header class="sticky-top text-white bg-dark navbar navbar-dark">
+  <nav class="container navbar-expand-lg">
+    <div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="/">Allen D. Ball</a>
+    </div>
+    <div>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/feed.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+<main class="flex-shrink-0">
+      <div class="container">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    <h1 itemprop="name headline">Google Cloud Platform App Engine Deployment Experience</h1>
+    <p>
+      <time datetime="2018-12-18T00:00:00+00:00" itemprop="datePublished">Dec 18, 2018
+      </time></p>
+  </header>
+  <div itemprop="articleBody">
+    <p>This article describes some of the challenges and pecularities of deploying
 an annotated
 <a href="https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/using-spring-boot.html#using-boot-using-springbootapplication-annotation"><code>@SpringBootApplication</code></a>
 application to <a href="https://cloud.google.com/appengine/">Google Cloud Platform</a>.</p>
@@ -480,3 +542,25 @@ INFO: submitting command: /usr/local/Caskroom/google-cloud-sdk/latest/google-clo
 Exercise left to the reader.
 <a href="#ref1">↩</a></p>
 
+
+  </div>
+  <a class="u-url" href="/article/2018-12-18-gae-deployment-experience" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="footer mt-auto text-white bg-dark">
+  <nav class="navbar navbar-dark">
+    <div class="container">
+      <span class="col text-start">
+        <a href="mailto:ball@hcf.dev">Allen D. Ball</a><ul class="social-media-list"><li><a href="https://github.com/allen-ball"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allen-ball</span></a></li></ul>
+</span>
+      <span class="col text-end">
+        <p>A blog about Java and other stuff.</p>
+      </span>
+    </div>
+  </nav>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  <script src="/assets/prism.js"></script>
+</footer>
+</body>
+</html>
