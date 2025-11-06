@@ -1,24 +1,26 @@
 ---
 layout: default
 ---
-
 <div>
   {{ content }}
-
   {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
   {%- if site.posts.size > 0 -%}
-    {%- for post in site.posts -%}
+  {%- for post in site.posts -%}
+  <div class="row">
     <div class="card">
-      <div class="card-body">
-        <span>{{ post.date | date: date_format }}</span>
-        <h3 class="card-title">
-          <a href="{{ post.url | relative_url }}">
+      <div class="card-header d-flex justify-content-between">
+        <div>
+          <a class="h5 card-link" href="{{ post.url | relative_url }}">
             {{ post.title | escape }}
           </a>
-        </h3>
+        </div>
+        <div>{{ post.date | date: date_format }}</div>
+      </div>
+      <div class="card-body">
         {%- if site.show_excerpts -%}{{ post.excerpt }}{%- endif -%}
       </div>
     </div>
-    {%- endfor -%}
+  </div>
+  {%- endfor -%}
   {%- endif -%}
 </div>
