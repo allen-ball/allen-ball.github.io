@@ -9,3 +9,5 @@ group :jekyll_plugins do
   gem "jekyll-seo-tags", "~> 1.0.0"
   gem "jekyll-sitemap", "~> 1.4.0"
 end
+
+gem "logger", "~> 1.7"
