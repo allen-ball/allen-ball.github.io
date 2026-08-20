@@ -16,8 +16,10 @@ javadoc:
     https://docs.spring.io/spring-boot/docs/2.4.5/api
   spring-security: >-
     https://docs.spring.io/spring-security/site/docs/5.4.6/api
-  ball-api: >-
-    https://blog.hcf.dev/javadoc/ball-api/20200622.0
+  ball-spring: >-
+    https://allen-ball.github.io/ball-spring
+  ball-upnp: >-
+    https://allen-ball.github.io/ball-upnp
 ---
 
 [This](/article/2019-11-16-spring-boot-part-01)
@@ -330,9 +332,9 @@ attributes and implements the
 [`root`](https://allen-ball.github.io/voyeur/voyeur/UIController.html#root-org.springframework.ui.Model-)
 method<sup id="ref1">[1](#endnote1)</sup> to serve the UI request paths.
 The
-[superclass]({{ page.javadoc.ball-api }}/ball/spring/AbstractController.html?is-external=true)
+[superclass]({{ page.javadoc.ball-spring }}/ball/spring/AbstractController.html?is-external=true)
 implements
-[`getViewName()`]({{ page.javadoc.ball-api }}/ball/spring/AbstractController.html#getViewName--)
+[`getViewName()`]({{ page.javadoc.ball-spring }}/ball/spring/AbstractController.html#getViewName())
 which creates a view name based on the implementing class's package which
 translates to
 [classpath:/templates/voyeur.html](https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.html),
@@ -683,7 +685,7 @@ the injected `SpringResourceTemplateResolver`.
 
 [UPNP]: https://openconnectivity.org/developer/specifications/upnp-resources/upnp-developer-resources
 
-[SSDPDiscoveryCache]: {{ page.javadoc.ball-api }}/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true
+[SSDPDiscoveryCache]: {{ page.javadoc.ball-upnp }}/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true
 
 [voyeur]: https://allen-ball.github.io/voyeur/voyeur/package-summary.html
 [voyeur.ArpCache]: https://allen-ball.github.io/voyeur/voyeur/ARPCache.html

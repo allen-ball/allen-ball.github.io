@@ -322,14 +322,14 @@ Obtained by calling the implementatioon of
 [Stream]: {{ page.javadoc.javase }}/java/util/stream/Stream.html
 [Supplier]: {{ page.javadoc.javase }}/java/util/function/Supplier.html
 
-[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/overview-summary.html
-[Combinations]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/stream/Combinations.html
-[DispatchSpliterator]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html
-[DispatchSpliterator.spliterators]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#spliterators--
-[ForSize]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177
-[Permutations]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/stream/Permutations.html
-[Start]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144
-[binomial]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/util/DispatchSpliterator.html#binomial-long-long-
-[ForPrefix]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208
-[ForCombination]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265
-[SpliteratorSupplier]: {{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/util/stream/Combinations.html#line.106
+[javadoc]: https://allen-ball.github.io/ball-util/overview-summary.html
+[Combinations]: https://allen-ball.github.io/ball-util/ball/util/stream/Combinations.html
+[DispatchSpliterator]: https://allen-ball.github.io/ball-util/ball/util/DispatchSpliterator.html
+[DispatchSpliterator.spliterators]: https://allen-ball.github.io/ball-util/ball/util/DispatchSpliterator.html#spliterators()
+[ForSize]: https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177
+[Permutations]: https://allen-ball.github.io/ball-util/ball/util/stream/Permutations.html
+[Start]: https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144
+[binomial]: https://allen-ball.github.io/ball-util/ball/util/DispatchSpliterator.html#binomial(long,long)
+[ForPrefix]: https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208
+[ForCombination]: https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265
+[SpliteratorSupplier]: https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.html#line.106

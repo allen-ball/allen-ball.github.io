@@ -244,6 +244,6 @@ Please see the discussion in ["JEP 238: Multi-Release JAR Files"][JEP 238].
 [InvocationHandler]: {{ page.javadoc.javase }}/java/lang/reflect/InvocationHandler.html?is-external=true
 [MethodHandles.Lookup]: {{ page.javadoc.javase }}/java/lang/invoke/MethodHandles.Lookup.html
 
-[DefaultInterfaceMethodInvocationHandler]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.html
-[DefaultInvocationHandler.invoke]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-
-[FluentNode]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/xml/FluentNode.html
+[DefaultInterfaceMethodInvocationHandler]: https://allen-ball.github.io/ball-util/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.html
+[DefaultInvocationHandler.invoke]: https://allen-ball.github.io/ball-util/ball/lang/reflect/DefaultInvocationHandler.html#invoke(java.lang.Object,java.lang.reflect.Method,java.lang.Object[])
+[FluentNode]: https://allen-ball.github.io/ball-util/ball/xml/FluentNode.html

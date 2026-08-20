@@ -218,7 +218,7 @@ software has been configured and/or is on the class path.
 
 Finally, `META-INF/spring.factories` must be configured in the starter JAR
 to notify Spring Boot to add the
-[`AutoConfiguration`]({{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html).
+[`AutoConfiguration`](https://allen-ball.github.io/ball-spring/ball/spring/jig/package-summary.html).
 
 <figcaption style="text-align: center">META-INF/spring.factories</figcaption>
 ```properties
@@ -275,7 +275,7 @@ implementations do not benefit from separate auto-configuration artifacts.
 [Configuration]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Configuration.html
 [Import]: {{ page.javadoc.spring }}/org/springframework/context/annotation/Import.html?is-external=true
 
-[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/allclasses-noframe.html
-[jig.AutoConfiguration]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/jig/autoconfigure/AutoConfiguration.html
-[mysql.AutoConfiguration]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/mysqld/autoconfigure/AutoConfiguration.html
-[BeanRestController]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/spring/jig/BeanRestController.html
+[javadoc]: https://allen-ball.github.io/ball-spring/overview-summary.html
+[jig.AutoConfiguration]: https://allen-ball.github.io/ball-spring/ball/spring/jig/package-summary.html
+[mysql.AutoConfiguration]: https://allen-ball.github.io/ball-spring/ball/spring/mysqld/package-summary.html
+[BeanRestController]: https://allen-ball.github.io/ball-spring/ball/spring/jig/BeanRestController.html

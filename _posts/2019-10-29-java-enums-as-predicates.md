@@ -392,9 +392,9 @@ used in combination with [`Stream`][Stream].
 [TemporalAccessor]: {{ page.javadoc.javase }}/java/time/temporal/TemporalAccessor.html
 [TemporalAdjuster]: {{ page.javadoc.javase }}/java/time/temporal/TemporalAdjuster.html
 
-[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/allclasses-noframe.html
-[Card.Rank]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/Card.Rank.html
-[Card.Suit]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/Card.Suit.html
-[Card]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/Card.html
-[Evaluator]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/poker/Evaluator.html
-[Ranking]: {{ site.javadoc.url }}/{{ page.permalink }}/ball/game/card/poker/Ranking.html
+[javadoc]: https://allen-ball.github.io/ball-game/overview-summary.html
+[Card.Rank]: https://allen-ball.github.io/ball-game/ball/game/card/Card.Rank.html
+[Card.Suit]: https://allen-ball.github.io/ball-game/ball/game/card/Card.Suit.html
+[Card]: https://allen-ball.github.io/ball-game/ball/game/card/Card.html
+[Evaluator]: https://allen-ball.github.io/ball-game/ball/game/card/poker/Evaluator.html
+[Ranking]: https://allen-ball.github.io/ball-game/ball/game/card/poker/Ranking.html

@@ -81,7 +81,7 @@ public class MD5CryptPasswordEncoder extends DelegatingPasswordEncoder {
 ```
 
 The
-[`MD5Crypt`]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.114)
+[`MD5Crypt`](https://allen-ball.github.io/ball-spring/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.110)
 inner class implementation is straightforward:
 
 ``` java
@@ -129,7 +129,7 @@ inner class implementation is straightforward:
 ```
 
 The
-[`NoCrypt`]({{ site.javadoc.url }}/{{ page.permalink }}/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.70)
+[`NoCrypt`](https://allen-ball.github.io/ball-spring/src-html/ball/spring/MD5CryptPasswordEncoder.html#line.68)
 implementation provides the methods for calculating salt and `itoa64`
 conversion.
 
@@ -194,4 +194,4 @@ public class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
 [UserDetailsService]: {{ page.javadoc.spring-security }}/org/springframework/security/core/userdetails/UserDetailsService.html
 [WebSecurityConfigurer]: {{ page.javadoc.spring-security }}/org/springframework/security/config/annotation/web/WebSecurityConfigurer.html
 
-[javadoc]: {{ site.javadoc.url }}/{{ page.permalink }}/allclasses-noframe.html
+[javadoc]: https://allen-ball.github.io/ball-spring/overview-summary.html

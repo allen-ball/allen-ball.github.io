@@ -521,12 +521,11 @@ of this series.
 ```xml
     <profile>
       <id>mysql</id>
-      <repositories>...</repositories>
       <dependencies>
         <dependency>
-          <groupId>ball</groupId>
+          <groupId>dev.hcf.ball</groupId>
           <artifactId>ball-spring-mysqld-starter</artifactId>
-          <version>2.1.2.20210415</version>
+          <version>2.4.16.20251111</version>
         </dependency>
       </dependencies>
       <build>

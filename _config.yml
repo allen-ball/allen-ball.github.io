@@ -3,11 +3,6 @@
 url: >-
   https://blog.hcf.dev/
 
-# Source: https://allen-ball.github.io/javadoc/
-javadoc:
-  url: >-
-    https://blog.hcf.dev/javadoc
-
 title: Allen D. Ball
 description: >-
   A blog about Java and other stuff.
