@@ -63,8 +63,8 @@
     <p><a href="https://fivethirtyeight.com/">FiveThirtyEight</a> presented a <a href="https://fivethirtyeight.com/features/whats-your-best-scrabble-string/">challenge</a> to order Scrabble tiles to
 generate the largest score.</p>
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/overview-summary.html">javadoc</a> is provided with the solution implemented in
-<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html"><code>SolveRiddle20190628Task</code></a>.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-riddler538/overview-summary.html">javadoc</a> is provided with the solution implemented in
+<a href="https://allen-ball.github.io/ball-riddler538/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html"><code>SolveRiddle20190628Task</code></a>.</p>
 
 <h2 id="solution">Solution</h2>
 
@@ -198,14 +198,14 @@ CAR                                                                             
 </code></pre>
 
 <p><code>wordlist</code> is a
-<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.441"><code>Map&lt;CharSequence,Integer&gt;</code></a>
+<a href="https://allen-ball.github.io/ball-riddler538/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.232"><code>Map&lt;CharSequence,Integer&gt;</code></a>
 mapping a valid “word” to its potential point value, <code>wordmap</code> is a
-<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.536"><code>Map&lt;CharSequence,SortedSet&lt;CharSequence&gt;&gt;</code></a>
+<a href="https://allen-ball.github.io/ball-riddler538/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.233"><code>Map&lt;CharSequence,SortedSet&lt;CharSequence&gt;&gt;</code></a>
 mapping a word to all its “included” words, and <code>starts</code> is also a
-<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.561"><code>Map&lt;CharSequence,SortedSet&lt;CharSequence&gt;&gt;</code></a>
+<a href="https://allen-ball.github.io/ball-riddler538/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.234"><code>Map&lt;CharSequence,SortedSet&lt;CharSequence&gt;&gt;</code></a>
 mapping all words to its respective prefix.  After each iteration of
 selecting a subsequence to
-<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.365">play</a>,
+<a href="https://allen-ball.github.io/ball-riddler538/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.365">play</a>,
 the <code>wordmap</code> <code>keySet()</code> is updated by removing any sequences that can no
 longer be played for points:</p>
 
@@ -219,7 +219,7 @@ longer be played for points:</p>
 </code></pre>
 
 <p>The
-<a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.313"><code>next()</code></a>
+<a href="https://allen-ball.github.io/ball-riddler538/src-html/ball/riddler538/ant/taskdefs/SolveRiddle20190628Task.html#line.313"><code>next()</code></a>
 method chooses the next highest valued sequence of tiles to play:</p>
 
 <pre><code class="language-java">    private Optional&lt;CharSequence&gt; next() {
@@ -256,7 +256,7 @@ method chooses the next highest valued sequence of tiles to play:</p>
 <p>The <code>ball.game.scrabble</code> package was initially developed to solve a previous
 Scrabble
 <a href="http://fivethirtyeight.com/features/this-challenge-will-boggle-your-mind/">problem</a>.
-The implementation is <a href="https://blog.hcf.dev/javadoc/article/2019-07-08-fivethirtyeight-best-scrabble-string/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html"><code>SolveExpress20161021Task</code></a>
+The implementation is <a href="https://allen-ball.github.io/ball-riddler538/ball/riddler538/ant/taskdefs/SolveExpress20161021Task.html"><code>SolveExpress20161021Task</code></a>
 giving the solution:</p>
 
 <pre><code class="language-log">CLASSISMS [AS, AS+S, L+ASS, LASS+I, LASSI+S, C+LASSIS, CLASSIS+M, CLASSISM+S]

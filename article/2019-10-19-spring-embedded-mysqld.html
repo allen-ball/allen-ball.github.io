@@ -70,11 +70,11 @@ If the property is defined, the corresponding bean
 manage the <code>mysqld</code> <code>Process</code> for the life of the Spring Boot application
 including graceful shutdown at application shutdown.</p>
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-10-19-spring-embedded-mysqld/allclasses-noframe.html">javadoc</a> is provided.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-spring/overview-summary.html">javadoc</a> is provided.</p>
 
 <h2 id="theory-of-operation">Theory of Operation</h2>
 
-<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-10-19-spring-embedded-mysqld/ball/spring/mysqld/MysqldConfiguration.html"><code>MysqldConfiguration</code></a> is
+<p>The <a href="https://allen-ball.github.io/ball-spring/ball/spring/mysqld/MysqldConfiguration.html"><code>MysqldConfiguration</code></a> is
 <a href="https://docs.spring.io/spring-boot/docs/2.4.5/api/org/springframework/boot/autoconfigure/condition/ConditionalOnProperty.html?is-external=true"><code>@ConditionalOnProperty</code></a> annotation for
 <code>${mysqld.home}</code>; if the property is defined, the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html"><code>Process</code></a>
 <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Bean.html?is-external=true"><code>@Bean</code></a> is created running the MySQL server.  If the
@@ -205,7 +205,7 @@ option for the purpose of notifying the Spring Boot Application that the
 server has started: While the <a href="https://dev.mysql.com/doc/connector-j/8.0/en/">MySQL Connector/J</a> does not support UNIX
 domain sockets, the above code waits for the <code>mysqld</code> server to create the
 socket to be sure the server is running before continuing.  The
-<a href="https://blog.hcf.dev/javadoc/article/2019-10-19-spring-embedded-mysqld/ball/spring/mysqld/MysqldComponent.html"><code>MysqldComponent</code></a> will simply monitor that the <code>Process</code>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/mysqld/MysqldComponent.html"><code>MysqldComponent</code></a> will simply monitor that the <code>Process</code>
 is still alive.  This <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/stereotype/Component.html?is-external=true"><code>@Component</code></a> is dependent on the <code>mysqld</code>
 <a href="https://docs.spring.io/spring/docs/5.3.6/javadoc-api/org/springframework/context/annotation/Bean.html?is-external=true"><code>@Bean</code></a> which in turn is dependent on the <code>${mysqld.home}</code> property.</p>
 
@@ -233,7 +233,7 @@ public class MysqldComponent {
 
 <p>Per the direction of the
 <a href="https://docs.spring.io/spring-boot/docs/2.4.5/reference/html/howto.html#howto-configure-a-component-that-is-used-by-JPA">Spring Boot Reference Guide</a>,
-<a href="https://blog.hcf.dev/javadoc/article/2019-10-19-spring-embedded-mysqld/ball/spring/mysqld/EntityManagerFactoryComponent.html"><code>EntityManagerFactoryComponent</code></a> is provided
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/mysqld/EntityManagerFactoryComponent.html"><code>EntityManagerFactoryComponent</code></a> is provided
 to indicate the <code>mysqld</code> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Process.html"><code>Process</code></a> is required by JPA.</p>
 
 <pre><code class="language-java">@Component

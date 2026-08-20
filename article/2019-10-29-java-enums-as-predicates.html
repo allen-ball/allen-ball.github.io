@@ -108,7 +108,7 @@ public class Card {
         .anyMatch();
 </code></pre>
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/allclasses-noframe.html">javadoc</a> is provided.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-game/overview-summary.html">javadoc</a> is provided.</p>
 
 <h2 id="extending-enums">Extending Enums</h2>
 
@@ -117,7 +117,7 @@ and those subclass implementations may have custom fields and methods.  For
 example, <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html"><code>java.time.DayOfWeek</code></a> implements the
 <a href="https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAccessor.html"><code>TemporalAccessor</code></a> and
 <a href="https://docs.oracle.com/javase/8/docs/api/java/time/temporal/TemporalAdjuster.html"><code>TemporalAdjuster</code></a> interfaces so <code>DayOfWeek</code> provides
-implementation methods for those interface methods.  The <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a>
+implementation methods for those interface methods.  The <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Suit.html"><code>Suit</code></a>
 implementation demonstrates how subclass fields may be defined and set by
 defining a custom constructor.</p>
 
@@ -149,8 +149,8 @@ defining a custom constructor.</p>
 <p>The key to contributing to the fluent interface provided by
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> is for the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> subclass to implement
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>.  Of course, that <code>Predicate</code> must test the bean
-that the <code>Enum</code> is a property for.  For example, <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> and
-<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a> must test <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.html"><code>Card</code></a>:</p>
+that the <code>Enum</code> is a property for.  For example, <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Rank.html"><code>Rank</code></a> and
+<a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Suit.html"><code>Suit</code></a> must test <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.html"><code>Card</code></a>:</p>
 
 <pre><code class="language-java">    public enum Rank implements Predicate&lt;Card&gt; {
         ...
@@ -182,13 +182,13 @@ that the <code>Enum</code> is a property for.  For example, <a href="https://blo
 <p>Note: Both implementations provide static <code>is</code> methods to further contribute
 to the “fluency” of the API.</p>
 
-<p>To re-inforce the fact that <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> and <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a> are
-bean properties of <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.html"><code>Card</code></a>, <code>Rank</code> and <code>Suit</code> are implemented as
+<p>To re-inforce the fact that <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Rank.html"><code>Rank</code></a> and <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Suit.html"><code>Suit</code></a> are
+bean properties of <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.html"><code>Card</code></a>, <code>Rank</code> and <code>Suit</code> are implemented as
 inner classes of <code>Card</code>.</p>
 
 <h2 id="fluent-implementation---poker-hand-ranking">Fluent Implementation - Poker Hand Ranking</h2>
 
-<p>To demonstrate the “fluency” of the API, a Poker <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a>
+<p>To demonstrate the “fluency” of the API, a Poker <a href="https://allen-ball.github.io/ball-game/ball/game/card/poker/Ranking.html"><code>Ranking</code></a>
 <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> may be defined.</p>
 
 <pre><code class="language-java">public enum Ranking implements Predicate&lt;List&lt;Card&gt;&gt; {
@@ -224,8 +224,8 @@ inner classes of <code>Card</code>.</p>
 }
 </code></pre>
 
-<p>To complete the Poker “domain specific language” the <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> and
-<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Suit.html"><code>Suit</code></a> types must provide static <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>
+<p>To complete the Poker “domain specific language” the <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Rank.html"><code>Rank</code></a> and
+<a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Suit.html"><code>Suit</code></a> types must provide static <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>
 <code>SAME</code> fields,</p>
 
 <pre><code class="language-java">    ...
@@ -247,7 +247,7 @@ inner classes of <code>Card</code>.</p>
     ...
 </code></pre>
 
-<p><a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a> must provide a static <code>SEQUENCE</code>
+<p><a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Rank.html"><code>Rank</code></a> must provide a static <code>SEQUENCE</code>
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a>,</p>
 
 <pre><code class="language-java">    ...
@@ -302,7 +302,7 @@ inner classes of <code>Card</code>.</p>
     ...
 </code></pre>
 
-<p>and <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> must provide static <code>with</code> and <code>holding</code> methods:</p>
+<p>and <a href="https://allen-ball.github.io/ball-game/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> must provide static <code>with</code> and <code>holding</code> methods:</p>
 
 <pre><code class="language-java">public enum Ranking implements Predicate&lt;List&lt;Card&gt;&gt; {
     ...
@@ -337,7 +337,7 @@ inner classes of <code>Card</code>.</p>
 }
 </code></pre>
 
-<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> combined
+<p>The <a href="https://allen-ball.github.io/ball-game/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> combined
 with the <code>Combinations</code> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> introduced in
 <a href="/article/2019-03-28-java-streams-and-spliterators">this article</a> may be
 used to test for a specific Poker hand.</p>
@@ -355,7 +355,7 @@ used to test for a specific Poker hand.</p>
 provides an <code>of(int,int,Predicate&lt;List&lt;T&gt;&gt;,Collection&lt;T&gt;)</code> method that
 allows the specification of a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> that when it
 evaluates to <code>false</code> will stop iterating over that branch.  The
-<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> may be extended to provide that
+<a href="https://allen-ball.github.io/ball-game/ball/game/card/poker/Ranking.html"><code>Ranking</code></a> <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Enum.html"><code>Enum</code></a> may be extended to provide that
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> by providing a <code>possible()</code> method:</p>
 
 <pre><code class="language-java">public enum Ranking implements Predicate&lt;List&lt;Card&gt;&gt; {
@@ -396,7 +396,7 @@ evaluates to <code>false</code> will stop iterating over that branch.  The
 <p>which in combination with the
 <code>Combinations.of(int,int,Predicate&lt;List&lt;T&gt;&gt;,Collection&lt;T&gt;)</code> method will
 optimize the search for <code>ThreeOfAKind</code> by escaping a branch if the first
-<a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.html"><code>Card</code>s</a> are not the same <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/Card.Rank.html"><code>Rank</code></a>, <code>Straight</code> if the
+<a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.html"><code>Card</code>s</a> are not the same <a href="https://allen-ball.github.io/ball-game/ball/game/card/Card.Rank.html"><code>Rank</code></a>, <code>Straight</code> if the
 first <code>Card</code>s are not a sequence, etc.</p>
 
 <pre><code class="language-java">    List&lt;Card&gt; hand = ...;
@@ -408,7 +408,7 @@ first <code>Card</code>s are not a sequence, etc.</p>
         .anyMatch();
 </code></pre>
 
-<p>The logic in <code>Ranking.find(Collection&lt;Card&gt;)</code> and <a href="https://blog.hcf.dev/javadoc/article/2019-10-29-java-enums-as-predicates/ball/game/card/poker/Evaluator.html"><code>Evaluator</code></a>
+<p>The logic in <code>Ranking.find(Collection&lt;Card&gt;)</code> and <a href="https://allen-ball.github.io/ball-game/ball/game/card/poker/Evaluator.html"><code>Evaluator</code></a>
 demonstrate more sophisticated logic.</p>
 
 <h2 id="summary">Summary</h2>

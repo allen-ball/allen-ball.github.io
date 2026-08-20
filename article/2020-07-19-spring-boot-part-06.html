@@ -75,7 +75,7 @@ described in
 
 <!--more-->
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/allclasses-noframe.html">javadoc</a> is provided.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-spring/overview-summary.html">javadoc</a> is provided.</p>
 
 <h2 id="theory-of-operation">Theory of Operation</h2>
 
@@ -197,7 +197,7 @@ Date: Sun, 19 Jul 2020 20:29:47 GMT
   </li>
 </ol>
 
-<p>The <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/BeanRestController.html"><code>BeanRestController</code></a> implementation is shown
+<p>The <a href="https://allen-ball.github.io/ball-spring/ball/spring/jig/BeanRestController.html"><code>BeanRestController</code></a> implementation is shown
 below.</p>
 
 <figcaption style="text-align: center">
@@ -235,7 +235,7 @@ public class BeanRestController implements ApplicationContextAware {
 requested bean and then serialize to JSON and XML.</p>
 
 <p>In the project for the starter, add the
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class.</p>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/jig/package-summary.html"><code>AutoConfiguration</code></a> class.</p>
 
 <figcaption style="text-align: center">
     ball.spring.jig.autoconfigure.AutoConfiguration
@@ -260,7 +260,7 @@ software has been configured and/or is on the class path.</p>
 
 <p>Finally, <code>META-INF/spring.factories</code> must be configured in the starter JAR
 to notify Spring Boot to add the
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a>.</p>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/jig/package-summary.html"><code>AutoConfiguration</code></a>.</p>
 
 <figcaption style="text-align: center">META-INF/spring.factories</figcaption>
 <pre><code class="language-properties">org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.jig.autoconfigure.AutoConfiguration
@@ -269,7 +269,7 @@ to notify Spring Boot to add the
 <p>Creating a starter for the embedded MySQL process described in
 <a href="/article/2019-10-19-spring-embedded-mysqld">“Spring Embedded MySQL Server”</a>
 is equally straightforward.  Its
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/mysqld/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class is shown below:</p>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/mysqld/package-summary.html"><code>AutoConfiguration</code></a> class is shown below:</p>
 
 <figcaption style="text-align: center">
     ball.spring.mysqld.autoconfigure.AutoConfiguration

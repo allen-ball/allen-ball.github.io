@@ -62,12 +62,12 @@
   <div itemprop="articleBody">
     <p>This article discusses implementing <a href="https://www.java.com/en/download/help/java8.html">Java 8</a> <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code>s</a> and
 the underlying <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation.  The nontrivial
-implementations described here are <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Permutations.html"><code>Permutations</code></a> and
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> streams, both of which provide a stream of
+implementations described here are <a href="https://allen-ball.github.io/ball-util/ball/util/stream/Permutations.html"><code>Permutations</code></a> and
+<a href="https://allen-ball.github.io/ball-util/ball/util/stream/Combinations.html"><code>Combinations</code></a> streams, both of which provide a stream of
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/List.html"><code>List&lt;T&gt;</code></a> instances representing the combinations of the argument
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html"><code>Collection&lt;T&gt;</code></a>.</p>
 
-<p>For example, the first <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> of <code>5</code> of a 52-card
+<p>For example, the first <a href="https://allen-ball.github.io/ball-util/ball/util/stream/Combinations.html"><code>Combinations</code></a> of <code>5</code> of a 52-card
 <code>Deck</code> are:</p>
 
 <pre><code class="language-bash">[2-♧, 3-♧, 4-♧, 5-♧, 6-♧]
@@ -84,12 +84,12 @@ implementations described here are <a href="https://blog.hcf.dev/javadoc/article
 ...
 </code></pre>
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/overview-summary.html">javadoc</a> is provided.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-util/overview-summary.html">javadoc</a> is provided.</p>
 
 <h2 id="stream-implementation">Stream Implementation</h2>
 
-<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Permutations.html"><code>Permutations</code></a> stream is implemented in terms of
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a>:</p>
+<p>The <a href="https://allen-ball.github.io/ball-util/ball/util/stream/Permutations.html"><code>Permutations</code></a> stream is implemented in terms of
+<a href="https://allen-ball.github.io/ball-util/ball/util/stream/Combinations.html"><code>Combinations</code></a>:</p>
 
 <pre><code class="language-java">    public static &lt;T&gt; Stream&lt;List&lt;T&gt;&gt; of(Predicate&lt;List&lt;T&gt;&gt; predicate,
                                          Collection&lt;T&gt; collection) {
@@ -99,7 +99,7 @@ implementations described here are <a href="https://blog.hcf.dev/javadoc/article
     }
 </code></pre>
 
-<p>and the <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> stream relies on a
+<p>and the <a href="https://allen-ball.github.io/ball-util/ball/util/stream/Combinations.html"><code>Combinations</code></a> stream relies on a
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> implementation provided through a
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html"><code>Supplier</code></a>:</p>
 
@@ -128,7 +128,7 @@ section.</p>
 
 <h2 id="spliterator-implementation">Spliterator Implementation</h2>
 
-<p>The abstract <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/DispatchSpliterator.html"><code>DispatchSpliterator</code></a> base class
+<p>The abstract <a href="https://allen-ball.github.io/ball-util/ball/util/DispatchSpliterator.html"><code>DispatchSpliterator</code></a> base class
 provides the implementation of
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html#tryAdvance-java.util.function.Consumer-"><code>Spliterator.tryAdvance(Consumer)</code></a>.  The key logic
 is the current <code>Spliterator</code>’s <code>tryAdvance(Consumer)</code> method is tried and if
@@ -174,11 +174,11 @@ is tried until there are no more <code>Spliterator</code>s to be supplied.</p>
 </code></pre>
 
 <p>Subclass implementors must supply an implementation of
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/DispatchSpliterator.html#spliterators--"><code>Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; spliterators()</code></a>.
-In the <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/stream/Combinations.html"><code>Combinations</code></a> implementation, the key
-<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>, <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208"><code>ForPrefix</code></a>, iterates over every
+<a href="https://allen-ball.github.io/ball-util/ball/util/DispatchSpliterator.html#spliterators()"><code>Iterator&lt;Supplier&lt;Spliterator&lt;T&gt;&gt;&gt; spliterators()</code></a>.
+In the <a href="https://allen-ball.github.io/ball-util/ball/util/stream/Combinations.html"><code>Combinations</code></a> implementation, the key
+<a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a>, <a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208"><code>ForPrefix</code></a>, iterates over every
 (sorted) prefix and either supplies more <code>ForPrefix</code> <code>Spliterator</code>s or a
-single <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265"><code>ForCombination</code></a> <code>Spliterator</code>:</p>
+single <a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265"><code>ForCombination</code></a> <code>Spliterator</code>:</p>
 
 <pre><code class="language-java">        private class ForPrefix extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
             private final int size;
@@ -219,7 +219,7 @@ single <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and
 </code></pre>
 
 <p>Size, supplied as a superclass constructor parameter, is calculated with the
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/ball/util/DispatchSpliterator.html#binomial-long-long-"><code>binomial()</code></a> method.  For an individual combination, the size is
+<a href="https://allen-ball.github.io/ball-util/ball/util/DispatchSpliterator.html#binomial(long,long)"><code>binomial()</code></a> method.  For an individual combination, the size is
 <code>1</code>.</p>
 
 <pre><code class="language-java">        private class ForCombination extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
@@ -246,9 +246,9 @@ in <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterator.html
 callers (including <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html"><code>Stream</code></a> thorough
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/StreamSupport.html"><code>StreamSupport</code></a>) to optimize and avoid computation.</p>
 
-<p>The complete implementation provides a <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144"><code>Start</code></a>
+<p>The complete implementation provides a <a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.144"><code>Start</code></a>
 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Spliterators.html"><code>Spliterator</code></a> returned by the
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.html#line.106"><code>SpliteratorSupplier</code></a> and a <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177"><code>ForSize</code></a>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.html#line.106"><code>SpliteratorSupplier</code></a> and a <a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.177"><code>ForSize</code></a>
 spliterator to iterate over combination sizes.</p>
 
 <pre><code class="language-java">        private class Start extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {
@@ -303,7 +303,7 @@ spliterator to iterate over combination sizes.</p>
 
 <p>The API defines a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html"><code>Predicate</code></a> parameter which provides a way
 for callers to dynamically short-circuit all or part of the iteration.  The
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208"><code>ForPrefix</code></a> and <a href="https://blog.hcf.dev/javadoc/article/2019-03-28-java-streams-and-spliterators/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265"><code>ForCombination</code></a>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.208"><code>ForPrefix</code></a> and <a href="https://allen-ball.github.io/ball-util/src-html/ball/util/stream/Combinations.SpliteratorSupplier.html#line.265"><code>ForCombination</code></a>
 <code>tryAdvance(Consumer)</code> methods are overridden as follows:</p>
 
 <pre><code class="language-java">        private class ForPrefix extends DispatchSpliterator&lt;List&lt;T&gt;&gt; {

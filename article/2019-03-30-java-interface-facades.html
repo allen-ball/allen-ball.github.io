@@ -67,7 +67,7 @@ described here is to add fluent methods to <a href="https://docs.oracle.com/java
 enable <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/taglet/overview.html">Javadoc</a> implementations to provide snippets of well-formed
 HTML/XML.
 <!--more-->
-The various fluent <code>add()</code> methods implemented in <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentNode.html"><code>FluentNode</code></a>
+The various fluent <code>add()</code> methods implemented in <a href="https://allen-ball.github.io/ball-util/ball/xml/FluentNode.html"><code>FluentNode</code></a>
 (the “facade”):</p>
 
 <pre><code class="language-java">    default FluentNode add(Stream&lt;Node&gt; stream) {
@@ -111,7 +111,7 @@ The various fluent <code>add()</code> methods implemented in <a href="https://bl
 </code></pre>
 
 <p>that can be built up in to templates (e.g.,
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/HTMLTemplates.html"><code>HTMLTemplates</code></a>):</p>
+<a href="https://allen-ball.github.io/ball-util/ball/xml/HTMLTemplates.html"><code>HTMLTemplates</code></a>):</p>
 
 <pre><code class="language-java">    default FluentNode pre(String content) {
         return element("pre").content(content);
@@ -132,16 +132,16 @@ snippets:</p>
 <pre><code class="language-xml">&lt;a href="https://www.rfc-editor.org/rfc/rfc2045.txt" target="newtab"&gt;RFC2045&lt;/a&gt;
 </code></pre>
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/overview-summary.html">javadoc</a> is provided.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-util/overview-summary.html">javadoc</a> is provided.</p>
 
 <h2 id="theory-of-operation">Theory of Operation</h2>
 
 <p>An application can add a facade to a class hierarchy by extending
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a><sup id="ref1"><a href="#endnote1">1</a></sup>
+<a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a><sup id="ref1"><a href="#endnote1">1</a></sup>
 and implementing
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor-java.lang.Object-"><code>getProxyClassFor(Object)</code></a>
+<a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/FacadeProxyInvocationHandler.html#getProxyClassFor(java.lang.Object)"><code>getProxyClassFor(Object)</code></a>
 where the
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-"><code>invoke(Object,Method,Object[])</code></a>
+<a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/FacadeProxyInvocationHandler.html#invoke(java.lang.Object,java.lang.reflect.Method,java.lang.Object[])"><code>invoke(Object,Method,Object[])</code></a>
 “enhances” any eligible return types.  Conceptually:</p>
 
 <pre><code class="language-java">    public Object enhance(Object in) {
@@ -179,13 +179,13 @@ from <code>getProxyClassFor(Object)</code> for any <code>Class</code> to be enha
 
 <h2 id="implementation">Implementation</h2>
 
-<p><a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html"><code>Node</code></a> will be enhanced by <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentNode.html"><code>FluentNode</code></a> and
+<p><a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html"><code>Node</code></a> will be enhanced by <a href="https://allen-ball.github.io/ball-util/ball/xml/FluentNode.html"><code>FluentNode</code></a> and
 <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Document.html"><code>Document</code></a> will be enhanced by
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocument.html"><code>FluentDocument</code></a>.  Note: A <code>Node</code> does not necessarily
+<a href="https://allen-ball.github.io/ball-util/ball/xml/FluentDocument.html"><code>FluentDocument</code></a>.  Note: A <code>Node</code> does not necessarily
 have to implement the sub-interface that corresponds to
 <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Node.html#getNodeType--">Node.getNodeType()</a> so both the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html"><code>Object</code></a>’s
 class hierarchy and node type are analyzed and the results are cached in the
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/xml/FluentNode.InvocationHandler.html#line.358"><code>getProxyClassFor(Object)</code></a> implementation.</p>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/xml/FluentNode.InvocationHandler.html#line.358"><code>getProxyClassFor(Object)</code></a> implementation.</p>
 
 <pre><code class="language-java">        private final HashMap&lt;List&lt;Class&lt;?&gt;&gt;,Class&lt;?&gt;&gt; map = new HashMap&lt;&gt;();
         ...
@@ -229,7 +229,7 @@ class hierarchy and node type are analyzed and the results are cached in the
 </code></pre>
 
 <p>The corresponding
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/xml/FluentNode.InvocationHandler.html#line.398">“fluent”</a>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/xml/FluentNode.InvocationHandler.html#line.398">“fluent”</a>
 interface is found through reflection:</p>
 
 <pre><code class="language-java">        private Class&lt;?&gt; fluent(Class&lt;?&gt; type) {
@@ -252,13 +252,13 @@ interface is found through reflection:</p>
 </code></pre>
 
 <p>The <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/parsers/DocumentBuilderFactory.html"><code>DocumentBuilderFactory</code></a>,
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocumentBuilderFactory.html"><code>FluentDocumentBuilderFactory</code></a>, and
+<a href="https://allen-ball.github.io/ball-util/ball/xml/FluentDocumentBuilderFactory.html"><code>FluentDocumentBuilderFactory</code></a>, and
 <a href="https://docs.oracle.com/javase/8/docs/api/javax/xml/parsers/DocumentBuilder.html"><code>DocumentBuilder</code></a>,
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocument.Builder.html"><code>FluentDocument.Builder</code></a>, implementations are both
+<a href="https://allen-ball.github.io/ball-util/ball/xml/FluentDocument.Builder.html"><code>FluentDocument.Builder</code></a>, implementations are both
 straightforward.  The two <code>DocumentBuilder</code>
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/xml/FluentDocument.Builder.html#line.75">methods</a>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/xml/FluentDocument.Builder.html#line.75">methods</a>
 that create new <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/Document.html"><code>Document</code>s</a> are implemented by creating a new
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentNode.InvocationHandler.html"><code>FluentNode.InvocationHandler</code></a>:</p>
+<a href="https://allen-ball.github.io/ball-util/ball/xml/FluentNode.InvocationHandler.html"><code>FluentNode.InvocationHandler</code></a>:</p>
 
 <pre><code class="language-java">        @Override
         public FluentDocument newDocument() {
@@ -275,7 +275,7 @@ that create new <a href="https://docs.oracle.com/javase/8/docs/api/org/w3c/dom/D
         }
 </code></pre>
 
-<p>Creating a new <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/FluentDocument.html"><code>FluentDocument</code></a> is as simple as:</p>
+<p>Creating a new <a href="https://allen-ball.github.io/ball-util/ball/xml/FluentDocument.html"><code>FluentDocument</code></a> is as simple as:</p>
 
 <pre><code class="language-java">            document =
                 FluentDocumentBuilderFactory.newInstance()
@@ -298,7 +298,7 @@ error similar to:</p>
 <p>The <code>com.sun.org.apache.xerces.internal.dom</code> implementation classes expect
 to have package access to other package classes.  This requires adjusting
 the
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.164"><code>invoke(Object,Method,Object[])</code></a>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.164"><code>invoke(Object,Method,Object[])</code></a>
 implementation to choose the wider of the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/Proxy.html"><code>Proxy</code></a> facade or the
 <em>reverse</em> depending on the required context:</p>
 
@@ -374,13 +374,13 @@ implementation to choose the wider of the <a href="https://docs.oracle.com/javas
 </code></pre>
 
 <p>and providing the necessary “reverse” methods contained in the
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.104">source</a>.</p>
+<a href="https://allen-ball.github.io/ball-util/src-html/ball/lang/reflect/FacadeProxyInvocationHandler.html#line.104">source</a>.</p>
 
 <h2 id="integration">Integration</h2>
 
-<p><a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/tools/javadoc/AbstractTaglet.html"><code>AbstractTaglet</code></a> demonstrates the integration.  The class
-must implement <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/XMLServices.html"><code>XMLServices</code></a> and provide an implementation of
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/XMLServices.html#document--"><code>document()</code></a>.</p>
+<p><a href="https://allen-ball.github.io/ball-tools-javadoc/ball-tools-javadoc/ball/tools/javadoc/AbstractTaglet.html"><code>AbstractTaglet</code></a> demonstrates the integration.  The class
+must implement <a href="https://allen-ball.github.io/ball-util/ball/xml/XMLServices.html"><code>XMLServices</code></a> and provide an implementation of
+<a href="https://allen-ball.github.io/ball-util/ball/xml/XMLServices.html#document()"><code>document()</code></a>.</p>
 
 <pre><code class="language-java">    private final FluentDocument document;
     ...
@@ -410,22 +410,22 @@ must implement <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-int
     public FluentDocument document() { return document; }
 </code></pre>
 
-<p><a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/tools/javadoc/AbstractTaglet.html"><code>AbstractTaglet</code></a> also implements
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/xml/HTMLTemplates.html"><code>HTMLTemplates</code></a> which provides <code>default</code> methods for HTML
+<p><a href="https://allen-ball.github.io/ball-tools-javadoc/ball-tools-javadoc/ball/tools/javadoc/AbstractTaglet.html"><code>AbstractTaglet</code></a> also implements
+<a href="https://allen-ball.github.io/ball-util/ball/xml/HTMLTemplates.html"><code>HTMLTemplates</code></a> which provides <code>default</code> methods for HTML
 elements/nodes.  <code>HTMLTemplates</code> is further extended by
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/tools/javadoc/JavadocHTMLTemplates.html"><code>JavadocHTMLTemplates</code></a> to provide common HTML/XML
+<a href="https://allen-ball.github.io/ball-tools-javadoc/ball-tools-javadoc/ball/tools/javadoc/JavadocHTMLTemplates.html"><code>JavadocHTMLTemplates</code></a> to provide common HTML/XML
 fragments required to generate Javadoc.</p>
 
 <h2 id="summary">Summary</h2>
 
-<p>The <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a> combined
+<p>The <a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a> combined
 with specialized interfaces implementing <code>default</code> methods provides a
 mechanism for extending an otherwise <code>final</code> class hierarchy.</p>
 
 <p><b id="endnote1">[1]</b>
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a> is a subclass
-of <a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/DefaultInvocationHandler.html"><code>DefaultInvocationHandler</code></a> whose
-<a href="https://blog.hcf.dev/javadoc/article/2019-03-30-java-interface-facades/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-"><code>invoke(Object,Method,Object[])</code></a>
+<a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/FacadeProxyInvocationHandler.html"><code>FacadeProxyInvocationHandler</code></a> is a subclass
+of <a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/DefaultInvocationHandler.html"><code>DefaultInvocationHandler</code></a> whose
+<a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/DefaultInvocationHandler.html#invoke(java.lang.Object,java.lang.reflect.Method,java.lang.Object[])"><code>invoke(Object,Method,Object[])</code></a>
 implementation is discussed in
 <a href="/article/2019-01-31-java-invocationhandler-interface-default-methods">“Adding Support to Java InvocationHandler Implementations for Interface
 Default Methods”</a>).

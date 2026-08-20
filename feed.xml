@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://blog.hcf.dev//feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.hcf.dev//" rel="alternate" type="text/html" /><updated>2026-08-12T20:48:36+00:00</updated><id>https://blog.hcf.dev//feed.xml</id><title type="html">Allen D. Ball</title><subtitle>A blog about Java and other stuff.</subtitle><entry><title type="html">Configuring and Using GitHub Readme Instant Preview</title><link href="https://blog.hcf.dev//article/2021-07-27-grip" rel="alternate" type="text/html" title="Configuring and Using GitHub Readme Instant Preview" /><published>2021-07-27T00:00:00+00:00</published><updated>2021-07-27T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/grip</id><content type="html" xml:base="https://blog.hcf.dev//article/2021-07-27-grip"><![CDATA[<p><a href="https://github.com/">GitHub</a> will render project <code>README</code> and other markdown files to <code>HTML</code>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://blog.hcf.dev//feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.hcf.dev//" rel="alternate" type="text/html" /><updated>2026-08-20T05:05:35+00:00</updated><id>https://blog.hcf.dev//feed.xml</id><title type="html">Allen D. Ball</title><subtitle>A blog about Java and other stuff.</subtitle><entry><title type="html">Configuring and Using GitHub Readme Instant Preview</title><link href="https://blog.hcf.dev//article/2021-07-27-grip" rel="alternate" type="text/html" title="Configuring and Using GitHub Readme Instant Preview" /><published>2021-07-27T00:00:00+00:00</published><updated>2021-07-27T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/grip</id><content type="html" xml:base="https://blog.hcf.dev//article/2021-07-27-grip"><![CDATA[<p><a href="https://github.com/">GitHub</a> will render project <code>README</code> and other markdown files to <code>HTML</code>
 when displaying projects on its website.  Those files must be commited and
 pushed before the developer can see the results which can result in
 extraneous and unwanted commits.  This post discusses installing and using
@@ -609,12 +609,11 @@ of this series.</p>
 
 <pre><code class="language-xml">    &lt;profile&gt;
       &lt;id&gt;mysql&lt;/id&gt;
-      &lt;repositories&gt;...&lt;/repositories&gt;
       &lt;dependencies&gt;
         &lt;dependency&gt;
-          &lt;groupId&gt;ball&lt;/groupId&gt;
+          &lt;groupId&gt;dev.hcf.ball&lt;/groupId&gt;
           &lt;artifactId&gt;ball-spring-mysqld-starter&lt;/artifactId&gt;
-          &lt;version&gt;2.1.2.20210415&lt;/version&gt;
+          &lt;version&gt;2.4.16.20251111&lt;/version&gt;
         &lt;/dependency&gt;
       &lt;/dependencies&gt;
       &lt;build&gt;
@@ -1811,7 +1810,7 @@ Implementation class of <a href="https://docs.oracle.com/javase/8/docs/api/java/
 <a href="#ref1">↩</a></p>]]></content><author><name></name></author><category term="Java" /><category term="Concurrency" /><summary type="html"><![CDATA[The combination of RecursiveTask implementations running in a ForkJoinPool allows tasks to be defined that may spawn subtasks that in turn may run asynchronously. The ForkJoinPool manages efficient processing of those tasks. This article presents a simple calculator application to evaluate a formula defined as a List presents a single-threaded recursive solution, and then converts that solution to use RecursiveTasks executed in a ForkJoinPool.]]></summary></entry><entry><title type="html">Java Multi-Release JARs</title><link href="https://blog.hcf.dev//article/2020-07-19-java-multi-release-jars" rel="alternate" type="text/html" title="Java Multi-Release JARs" /><published>2020-07-19T00:00:00+00:00</published><updated>2020-07-19T00:00:00+00:00</updated><id>https://blog.hcf.dev//article/java-multi-release-jars</id><content type="html" xml:base="https://blog.hcf.dev//article/2020-07-19-java-multi-release-jars"><![CDATA[<p><a href="/article/2019-01-31-java-invocationhandler-interface-default-methods">“Adding Support to Java InvocationHandler Implementations for Interface Default Methods”</a>
 describes how to implement an <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/InvocationHandler.html?is-external=true"><code>InvocationHandler</code></a> to
 invoke <code>default</code> interface methods.  This mechanism is critical to the
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-java-multi-release-jars/ball/xml/FluentNode.html"><code>FluentNode</code></a> implementation described in
+<a href="https://allen-ball.github.io/ball-util/ball/xml/FluentNode.html"><code>FluentNode</code></a> implementation described in
 <a href="/article/2019-03-30-java-interface-facades">“Java Interface Facades”</a>.
 The first article also notes that the
 <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/invoke/MethodHandles.Lookup.html"><code>MethodHandles.Lookup</code></a> method used with <a href="https://www.java.com/en/download/help/java8.html">Java 8</a>
@@ -1848,9 +1847,9 @@ a Java 9 environment and saved to the JAR beneath the
 
 <h2 id="implementation">Implementation</h2>
 
-<p><a href="https://blog.hcf.dev/javadoc/article/2020-07-19-java-multi-release-jars/ball/lang/reflect/DefaultInvocationHandler.html#invoke-java.lang.Object-java.lang.reflect.Method-java.lang.Object:A-"><code>DefaultInvocationHandler.invoke(Object,Method,Object[])</code></a>
+<p><a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/DefaultInvocationHandler.html#invoke(java.lang.Object,java.lang.reflect.Method,java.lang.Object[])"><code>DefaultInvocationHandler.invoke(Object,Method,Object[])</code></a>
 is re-factored to implement
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-java-multi-release-jars/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.html"><code>DefaultInterfaceMethodInvocationHandler</code></a>:</p>
+<a href="https://allen-ball.github.io/ball-util/ball/lang/reflect/DefaultInterfaceMethodInvocationHandler.html"><code>DefaultInterfaceMethodInvocationHandler</code></a>:</p>
 
 <figcaption style="text-align: center">DefaultInvocationHandler</figcaption>
 <pre><code class="language-java">@NoArgsConstructor @ToString
@@ -2037,7 +2036,7 @@ described in
 
 <!--more-->
 
-<p>Complete <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/allclasses-noframe.html">javadoc</a> is provided.</p>
+<p>Complete <a href="https://allen-ball.github.io/ball-spring/overview-summary.html">javadoc</a> is provided.</p>
 
 <h2 id="theory-of-operation">Theory of Operation</h2>
 
@@ -2159,7 +2158,7 @@ Date: Sun, 19 Jul 2020 20:29:47 GMT
   </li>
 </ol>
 
-<p>The <a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/BeanRestController.html"><code>BeanRestController</code></a> implementation is shown
+<p>The <a href="https://allen-ball.github.io/ball-spring/ball/spring/jig/BeanRestController.html"><code>BeanRestController</code></a> implementation is shown
 below.</p>
 
 <figcaption style="text-align: center">
@@ -2197,7 +2196,7 @@ public class BeanRestController implements ApplicationContextAware {
 requested bean and then serialize to JSON and XML.</p>
 
 <p>In the project for the starter, add the
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class.</p>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/jig/package-summary.html"><code>AutoConfiguration</code></a> class.</p>
 
 <figcaption style="text-align: center">
     ball.spring.jig.autoconfigure.AutoConfiguration
@@ -2222,7 +2221,7 @@ software has been configured and/or is on the class path.</p>
 
 <p>Finally, <code>META-INF/spring.factories</code> must be configured in the starter JAR
 to notify Spring Boot to add the
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/jig/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a>.</p>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/jig/package-summary.html"><code>AutoConfiguration</code></a>.</p>
 
 <figcaption style="text-align: center">META-INF/spring.factories</figcaption>
 <pre><code class="language-properties">org.springframework.boot.autoconfigure.EnableAutoConfiguration: ball.spring.jig.autoconfigure.AutoConfiguration
@@ -2231,7 +2230,7 @@ to notify Spring Boot to add the
 <p>Creating a starter for the embedded MySQL process described in
 <a href="/article/2019-10-19-spring-embedded-mysqld">“Spring Embedded MySQL Server”</a>
 is equally straightforward.  Its
-<a href="https://blog.hcf.dev/javadoc/article/2020-07-19-spring-boot-part-06/ball/spring/mysqld/autoconfigure/AutoConfiguration.html"><code>AutoConfiguration</code></a> class is shown below:</p>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/mysqld/package-summary.html"><code>AutoConfiguration</code></a> class is shown below:</p>
 
 <figcaption style="text-align: center">
     ball.spring.mysqld.autoconfigure.AutoConfiguration
@@ -2326,7 +2325,7 @@ updates
     </tr>
     <tr>
       <td><a href="https://allen-ball.github.io/voyeur/voyeur/SSDP.html"><code>SSDP</code></a></td>
-      <td>SSDP hosts discovered via <a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true"><code>SSDPDiscoveryCache</code></a></td>
+      <td>SSDP hosts discovered via <a href="https://allen-ball.github.io/ball-upnp/ball/upnp/ssdp/SSDPDiscoveryCache.html?is-external=true"><code>SSDPDiscoveryCache</code></a></td>
     </tr>
   </tbody>
 </table>
@@ -2591,9 +2590,9 @@ attributes and implements the
 <a href="https://allen-ball.github.io/voyeur/voyeur/UIController.html#root-org.springframework.ui.Model-"><code>root</code></a>
 method<sup id="ref1"><a href="#endnote1">1</a></sup> to serve the UI request paths.
 The
-<a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html?is-external=true">superclass</a>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/AbstractController.html?is-external=true">superclass</a>
 implements
-<a href="https://blog.hcf.dev/javadoc/ball-api/20200622.0/ball/spring/AbstractController.html#getViewName--"><code>getViewName()</code></a>
+<a href="https://allen-ball.github.io/ball-spring/ball/spring/AbstractController.html#getViewName()"><code>getViewName()</code></a>
 which creates a view name based on the implementing class’s package which
 translates to
 <a href="https://github.com/allen-ball/voyeur/blob/trunk/src/main/resources/templates/voyeur.html">classpath:/templates/voyeur.html</a>,
